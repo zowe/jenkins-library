@@ -150,24 +150,41 @@ fi
   writeFile file: packageScriptFile, text: packageScriptContent
 
   withCredentials([usernamePassword(credentialsId: serverCredential, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-    // send to pax server
-    sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -b - ${USERNAME}@${serverIP} << EOF
+    def failure
+    try {
+      // send to pax server
+      sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -b - ${USERNAME}@${serverIP} << EOF
 put ${packageTar} ${serverWorkplaceRoot}
 put ${packageScriptFile} ${serverWorkplaceRoot}
 EOF"""
-    // extract tar file, run pre/post hooks and create pax file
-    sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no ${USERNAME}@${serverIP} << EOF
+      // extract tar file, run pre/post hooks and create pax file
+      sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no ${USERNAME}@${serverIP} << EOF
 iconv -f ISO8859-1 -t IBM-1047 ${serverWorkplaceRoot}/${packageScriptFile} > ${serverWorkplaceRoot}/${packageScriptFile}.new
 mv ${serverWorkplaceRoot}/${packageScriptFile}.new ${serverWorkplaceRoot}/${packageScriptFile}
 chmod +x ${serverWorkplaceRoot}/${packageScriptFile}
 . ${serverWorkplaceRoot}/${packageScriptFile}
 EOF"""
-    // copy back pax file
-    sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -b - ${USERNAME}@${serverIP} << EOF
+      // copy back pax file
+      sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -b - ${USERNAME}@${serverIP} << EOF
 get ${serverWorkplace}/${paxFileName} ${workspace}
 EOF"""
-    // clean up temporary files/folders
-    echo "${func} cleaning up ..."
-    sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no ${USERNAME}@${serverIP} \"rm -fr ${serverWorkplaceRoot}/${jobId}-${branch}-*\""
+      successful = true
+    } catch (ex1) {
+      // display errors
+      echo "${func}[error] in packaging: ${ex1}"
+      failure = ex1
+    }
+
+    try {
+      // clean up temporary files/folders
+      echo "${func} cleaning up ..."
+      sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no ${USERNAME}@${serverIP} \"rm -fr ${serverWorkplaceRoot}/${jobId}-${branch}-*\""
+    } catch (ex2) {
+      // ignore errors for cleaning up
+    }
+
+    if (failure) {
+      throw failure
+    }
   }
 }
