@@ -93,6 +93,9 @@ def call(String artifactPath, String buildName='', String buildNumber='') {
     result[key] = val
   }
 
-  echo "${func} renderred result: ${result.inspect()}"
+  echo "${func} renderred result:"
+  result.each( k, v -> {
+    echo "${k} = ${v}"
+  })
   return result
 }
