@@ -94,8 +94,8 @@ def call(String artifactPath, String buildName='', String buildNumber='') {
   }
 
   echo "${func} renderred result:"
-  result.each( k, v -> {
+  result.each { k, v ->
     echo "${k} = ${v}"
-  })
+  }
   return result
 }
