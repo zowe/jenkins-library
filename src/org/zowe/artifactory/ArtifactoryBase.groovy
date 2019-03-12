@@ -11,6 +11,12 @@
 package org.zowe.artifactory
 
 class ArtifactoryBase {
+  def steps
+
+  ArtifactoryBase(steps) {
+    this.steps = steps
+  }
+
   void test(String param1, String param2, int param3 = null) {
     echo ">>>>>>>>>>>> test started >>>>>>>>>>>"
     echo "param1 = ${param1}"
