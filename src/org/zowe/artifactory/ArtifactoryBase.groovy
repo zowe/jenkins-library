@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *
- * Copyright IBM Corporation 2018, 2019
+ * Copyright IBM Corporation 2019
  */
 
 package org.zowe.artifactory
@@ -17,12 +17,12 @@ class ArtifactoryBase {
     this.steps = steps
   }
 
-  String test(String param1, String param2, Integer param3 = null) {
+  String test(Map arguments = [:]) {
     println ">>>>>>>>>>>> test started >>>>>>>>>>>"
     def ret = """
-param1 = ${param1}
-param2 = ${param2}
-param3 = ${param3}
+param1 = ${arguments.param1}
+param2 = ${arguments.param2}
+param3 = ${arguments.param3}
 """
 
     return ret
