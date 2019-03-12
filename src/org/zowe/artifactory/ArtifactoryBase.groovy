@@ -17,7 +17,7 @@ class ArtifactoryBase {
     this.steps = steps
   }
 
-  void test(String param1, String param2, int param3 = null) {
+  void test(String param1, String param2, Integer param3 = null) {
     echo ">>>>>>>>>>>> test started >>>>>>>>>>>"
     echo "param1 = ${param1}"
     echo "param2 = ${param2}"
