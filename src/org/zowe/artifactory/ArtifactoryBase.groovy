@@ -18,9 +18,9 @@ class ArtifactoryBase {
   }
 
   void test(String param1, String param2, Integer param3 = null) {
-    echo ">>>>>>>>>>>> test started >>>>>>>>>>>"
-    echo "param1 = ${param1}"
-    echo "param2 = ${param2}"
-    echo "param3 = ${param3}"
+    println ">>>>>>>>>>>> test started >>>>>>>>>>>"
+    println "param1 = ${param1}"
+    println "param2 = ${param2}"
+    println "param3 = ${param3}"
   }
 }
