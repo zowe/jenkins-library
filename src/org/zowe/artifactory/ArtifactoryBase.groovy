@@ -18,7 +18,7 @@ class ArtifactoryBase {
   }
 
   String test(Map arguments = [:]) {
-    println ">>>>>>>>>>>> test started >>>>>>>>>>>"
+    steps.sh ">>>>>>>>>>>> test started >>>>>>>>>>>"
     def ret = """
 param1 = ${arguments.param1}
 param2 = ${arguments.param2}
