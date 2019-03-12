@@ -17,10 +17,14 @@ class ArtifactoryBase {
     this.steps = steps
   }
 
-  void test(String param1, String param2, Integer param3 = null) {
-    println ">>>>>>>>>>>> test started >>>>>>>>>>>"
-    println "param1 = ${param1}"
-    println "param2 = ${param2}"
-    println "param3 = ${param3}"
+  String test(String param1, String param2, Integer param3 = null) {
+    def ret = """
+>>>>>>>>>>>> test started >>>>>>>>>>>
+param1 = ${param1}
+param2 = ${param2}
+param3 = ${param3}
+"""
+
+    return ret
   }
 }
