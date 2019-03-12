@@ -18,8 +18,8 @@ class ArtifactoryBase {
   }
 
   String test(String param1, String param2, Integer param3 = null) {
+    println ">>>>>>>>>>>> test started >>>>>>>>>>>"
     def ret = """
->>>>>>>>>>>> test started >>>>>>>>>>>
 param1 = ${param1}
 param2 = ${param2}
 param3 = ${param3}
