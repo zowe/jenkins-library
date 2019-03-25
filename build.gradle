@@ -53,7 +53,7 @@ dependencies {
 sourceSets {
     main {
         groovy {
-            srcDirs = ["src/main/groovy"]
+            srcDirs = ["src/org/zowe"]
         }
     }
     test {
