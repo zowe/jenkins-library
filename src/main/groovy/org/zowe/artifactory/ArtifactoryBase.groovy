@@ -11,20 +11,4 @@
 package org.zowe.artifactory
 
 class ArtifactoryBase {
-  def steps
-
-  ArtifactoryBase(steps) {
-    this.steps = steps
-  }
-
-  String test(Map arguments = [:]) {
-    steps.echo ">>>>>>>>>>>> test started >>>>>>>>>>>"
-    def ret = """
-param1 = ${arguments.param1}
-param2 = ${arguments.param2}
-param3 = ${arguments.param3}
-"""
-
-    return ret
-  }
 }

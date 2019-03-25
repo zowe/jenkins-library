@@ -25,3 +25,11 @@ utils.conditionalStage('build', !isPullRequest) {
   // your stage code
 }
 ```
+
+## Run Tests
+
+To start test, run gradle command `gradle test`.
+
+## Generate Documentation
+
+Run gradle command `gradle groovydoc` to generate documentation.

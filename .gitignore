@@ -1,2 +1,24 @@
 # Mac temp file
 .DS_Store
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+bin
+out
+
+.idea
+.vscode
+target
+.project
+*.iml
+
+# ignored files for the inner mocked project used for testing the shared pipeline
+mock_project
+node_modules
+mock_project/package-lock.json
+lib
+__tests__/__results__
