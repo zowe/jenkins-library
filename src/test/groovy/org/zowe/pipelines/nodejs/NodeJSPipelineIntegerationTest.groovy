@@ -85,11 +85,11 @@ class NodeJsPipelineIntegerationTest {
     }
 
     @Test
-    void testCall() {
+    void testDefaultBuild() {
         List job = fullTestJobName.collect()
         // will start building master
         job.add('master')
-        def result = api.buildJobAndGetResult(job, [
+        def result = api.startJobAndGetResult(job, [
             'FETCH_PARAMETER_ONLY': 'false',
             'LIBRARY_BRANCH': System.getProperty('library.branch')
         ])

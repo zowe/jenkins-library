@@ -283,6 +283,8 @@ class JenkinsAPI {
      */
     String _requestCrumb() throws JenkinsAPIException {
         if (!jenkinsCrumb) {
+            logger.fine("Requesting Jenkins Crumb header ...")
+
             Map result = get(CRUMB_URL)
             // Jenkins-Crumb:25a3f51eb877771cc558e2f7911de531
             if (result['body'] && result['body'].substring(0, 14).equalsIgnoreCase('jenkins-crumb:')) {
@@ -355,6 +357,8 @@ class JenkinsAPI {
 
         // start repository scan for multibranch pipeline
         if (xml.contains('</org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject>')) {
+            logger.fine("Starting repository scanning for multibranch pipeline job ...")
+
             parentFolder.add(name)
             Map repoScanResult = post(getJobUrl(parentFolder, '/build', ['delay': '0']))
             if (repoScanResult['code'] != 302) {
@@ -430,8 +434,8 @@ class JenkinsAPI {
      * @param  params  parameters to start the job
      * @return         true if the job is started
      */
-    boolean buildJob(List<String> name, Map params = [:]) throws JenkinsAPIException {
-        logger.fine("Building job ${name} with parameters ${params} ...")
+    boolean startJob(List<String> name, Map params = [:]) throws JenkinsAPIException {
+        logger.fine("Starting job ${name} with parameters ${params} ...")
 
         Map result = post(
             getJobUrl(name, params.size() > 0 ? '/buildWithParameters' : '/build'),
@@ -527,6 +531,7 @@ class JenkinsAPI {
         Map result = get(getJobUrl(name, "/${buildNumber}/api/json"))
 
         if (result['body'] && result['body']['result']) {
+            logger.finer("Build ${name}#${buildNumber} result is ${result['body']['result']}")
             return result['body']['result']
         } else {
             throw new JenkinsAPIException("Failed to find build result of ${name}#{$buildNumber}: ${result['body']}")
@@ -539,12 +544,12 @@ class JenkinsAPI {
      * @param  name   paths to find the job. For example: ['in-my-folder', 'with-job', 'my-branch']
      * @return              SUCCESS, FAILURE, UNSTABLE etc
      */
-    String buildJobAndGetResult(List<String> name, Map params = [:]) {
+    String startJobAndGetResult(List<String> name, Map params = [:]) {
         // get old last build number
         Integer oldLastBuildNumber = getLastBuildNumber(name)
 
         // start the job
-        buildJob name, params
+        startJob name, params
 
         // FIXME: how to find the last build ID?
         // wait for a while for lastBuildNumber be refreshed with new started build
@@ -575,6 +580,8 @@ class JenkinsAPI {
      * @param  name   paths to find the job. For example: ['in-my-folder', 'with-job', 'my-branch']
      */
     void fetchJobParameters(List<String> name) {
-        buildJobAndGetResult name
+        logger.finer("Fetching jon ${name} parameters ...")
+
+        startJobAndGetResult name
     }
 }
