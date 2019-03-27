@@ -40,11 +40,10 @@ properties(opts)
 
 // load local files as library
 def repoPath = sh(returnStdout: true, script: 'pwd').trim()
-library(
+def lib = library(
   identifier: 'local-lib@master',
   retriever: modernSCM([$class: 'GitSCMSource', remote: repoPath])
 ).org.zowe
-import org.zowe.scm.GitHub
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {
@@ -59,7 +58,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('github') {
-      def github = new GitHub(this, [
+      def github = new lib.scm.GitHub(this, [
         'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
         'username'                   : GITHUB_USERNAME,
         'email'                      : GITHUB_EMAIL,
