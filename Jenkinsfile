@@ -58,7 +58,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('github') {
-      def github = new lib.scm.GitHub(this, [
+      def github = lib.scm.GitHub.new(this, [
         'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
         'username'                   : GITHUB_USERNAME,
         'email'                      : GITHUB_EMAIL,
