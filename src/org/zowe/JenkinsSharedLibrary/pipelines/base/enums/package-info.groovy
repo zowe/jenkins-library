@@ -9,6 +9,6 @@
  */
 
 /**
- * Enumerations that are part of the base {@link org.zowe.pipelines.base.Pipeline}
+ * Enumerations that are part of the base {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}
  */
-package org.zowe.pipelines.base.enums
+package org.zowe.jenkins_shared_library.pipelines.base.enums

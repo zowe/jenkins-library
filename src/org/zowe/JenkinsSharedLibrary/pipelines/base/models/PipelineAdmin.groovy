@@ -8,11 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.models
+package org.zowe.jenkins_shared_library.pipelines.base.models
 
 import hudson.model.User
 import hudson.tasks.Mailer
-import org.zowe.pipelines.base.exceptions.AdminInitializationException
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.AdminInitializationException
 
 /**
  * An admin of the pipeline.

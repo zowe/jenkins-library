@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.interfaces
+package org.zowe.jenkins_shared_library.pipelines.base.interfaces
 
 /**
- * Required properties of a model used in the {@link org.zowe.pipelines.base.ProtectedBranches}
+ * Required properties of a model used in the {@link org.zowe.jenkins_shared_library.pipelines.base.ProtectedBranches}
  * class.
  */
 interface ProtectedBranchProperties {

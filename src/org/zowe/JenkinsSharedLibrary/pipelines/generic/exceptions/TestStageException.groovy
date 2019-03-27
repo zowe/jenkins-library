@@ -8,13 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.exceptions
+package org.zowe.jenkins_shared_library.pipelines.generic.exceptions
 
-import org.zowe.pipelines.base.exceptions.StageException
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.StageException
 
 /**
  * A generic exception that is thrown from within the
- * {@link org.zowe.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method.
+ * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method.
  */
 class TestStageException extends StageException {
     /**

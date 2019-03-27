@@ -9,6 +9,6 @@
  */
 
 /**
- * A collections of exceptions that can be thrown out of <b>org.zowe.pipelines.nodejs</b>
+ * A collections of exceptions that can be thrown out of <b>org.zowe.jenkins_shared_library.pipelines.nodejs</b>
  */
-package org.zowe.pipelines.nodejs.exceptions
+package org.zowe.jenkins_shared_library.pipelines.nodejs.exceptions

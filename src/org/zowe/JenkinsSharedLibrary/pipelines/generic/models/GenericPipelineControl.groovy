@@ -8,13 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.models
+package org.zowe.jenkins_shared_library.pipelines.generic.models
 
-import org.zowe.pipelines.base.models.PipelineControl
-import org.zowe.pipelines.base.models.Stage
+import org.zowe.jenkins_shared_library.pipelines.base.models.PipelineControl
+import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 
 /**
- * Additional control variables for a {@link org.zowe.pipelines.generic.GenericPipeline}
+ * Additional control variables for a {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}
  */
 class GenericPipelineControl extends PipelineControl {
     /**

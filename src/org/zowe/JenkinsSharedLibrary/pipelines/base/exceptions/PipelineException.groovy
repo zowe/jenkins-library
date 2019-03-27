@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.exceptions
+package org.zowe.jenkins_shared_library.pipelines.base.exceptions
 
 /**
- * An exception that can be thrown from the {@link org.zowe.pipelines.base.Pipeline} class
+ * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class
  */
 class PipelineException extends Exception {
     /**

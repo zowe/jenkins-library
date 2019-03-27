@@ -11,4 +11,4 @@
 /**
  * Packages that give basic utility methods to work with NPM registry.
  */
-package org.zowe.jenkins-shared-library.npm
+package org.zowe.jenkins_shared_library.npm

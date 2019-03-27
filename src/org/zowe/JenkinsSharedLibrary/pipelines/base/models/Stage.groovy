@@ -8,17 +8,17 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.models
+package org.zowe.jenkins_shared_library.pipelines.base.models
 
-import org.zowe.pipelines.base.arguments.StageArguments
-import org.zowe.pipelines.base.enums.StageStatus
+import org.zowe.jenkins_shared_library.pipelines.base.arguments.StageArguments
+import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 
 /**
  * A stage that will be executed in the Jenkins pipeline.
  */
 class Stage {
     /**
-     * The arguments passed into the {@link org.zowe.pipelines.base.Pipeline#createStage(org.zowe.pipelines.base.arguments.StageArguments)}
+     * The arguments passed into the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#createStage(org.zowe.jenkins_shared_library.pipelines.base.arguments.StageArguments)}
      * method.
      */
     StageArguments args

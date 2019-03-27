@@ -8,16 +8,16 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.nodejs.arguments
+package org.zowe.jenkins_shared_library.pipelines.nodejs.arguments
 
-import org.zowe.pipelines.base.models.StageTimeout
-import org.zowe.pipelines.generic.arguments.GenericSetupArguments
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments
 
 import java.util.concurrent.TimeUnit
 
 /**
  * Arguments available to the
- * {@link org.zowe.pipelines.nodejs.NodeJSPipeline#setup(org.zowe.pipelines.nodejs.arguments.NodeJSSetupArguments)}
+ * {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline#setup(org.zowe.jenkins_shared_library.pipelines.nodejs.arguments.NodeJSSetupArguments)}
  * method.
  */
 class NodeJSSetupArguments extends GenericSetupArguments {

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.enums
+package org.zowe.jenkins_shared_library.pipelines.base.enums
 
 /**
  * Status levels available for a stage type.

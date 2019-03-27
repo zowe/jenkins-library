@@ -10,6 +10,6 @@
 
 /**
  * Groovy classes that are used as input arguments for any methods within the
- * <b>org.zowe.pipelines.generic</b> package or any of it's sub packages.
+ * <b>org.zowe.jenkins_shared_library.pipelines.generic</b> package or any of it's sub packages.
  */
-package org.zowe.pipelines.generic.arguments
+package org.zowe.jenkins_shared_library.pipelines.generic.arguments

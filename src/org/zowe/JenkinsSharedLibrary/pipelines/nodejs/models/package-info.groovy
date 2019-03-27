@@ -11,4 +11,4 @@
 /**
  * Data models used within a Node JS pipeline.
  */
-package org.zowe.pipelines.nodejs.models
+package org.zowe.jenkins_shared_library.pipelines.nodejs.models

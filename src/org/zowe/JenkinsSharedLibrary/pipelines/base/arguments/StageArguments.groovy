@@ -8,13 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.arguments
+package org.zowe.jenkins_shared_library.pipelines.base.arguments
 
-import org.zowe.pipelines.base.enums.ResultEnum
-import org.zowe.pipelines.base.models.StageTimeout
+import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 
 /**
- * Arguments available to the {@link org.zowe.pipelines.base.Pipeline#createStage(org.zowe.pipelines.base.arguments.StageArguments)}
+ * Arguments available to the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#createStage(org.zowe.jenkins_shared_library.pipelines.base.arguments.StageArguments)}
  * method.
  */
 class StageArguments {
@@ -64,7 +64,7 @@ class StageArguments {
      * <p>If the current build health is less than the value specified, the stage will be skipped.</p>
      *
      * <p>For more information about the skip precedent, see
-     * {@link org.zowe.pipelines.base.Pipeline#createStage(StageArguments)}</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#createStage(StageArguments)}</p>
      *
      * @default {@link ResultEnum#SUCCESS}
      */
@@ -78,7 +78,7 @@ class StageArguments {
      * be skipped.</p>
      *
      * <p>For more information about the skip precedent, see
-     * {@link org.zowe.pipelines.base.Pipeline#createStage(StageArguments)}
+     * {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#createStage(StageArguments)}
      *
      * @default <pre>{ {@code -> true}}</pre>
      */
@@ -101,7 +101,7 @@ class StageArguments {
      * Amount of time allowed for this stage.
      *
      * <p>If no value is provided, the timeout will be the default values of
-     * {@link org.zowe.pipelines.base.models.StageTimeout}</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout}</p>
      */
     StageTimeout timeout = [:]
 }

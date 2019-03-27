@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.jenkins-shared-library.exceptions
+package org.zowe.jenkins_shared_library.exceptions
 
 /**
  * An exception that can be thrown if the class method is not implemented

@@ -8,10 +8,10 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins-shared-library.npm
+package org.zowe.jenkins_shared_library.npm
 
-import org.zowe.jenkins-shared-library.exceptions.InvalidArgumentException
-import org.zowe.jenkins-shared-library.scm.GitHub
+import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
+import org.zowe.jenkins_shared_library.scm.GitHub
 
 class Registry {
     /**

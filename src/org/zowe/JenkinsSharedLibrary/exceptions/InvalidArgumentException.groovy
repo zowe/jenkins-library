@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.jenkins-shared-library.exceptions
+package org.zowe.jenkins_shared_library.exceptions
 
 /**
  * An exception that can be thrown from the {@link org.zowe} class
@@ -26,12 +26,8 @@ class InvalidArgumentException extends Exception {
      * @param message    The exception message.
      */
     InvalidArgumentException(String argument, String message = '') {
+        super(message ? message : "Argument \"${argument}\" is not provided or invalid")
+
         this.argument = argument
-        if (!message) {
-            message = "Argument \"${argument}\" is not provided or invalid"
-        }
-
-        super(message)
-
     }
 }

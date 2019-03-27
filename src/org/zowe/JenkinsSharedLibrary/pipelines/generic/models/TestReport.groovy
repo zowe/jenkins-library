@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.models
+package org.zowe.jenkins_shared_library.pipelines.generic.models
 
 /**
  * Test report archive information.

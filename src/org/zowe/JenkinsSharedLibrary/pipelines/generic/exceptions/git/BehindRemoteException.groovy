@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.exceptions.git
+package org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git
 
 /**
  * An exception that is thrown when it is detected that the local branch is

@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.nodejs.exceptions
+package org.zowe.jenkins_shared_library.pipelines.nodejs.exceptions
 
 /**
- * An exception that can be thrown from the {@link org.zowe.pipelines.nodejs.NodeJSPipeline} class
+ * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline} class
  */
 class NodeJSPipelineException extends Exception {
     /**

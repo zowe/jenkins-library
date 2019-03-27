@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins-shared-library.artifactory
+package org.zowe.jenkins_shared_library.artifactory
 
 class ArtifactoryBase {
 }

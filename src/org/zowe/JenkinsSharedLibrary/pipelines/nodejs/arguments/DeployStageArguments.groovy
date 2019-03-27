@@ -8,13 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.nodejs.arguments
+package org.zowe.jenkins_shared_library.pipelines.nodejs.arguments
 
-import org.zowe.pipelines.generic.arguments.GenericStageArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericStageArguments
 
 /**
  * Represents the arguments available to the
- * {@link org.zowe.pipelines.nodejs.NodeJSPipeline#deploy(java.util.Map, java.util.Map)} method.
+ * {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline#deploy(java.util.Map, java.util.Map)} method.
  */
 class DeployStageArguments extends GenericStageArguments {
     /**

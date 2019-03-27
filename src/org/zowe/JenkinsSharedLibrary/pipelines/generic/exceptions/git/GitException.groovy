@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.exceptions.git
+package org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git
 
-import org.zowe.pipelines.base.exceptions.PipelineException
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.PipelineException
 
 /**
  * An exception that is thrown when an error occurs during a git operation.

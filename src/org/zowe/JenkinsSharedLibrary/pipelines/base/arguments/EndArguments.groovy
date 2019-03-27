@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.arguments
+package org.zowe.jenkins_shared_library.pipelines.base.arguments
 
 /**
- * Arguments available to the {@link org.zowe.pipelines.base.Pipeline#endBase(EndArguments)}
+ * Arguments available to the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#endBase(EndArguments)}
  * method.
  */
 class EndArguments {

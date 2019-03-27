@@ -8,11 +8,11 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins-shared-library.integrationtest
+package org.zowe.jenkins_shared_library.integrationtest
 
 /**
  * A generic exception that is thrown from within the
- * {@link org.zowe.jenkins-shared-library.integrationtest.JenkinsAPI} class.
+ * {@link org.zowe.jenkins_shared_library.integrationtest.JenkinsAPI} class.
  */
 class JenkinsAPIException extends Exception {
     /**

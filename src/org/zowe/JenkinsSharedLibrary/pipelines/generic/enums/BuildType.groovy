@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.enums
+package org.zowe.jenkins_shared_library.pipelines.generic.enums
 
 /**
  * The available build types.

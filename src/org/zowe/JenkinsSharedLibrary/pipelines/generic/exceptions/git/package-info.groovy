@@ -9,6 +9,6 @@
  */
 
 /**
- * Exceptions that can be thrown by various git operations in {@link org.zowe.pipelines.generic.GenericPipeline}
+ * Exceptions that can be thrown by various git operations in {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}
  */
-package org.zowe.pipelines.generic.exceptions.git
+package org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git

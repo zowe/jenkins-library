@@ -11,4 +11,4 @@
 /**
  * Packages provide shared library for Jenkins pipeline.
  */
-package org.zowe.jenkins-shared-library
+package org.zowe.jenkins_shared_library

@@ -8,14 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base
+package org.zowe.jenkins_shared_library.pipelines.base
 
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
-import org.zowe.pipelines.base.arguments.*
-import org.zowe.pipelines.base.enums.ResultEnum
-import org.zowe.pipelines.base.enums.StageStatus
-import org.zowe.pipelines.base.models.*
-import org.zowe.pipelines.base.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.base.arguments.*
+import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
+import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
+import org.zowe.jenkins_shared_library.pipelines.base.models.*
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
 
 import java.util.concurrent.TimeUnit
 
@@ -53,7 +53,7 @@ import com.cloudbees.groovy.cps.NonCPS
  * @Example
  *
  * <pre>
- * {@literal @}Library('fill this out according to your setup') import org.zowe.pipelines.base.Pipeline
+ * {@literal @}Library('fill this out according to your setup') import org.zowe.jenkins_shared_library.pipelines.base.Pipeline
  *
  * node('pipeline-node') {
  *   Pipeline pipeline = new Pipeline(this)

@@ -9,6 +9,6 @@
  */
 
 /**
- * A collection of interfaces used by <b>org.zowe.pipelines.base</b>
+ * A collection of interfaces used by <b>org.zowe.jenkins_shared_library.pipelines.base</b>
  */
-package org.zowe.pipelines.base.interfaces
+package org.zowe.jenkins_shared_library.pipelines.base.interfaces

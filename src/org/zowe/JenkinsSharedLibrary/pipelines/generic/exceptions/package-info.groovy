@@ -9,6 +9,6 @@
  */
 
 /**
- * A collections of exceptions that can be thrown out of <b>org.zowe.pipelines.generic</b>
+ * A collections of exceptions that can be thrown out of <b>org.zowe.jenkins_shared_library.pipelines.generic</b>
  */
-package org.zowe.pipelines.generic.exceptions
+package org.zowe.jenkins_shared_library.pipelines.generic.exceptions

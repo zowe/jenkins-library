@@ -11,4 +11,4 @@
 /**
  * Packages that give basic utility methods to work with SCM.
  */
-package org.zowe.jenkins-shared-library.scm
+package org.zowe.jenkins_shared_library.scm

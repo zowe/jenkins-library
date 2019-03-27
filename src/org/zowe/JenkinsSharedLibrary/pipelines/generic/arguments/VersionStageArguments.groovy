@@ -8,11 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.arguments
+package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
 /**
  * Represents the arguments available to the
- * {@link org.zowe.pipelines.generic.GenericPipeline#versionGeneric(java.util.Map)} method.
+ * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#versionGeneric(java.util.Map)} method.
  */
 class VersionStageArguments extends GenericStageArguments {
     /**

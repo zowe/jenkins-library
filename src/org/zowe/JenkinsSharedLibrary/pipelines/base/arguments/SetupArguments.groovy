@@ -8,15 +8,15 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.arguments
+package org.zowe.jenkins_shared_library.pipelines.base.arguments
 
-import org.zowe.pipelines.base.models.StageTimeout
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 
 import java.util.concurrent.TimeUnit
 
 /**
  * Arguments available to the
- * {@link org.zowe.pipelines.base.Pipeline#setupBase(org.zowe.pipelines.base.arguments.SetupArguments)}
+ * {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#setupBase(org.zowe.jenkins_shared_library.pipelines.base.arguments.SetupArguments)}
  * method.
  */
 class SetupArguments {

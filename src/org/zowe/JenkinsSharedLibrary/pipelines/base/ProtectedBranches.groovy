@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base
+package org.zowe.jenkins_shared_library.pipelines.base
 
-import org.zowe.pipelines.base.exceptions.ProtectedBranchException
-import org.zowe.pipelines.base.interfaces.ProtectedBranchProperties
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.ProtectedBranchException
+import org.zowe.jenkins_shared_library.pipelines.base.interfaces.ProtectedBranchProperties
 
 /**
  * Manages the protected branches of a Pipeline.

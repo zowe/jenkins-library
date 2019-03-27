@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.exceptions.git
+package org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git
 
-import org.zowe.pipelines.generic.enums.BuildType
-import org.zowe.pipelines.generic.enums.GitOperation
+import org.zowe.jenkins_shared_library.pipelines.generic.enums.BuildType
+import org.zowe.jenkins_shared_library.pipelines.generic.enums.GitOperation
 
 /**
  * An exception that is thrown when git operations are executed on an unsupported build type.

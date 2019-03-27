@@ -11,4 +11,4 @@
 /**
  * Data models used within a generic pipeline.
  */
-package org.zowe.pipelines.generic.models
+package org.zowe.jenkins_shared_library.pipelines.generic.models

@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base
+package org.zowe.jenkins_shared_library.pipelines.base
 
-import org.zowe.pipelines.base.models.*
-import org.zowe.pipelines.base.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.base.models.*
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
 
 /**
  * Create the various stages of a pipeline.

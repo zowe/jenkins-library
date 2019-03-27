@@ -9,6 +9,6 @@
  */
 
 /**
- * Enum types available to a {@link org.zowe.pipelines.generic.GenericPipeline}
+ * Enum types available to a {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}
  */
-package org.zowe.pipelines.generic.enums
+package org.zowe.jenkins_shared_library.pipelines.generic.enums

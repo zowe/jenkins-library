@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.models
+package org.zowe.jenkins_shared_library.pipelines.base.models
 
-import org.zowe.pipelines.base.interfaces.ProtectedBranchProperties
+import org.zowe.jenkins_shared_library.pipelines.base.interfaces.ProtectedBranchProperties
 
 /**
  * Properties of a protected branch
@@ -20,7 +20,7 @@ import org.zowe.pipelines.base.interfaces.ProtectedBranchProperties
  * branches.</p>
  *
  * <p>If a branch is marked as protected, emails will always be sent out to the committers and
- * the list of {@link org.zowe.pipelines.base.Pipeline#admins} provided.</p>
+ * the list of {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#admins} provided.</p>
  */
 class ProtectedBranch implements ProtectedBranchProperties {
     /**

@@ -11,10 +11,10 @@
 import org.junit.*
 import static groovy.test.GroovyAssert.*
 import java.util.logging.Logger
-import org.zowe.jenkins-shared-library.integrationtest.*
+import org.zowe.jenkins_shared_library.integrationtest.*
 
 /**
- * Test {@link org.zowe.pipelines.nodejs.NodeJSPipeline}
+ * Test {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline}
  *
  * The test case will create a test Jenkins job and attach the current library to it.
  *

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.nodejs.models
+package org.zowe.jenkins_shared_library.pipelines.nodejs.models
 
 /**
  * The semantic versioning level that can be changed within a branch.

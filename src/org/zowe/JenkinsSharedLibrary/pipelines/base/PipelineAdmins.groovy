@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base
+package org.zowe.jenkins_shared_library.pipelines.base
 
-import org.zowe.pipelines.base.exceptions.AdminInitializationException
-import org.zowe.pipelines.base.models.PipelineAdmin
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.AdminInitializationException
+import org.zowe.jenkins_shared_library.pipelines.base.models.PipelineAdmin
 
 /**
  * Stores the list of admins for a pipeline.
@@ -90,7 +90,7 @@ class PipelineAdmins {
      * Generic method to formulate the syntax of the email list.
      * @param prefix The prefix for the email. If specified this will be present as {@code "$prefix:$email"}
      *               for each email address.
-     * @return A comma separated list of emails suitable for {@link org.zowe.pipelines.base.arguments.EmailArguments#to}
+     * @return A comma separated list of emails suitable for {@link org.zowe.jenkins_shared_library.pipelines.base.arguments.EmailArguments#to}
      */
     private String _getEmailList(String prefix = null) {
         String emailList = ""

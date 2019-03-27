@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins-shared-library.integrationtest
+package org.zowe.jenkins_shared_library.integrationtest
 
 import java.util.logging.Level
 

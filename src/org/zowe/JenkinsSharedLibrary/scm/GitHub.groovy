@@ -8,10 +8,10 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins-shared-library.scm
+package org.zowe.jenkins_shared_library.scm
 
-import org.zowe.jenkins-shared-library.exceptions.InvalidArgumentException
-import org.zowe.jenkins-shared-library.exceptions.UnderConstructionException
+import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
+import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 
 class GitHub {
     /**
@@ -100,7 +100,7 @@ class GitHub {
         }
     }
 
-    void clone(Map args = [:]) throws InvalidArgumentException {
+    void cloneRepository(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
         if (args.size() > 0) {
             this.init(args)

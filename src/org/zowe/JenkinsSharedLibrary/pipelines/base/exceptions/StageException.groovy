@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.base.exceptions
+package org.zowe.jenkins_shared_library.pipelines.base.exceptions
 
 /**
  * A generic exception that can be thrown during any stage of your Jenkins pipeline.

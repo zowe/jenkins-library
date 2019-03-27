@@ -8,37 +8,37 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.nodejs
+package org.zowe.jenkins_shared_library.pipelines.nodejs
 
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
-import org.zowe.pipelines.base.ProtectedBranches
-import org.zowe.pipelines.base.models.Stage
-import org.zowe.pipelines.base.models.StageTimeout
-import org.zowe.pipelines.generic.GenericPipeline
-import org.zowe.pipelines.generic.arguments.VersionStageArguments
-import org.zowe.pipelines.generic.exceptions.*
-import org.zowe.pipelines.nodejs.arguments.*
-import org.zowe.pipelines.nodejs.models.*
-import org.zowe.pipelines.nodejs.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.base.ProtectedBranches
+import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
+import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.VersionStageArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.nodejs.arguments.*
+import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
+import org.zowe.jenkins_shared_library.pipelines.nodejs.exceptions.*
 
 import java.util.concurrent.TimeUnit
 
 /**
- * Extends the functionality available in the {@link org.zowe.pipelines.generic.GenericPipeline} class.
+ * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline} class.
  * This class adds more advanced functionality to build, test, and deploy your application.
  *
  * <dl><dt><b>Required Plugins:</b></dt><dd>
  * The following plugins are required:
  *
  * <ul>
- *     <li>All plugins listed at {@link org.zowe.pipelines.generic.GenericPipeline}</li>
+ *     <li>All plugins listed at {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}</li>
  *     <li><a href="https://plugins.jenkins.io/pipeline-utility-steps">Pipeline Utility Steps</a></li>
  *     <li><a href="https://plugins.jenkins.io/pipeline-input-step">Pipeline: Input Step</a></li>
  * </ul>
  * </dd></dl>
  *
  * <pre>
- * {@literal @}Library('fill this out according to your setup') import org.zowe.pipelines.nodejs.NodeJSPipeline
+ * {@literal @}Library('fill this out according to your setup') import org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline
  *
  * node('pipeline-node') {
  *     // Create the runner and pass the methods available to the workflow script to the runner
@@ -155,17 +155,17 @@ class NodeJSPipeline extends GenericPipeline {
      * Creates a stage that will build a NodeJSPipeline package.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.pipelines.generic.arguments.BuildStageArguments} class.</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} class.</p>
      *
-     * <p>The stage will be created with the {@link org.zowe.pipelines.generic.GenericPipeline#buildGeneric(java.util.Map)}
+     * <p>The stage will be created with the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#buildGeneric(java.util.Map)}
      * method and will have the following additional operations. <ul>
-     *     <li>If {@link org.zowe.pipelines.generic.arguments.BuildStageArguments#operation} is not
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments#operation} is not
      *     provided, the stage will default to executing {@code npm run build}.</li>
      *     <li>After the operation is complete, the stage will use npm pack to generate an
      *     installable artifact. This artifact is archived to the build for later access.</li>
      * </ul></p>
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.pipelines.generic.arguments.BuildStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
      */
     void build(Map arguments = [:]) {
@@ -201,9 +201,9 @@ class NodeJSPipeline extends GenericPipeline {
      * Manage versions of a NodeJSPipeline package.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.pipelines.generic.arguments.VersionStageArguments} class.</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.VersionStageArguments} class.</p>
      *
-     * <p>The stage will be created with the {@link org.zowe.pipelines.generic.GenericPipeline#versionGeneric(java.util.Map)}
+     * <p>The stage will be created with the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#versionGeneric(java.util.Map)}
      * method.</p>
      *
      * <p>In a Node JS Pipeline, this stage will always be executed on a protected branch. When in this stage,
@@ -226,7 +226,7 @@ class NodeJSPipeline extends GenericPipeline {
      *     <dl>
      *         <dt><b>{@link IllegalArgumentException}</b></dt>
      *         <dd>When versionArguments.operation is provided. This is an invalid parameter.</dd>
-     *         <dt><b>{@link org.zowe.pipelines.generic.exceptions.VersionStageException}</b></dt>
+     *         <dt><b>{@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.VersionStageException}</b></dt>
      *         <dd>
      *             When no pipeline admins are defined and auto deploy is false. Pipeline admins are used as approvers
      *             for the build. If there are none, the build can never be approved.
@@ -238,7 +238,7 @@ class NodeJSPipeline extends GenericPipeline {
      *     </dl>
      * </p>
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.pipelines.generic.arguments.VersionStageArguments} used to
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.VersionStageArguments} used to
      *                  define the stage.
      */
     void version(Map arguments = [:]) {
@@ -423,10 +423,10 @@ class NodeJSPipeline extends GenericPipeline {
      *         The following map objects are valid options for the arguments map.
      *         <dl>
      *             <dt><b>versionArguments</b></dt>
-     *             <dd>A map of {@link org.zowe.pipelines.generic.arguments.GenericStageArguments} to be
+     *             <dd>A map of {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericStageArguments} to be
      *             provided to the version command.</dd>
      *             <dt><b>deployArguments</b></dt>
-     *             <dd>A map of {@link org.zowe.pipelines.generic.arguments.GenericStageArguments} to be
+     *             <dd>A map of {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericStageArguments} to be
      *                 provided to the deploy command.</dd>
      *         </dl>
      *     </dd>
@@ -479,7 +479,7 @@ class NodeJSPipeline extends GenericPipeline {
      * Deploy a Node JS package.
      *
      * @Stages
-     * This will extend the stages provided by the {@link org.zowe.pipelines.generic.GenericPipeline#deployGeneric(java.util.Map, java.util.Map)}
+     * This will extend the stages provided by the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#deployGeneric(java.util.Map, java.util.Map)}
      * method.
      *
      * <dl>
@@ -505,7 +505,7 @@ class NodeJSPipeline extends GenericPipeline {
      *          <dl>
      *              <dt><b>{@link IllegalArgumentException}</b></dt>
      *              <dd>When versionArguments.operation is provided. This is an invalid parameter.</dd>
-     *              <dt><b>{@link org.zowe.pipelines.generic.exceptions.DeployStageException}</b></dt>
+     *              <dt><b>{@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.DeployStageException}</b></dt>
      *              <dd>
      *                  When no pipeline admins are defined and auto deploy is false. Pipeline admins
      *                  are used as approvers for the build. If there are none, the build can never be
@@ -805,7 +805,7 @@ class NodeJSPipeline extends GenericPipeline {
 
 
     /**
-     * Calls {@link org.zowe.pipelines.generic.GenericPipeline#setupGeneric()} to setup the build.
+     * Calls {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric()} to setup the build.
      *
      * @Stages
      * This method adds one stage to the build:
@@ -934,18 +934,18 @@ class NodeJSPipeline extends GenericPipeline {
      * Creates a stage that will execute tests on your application.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.pipelines.generic.arguments.TestStageArguments} class.</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} class.</p>
      *
      * <p>The stage will be created with the
-     * {@link org.zowe.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method and will
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method and will
      * have the following additional operations: <ul>
-     *     <li>If {@link org.zowe.pipelines.generic.arguments.TestStageArguments#operation} is not
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#operation} is not
      *     provided, this method will default to executing {@code npm run test}</li>
      * </ul>
      * </p>
      *
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.pipelines.generic.arguments.TestStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
     void test(Map arguments = [:]) {

@@ -8,13 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic.arguments
+package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
-import org.zowe.pipelines.generic.models.TestReport
+import org.zowe.jenkins_shared_library.pipelines.generic.models.TestReport
 
 /**
  * Represents the arguments available to the
- * {@link org.zowe.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method.
+ * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method.
  */
 class TestStageArguments extends GenericStageArguments {
     /**

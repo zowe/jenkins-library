@@ -8,30 +8,30 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.pipelines.generic
+package org.zowe.jenkins_shared_library.pipelines.generic
 
 // import com.cloudbees.groovy.cps.NonCPS
-import org.zowe.pipelines.base.Pipeline
-import org.zowe.pipelines.base.enums.ResultEnum
-import org.zowe.pipelines.base.enums.StageStatus
-import org.zowe.pipelines.base.models.Stage
-import org.zowe.pipelines.generic.arguments.*
-import org.zowe.pipelines.generic.enums.BuildType
-import org.zowe.pipelines.generic.enums.GitOperation
-import org.zowe.pipelines.generic.exceptions.git.*
-import org.zowe.pipelines.generic.models.*
-import org.zowe.pipelines.generic.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.base.Pipeline
+import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
+import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
+import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.*
+import org.zowe.jenkins_shared_library.pipelines.generic.enums.BuildType
+import org.zowe.jenkins_shared_library.pipelines.generic.enums.GitOperation
+import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git.*
+import org.zowe.jenkins_shared_library.pipelines.generic.models.*
+import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import java.util.regex.Pattern
 
 /**
- * Extends the functionality available in the {@link org.zowe.pipelines.base.Pipeline} class. This class adds methods for
+ * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
  * building and testing your application.
  *
  * <dl><dt><b>Required Plugins:</b></dt><dd>
  * The following plugins are required:
  *
  * <ul>
- *     <li>All plugins listed at {@link org.zowe.pipelines.base.Pipeline}</li>
+ *     <li>All plugins listed at {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}</li>
  *     <li><a href="https://plugins.jenkins.io/credentials-binding">Credentials Binding</a></li>
  *     <li><a href="https://plugins.jenkins.io/junit">JUnit</a></li>
  *     <li><a href="https://plugins.jenkins.io/htmlpublisher">HTML Publisher</a></li>
@@ -42,7 +42,7 @@ import java.util.regex.Pattern
  * @Example
  *
  * <pre>
- * {@literal @}Library('fill this out according to your setup') import org.zowe.pipelines.generic.GenericPipeline
+ * {@literal @}Library('fill this out according to your setup') import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
  * node('pipeline-node') {
  *     GenericPipeline pipeline = new GenericPipeline(this)
  *
@@ -95,7 +95,7 @@ class GenericPipeline extends Pipeline {
      *
      * <p>The configuration will determine what user is responsible for committing and pushing
      * code updates done by the pipeline. Failure to include this configuration will result in
-     * a {@link org.zowe.pipelines.generic.exceptions.git.GitException} being thrown in the pipeline
+     * a {@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git.GitException} being thrown in the pipeline
      * setup.</p>
      */
     GitConfig gitConfig
@@ -158,7 +158,7 @@ class GenericPipeline extends Pipeline {
      * </p>
      *
      * @Note This method was intended to be called {@code build} but had to be named
-     * {@code buildGeneric} due to the issues described in {@link org.zowe.pipelines.base.Pipeline}.
+     * {@code buildGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
      *
      * @param arguments A map of arguments to be applied to the {@link BuildStageArguments} used to define
      *                  the stage.
@@ -236,7 +236,7 @@ class GenericPipeline extends Pipeline {
      * </p>
      *
      * @Note This method was intended to be called {@code version} but had to be named
-     * {@code versionGeneric} due to the issues described in {@link org.zowe.pipelines.base.Pipeline}.
+     * {@code versionGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
      *
      * @param arguments A map of arguments to be applied to the {@link VersionStageArguments} used to define the stage.
      */
@@ -334,7 +334,7 @@ class GenericPipeline extends Pipeline {
      * </p>
      *
      * @Note This method was intended to be called {@code deploy} but had to be named
-     * {@code deployGeneric} due to the issues described in {@link org.zowe.pipelines.base.Pipeline}.
+     * {@code deployGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
      *
      * @param deployArguments The arguments for the deploy step. {@code deployArguments.operation} must be
      *                        provided.
@@ -411,7 +411,7 @@ class GenericPipeline extends Pipeline {
      * will ensure that any pushes/commits don't expose the credentials in plaintext console output.
      * </p>
      *
-     * @param options Options to send to {@link org.zowe.pipelines.base.Pipeline#endBase(java.util.Map)}
+     * @param options Options to send to {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#endBase(java.util.Map)}
      */
     void endGeneric(Map options = [:]) {
         if (!gitConfig?.credentialsId) {
@@ -483,7 +483,7 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Calls {@link org.zowe.pipelines.base.Pipeline#setupBase()} to setup the build.
+     * Calls {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#setupBase()} to setup the build.
      *
      * @Stages
      * This method adds 2 stages to the build:
@@ -505,7 +505,7 @@ class GenericPipeline extends Pipeline {
      * </dl>
      *
      * @Note This method was intended to be called {@code setup} but had to be named
-     * {@code setupGeneric} due to the issues described in {@link org.zowe.pipelines.base.Pipeline}.
+     * {@code setupGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
      */
     void setupGeneric(GenericSetupArguments timeouts) {
         // Call setup from the super class
@@ -567,13 +567,13 @@ class GenericPipeline extends Pipeline {
      * Creates a stage that will execute tests on your application.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.pipelines.generic.arguments.TestStageArguments} class.</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} class.</p>
      *
      * @Stages
      * This method adds the following stage to the build:
      *
      * <dl>
-     *     <dt><b>Test: {@link org.zowe.pipelines.generic.arguments.TestStageArguments#name}</b></dt>
+     *     <dt><b>Test: {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#name}</b></dt>
      *     <dd>
      *         <p>Runs one of your application tests. If the test operation throws an error, that error is
      *         ignored and  will be assumed to be caught in the junit processing. Some test functions may
@@ -625,7 +625,7 @@ class GenericPipeline extends Pipeline {
      *         <p>
      *             Some tests may also require the use of the gnome-keyring. The stage can be configured to
      *             unlock the keyring prior to the tests by passing
-     *             {@link org.zowe.pipelines.generic.arguments.TestStageArguments#shouldUnlockKeyring} as true.
+     *             {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#shouldUnlockKeyring} as true.
      *         </p>
      *     </dd>
      * </dl>
@@ -633,13 +633,13 @@ class GenericPipeline extends Pipeline {
      * @Exceptions
      * <p>
      *     The test stage can throw the following exceptions:
-     *     
+     *
      *     <dl>
      *         <dt><b>{@link TestStageException}</b></dt>
      *         <dd>When a test stage is created before a call to {@link #buildGeneric(Map)}</dd>
-     *         <dd>When {@link org.zowe.pipelines.generic.arguments.TestStageArguments#testResults} is missing</dd>
-     *         <dd>When invalid options are specified for {@link org.zowe.pipelines.generic.arguments.TestStageArguments#testResults}</dd>
-     *         <dd>When {@link org.zowe.pipelines.generic.arguments.TestStageArguments#coverageResults} is provided but has an invalid format</dd>
+     *         <dd>When {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#testResults} is missing</dd>
+     *         <dd>When invalid options are specified for {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#testResults}</dd>
+     *         <dd>When {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#coverageResults} is provided but has an invalid format</dd>
      *         <dd>When {@link TestStageArguments#junitOutput} is missing.</dd>
      *         <dd>When {@link TestStageArguments#operation} is missing.</dd>
      *         <dd>
@@ -647,9 +647,9 @@ class GenericPipeline extends Pipeline {
      * </p>
      *
      * @Note This method was intended to be called {@code test} but had to be named
-     * {@code testGeneric} due to the issues described in {@link org.zowe.pipelines.base.Pipeline}.</p>
+     * {@code testGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.</p>
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.pipelines.generic.arguments.TestStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
     void testGeneric(Map arguments = [:]) {
