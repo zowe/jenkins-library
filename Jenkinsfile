@@ -60,15 +60,15 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                 sh """
 ./gradlew test \
   -PlogLevel=${params.TEST_LOG_LEVEL} \
-  -Pjenkins.baseuri=${env.JENKINS_URL} \
-  -Pjenkins.user=${USERNAME} \
-  -Pjenkins.password=${PASSWORD} \
-  -Plibrary.branch=${env.BRANCH_NAME} \
-  -Pgithub.username=${GITHUB_USERNAME} \
-  -Pgithub.email=${GITHUB_EMAIL} \
-  -Pgithub.credential=${GITHUB_CREDENTIAL}
-  -Pnpm.email=${NPM_EMAIL} \
-  -Pnpm.credential=${NPM_CREDENTIAL}
+  -Pjenkins.baseuri='${env.JENKINS_URL}' \
+  -Pjenkins.user='${USERNAME}' \
+  -Pjenkins.password='${PASSWORD}' \
+  -Plibrary.branch='${env.BRANCH_NAME}' \
+  -Pgithub.username='${GITHUB_USERNAME}' \
+  -Pgithub.email='${GITHUB_EMAIL}' \
+  -Pgithub.credential='${GITHUB_CREDENTIAL}' \
+  -Pnpm.email='${NPM_EMAIL}' \
+  -Pnpm.credential='${NPM_CREDENTIAL}'
 """
             }
         } catch (e) {
