@@ -11,10 +11,10 @@
 import org.junit.*
 import static groovy.test.GroovyAssert.*
 import java.util.logging.Logger
-import org.zowe.scm.GitHub
+import org.zowe.jenkins-shared-library.scm.GitHub
 
 /**
- * Test {@link org.zowe.scm.GitHub}
+ * Test {@link org.zowe.jenkins-shared-library.scm.GitHub}
  */
 class GitHubTest {
     final static TEST_REPOSITORY = 'zowe/jenkins-library-fvt-nodejs'

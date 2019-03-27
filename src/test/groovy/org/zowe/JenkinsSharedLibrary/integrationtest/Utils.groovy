@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.integrationtest
+package org.zowe.jenkins-shared-library.integrationtest
 
 import java.time.Instant
 import java.net.URLEncoder

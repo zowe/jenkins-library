@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.artifactory
-
-class ArtifactoryBase {
-}
+/**
+ * Packages provide shared library for Jenkins pipeline.
+ */
+package org.zowe.jenkins-shared-library.integrationtest

@@ -8,10 +8,10 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.scm
+package org.zowe.jenkins-shared-library.scm
 
-import org.zowe.exceptions.InvalidArgumentException
-import org.zowe.exceptions.UnderConstructionException
+import org.zowe.jenkins-shared-library.exceptions.InvalidArgumentException
+import org.zowe.jenkins-shared-library.exceptions.UnderConstructionException
 
 class GitHub {
     /**

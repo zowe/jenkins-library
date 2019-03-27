@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.integrationtest
+package org.zowe.jenkins-shared-library.integrationtest
 
 import groovy.json.JsonSlurper
 import java.net.URLEncoder

@@ -8,13 +8,11 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.integrationtest
-
-import org.zowe.pipelines.base.exceptions.StageException
+package org.zowe.jenkins-shared-library.integrationtest
 
 /**
  * A generic exception that is thrown from within the
- * {@link org.zowe.integrationtest.JenkinsAPI} class.
+ * {@link org.zowe.jenkins-shared-library.integrationtest.JenkinsAPI} class.
  */
 class JenkinsAPIException extends Exception {
     /**

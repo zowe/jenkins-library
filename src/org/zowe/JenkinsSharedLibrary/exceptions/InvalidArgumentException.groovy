@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.exceptions
+package org.zowe.jenkins-shared-library.exceptions
 
 /**
  * An exception that can be thrown from the {@link org.zowe} class

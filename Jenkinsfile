@@ -43,7 +43,7 @@ def repoPath = sh(returnStdout: true, script: 'pwd').trim()
 def lib = library(
   identifier: 'local-lib@master',
   retriever: modernSCM([$class: 'GitSCMSource', remote: repoPath])
-).org.zowe
+).org.zowe.jenkins-shared-library
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {

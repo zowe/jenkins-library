@@ -11,7 +11,7 @@
 import org.junit.*
 import static groovy.test.GroovyAssert.*
 import java.util.logging.Logger
-import org.zowe.integrationtest.*
+import org.zowe.jenkins-shared-library.integrationtest.*
 
 /**
  * Test {@link org.zowe.pipelines.nodejs.NodeJSPipeline}
