@@ -86,6 +86,11 @@ test {
         'jenkins.password',
         'jenkins.crumb',
         'library.branch',
+        'github.username',
+        'github.email',
+        'github.credential',
+        'npm.email',
+        'npm.credential',
     ]) {
         systemProperty prop, project.getProperty(prop)
     }

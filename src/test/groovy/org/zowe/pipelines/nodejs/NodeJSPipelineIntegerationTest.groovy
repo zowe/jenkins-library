@@ -62,7 +62,7 @@ class NodeJsPipelineIntegerationTest {
             'multibranchPipeline.xml',
             [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
             [
-                'fvt-github-credential'     : 'zowe-robot-github',
+                'fvt-github-credential'     : System.getProperty('github.credential'),
                 'fvt-git-owner'             : 'zowe',
                 'fvt-git-repository'        : 'jenkins-library-fvt-nodejs',
                 'fvt-jenkinsfile-path'      : 'Jenkinsfile',
