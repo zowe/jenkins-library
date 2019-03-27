@@ -39,10 +39,9 @@ opts.push(parameters(customParameters))
 properties(opts)
 
 // load local files as library
-def repoPath = sh(returnStdout: true, script: 'pwd').trim()
 def lib = library(
   identifier: 'local-lib@master',
-  retriever: modernSCM([$class: 'GitSCMSource', remote: repoPath])
+  retriever: modernSCM([$class: 'GitSCMSource', remote: env.WORKSPACE])
 ).org.zowe.jenkins-shared-library
 def github = lib.scm.GitHub.new(this, [
   'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
