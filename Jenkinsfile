@@ -44,6 +44,12 @@ def lib = library(
   identifier: 'local-lib@master',
   retriever: modernSCM([$class: 'GitSCMSource', remote: repoPath])
 ).org.zowe.jenkins-shared-library
+def github = lib.scm.GitHub.new(this, [
+  'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
+  'username'                   : GITHUB_USERNAME,
+  'email'                      : GITHUB_EMAIL,
+  'usernamePasswordCredential' : System.getProperty('github.credential'),
+])
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {
@@ -58,12 +64,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('github') {
-      def github = lib.scm.GitHub.new(this, [
-        'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
-        'username'                   : GITHUB_USERNAME,
-        'email'                      : GITHUB_EMAIL,
-        'usernamePasswordCredential' : System.getProperty('github.credential'),
-      ])
       github.clone(['targetFolder': '.tmp-git'])
       sh 'ls -la .tmp-git'
       error 'exit here'
