@@ -53,6 +53,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('github') {
+      echo "this: ${_this}"
+      echo "class: ${_this..getClass()}"
+
       // load local files as library
       def lib = library(
         identifier: 'local-lib@master',
@@ -62,7 +65,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
         'username'                   : GITHUB_USERNAME,
         'email'                      : GITHUB_EMAIL,
-        'usernamePasswordCredential' : System.getProperty('github.credential'),
+        'usernamePasswordCredential' : GITHUB_CREDENTIAL,
       ])
 
       github.clone(['targetFolder': '.tmp-git'])
