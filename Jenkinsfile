@@ -52,27 +52,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         }
     }
 
-    stage('github') {
-      echo "this: ${_this}"
-      echo "class: ${_this..getClass()}"
-
-      // load local files as library
-      def lib = library(
-        identifier: 'local-lib@master',
-        retriever: modernSCM([$class: 'GitSCMSource', remote: env.WORKSPACE])
-      ).org.zowe.jenkins_shared_library
-      def github = lib.scm.GitHub.new(_this, [
-        'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
-        'username'                   : GITHUB_USERNAME,
-        'email'                      : GITHUB_EMAIL,
-        'usernamePasswordCredential' : GITHUB_CREDENTIAL,
-      ])
-
-      github.clone(['targetFolder': '.tmp-git'])
-      sh 'ls -la .tmp-git'
-      error 'exit here'
-    }
-
     stage('test') {
         try {
             withCredentials([usernamePassword(
