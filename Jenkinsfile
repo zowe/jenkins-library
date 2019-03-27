@@ -38,17 +38,7 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-// load local files as library
-def lib = library(
-  identifier: 'local-lib@master',
-  retriever: modernSCM([$class: 'GitSCMSource', remote: env.WORKSPACE])
-).org.zowe.jenkins-shared-library
-def github = lib.scm.GitHub.new(this, [
-  'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
-  'username'                   : GITHUB_USERNAME,
-  'email'                      : GITHUB_EMAIL,
-  'usernamePasswordCredential' : System.getProperty('github.credential'),
-])
+def _this = this
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {
@@ -63,6 +53,18 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('github') {
+      // load local files as library
+      def lib = library(
+        identifier: 'local-lib@master',
+        retriever: modernSCM([$class: 'GitSCMSource', remote: env.WORKSPACE])
+      ).org.zowe.jenkins-shared-library
+      def github = lib.scm.GitHub.new(_this, [
+        'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
+        'username'                   : GITHUB_USERNAME,
+        'email'                      : GITHUB_EMAIL,
+        'usernamePasswordCredential' : System.getProperty('github.credential'),
+      ])
+
       github.clone(['targetFolder': '.tmp-git'])
       sh 'ls -la .tmp-git'
       error 'exit here'
