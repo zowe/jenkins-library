@@ -38,8 +38,6 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-def _this = this
-
 node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {
         // checkout source code
