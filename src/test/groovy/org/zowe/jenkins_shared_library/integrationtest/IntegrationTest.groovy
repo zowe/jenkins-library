@@ -28,11 +28,11 @@ class IntegrationTest {
     /**
      * JenkinsAPI instance
      */
-    private final JenkinsAPI api
+    private JenkinsAPI api
     /**
      * Logger object
      */
-    private final Logger logger
+    private Logger logger
 
     /**
      * The test job name. After test is done, the job should be deleted.

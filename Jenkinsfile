@@ -30,8 +30,8 @@ opts.push(disableConcurrentBuilds())
 def customParameters = []
 customParameters.push(choice(
     name: 'TEST_LOG_LEVEL',
-    choices: ['INFO', 'SEVERE', 'WARNING', 'CONFIG', 'FINE', 'FINER', 'FINEST'],
-    description: 'Log level for running gradle test'
+    choices: ['', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST'],
+    description: 'Log level for running gradle test. Default is INFO if leave it empty.'
 ))
 opts.push(parameters(customParameters))
 
