@@ -59,15 +59,16 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // make modification
         sh "echo '- ${env.JOB_NAME}#${env.BUILD_NUMBER}' >> '${CLONE_DIRECTORY}/test-commit'"
         // commit
-        github.commit()
+        def msg = "Automated commit from ${env.JOB_NAME}#${env.BUILD_NUMBER}"
+        github.commit(msg)
         // verify
         if (!github.isClean()) {
             error 'Working tree is not clean. There are changes not committed.'
         }
         // check result
         def commit = getLastCommit(['subject'])
-        if (!commit['subject'] || !commit['subject'].contains("Automated commit from ${env.JOB_NAME}#${env.BUILD_NUMBER}")) {
-            error "Failed to verify commit subject:\nCommit: ${commit}\nShould contain: Automated commit from ${env.JOB_NAME}#${env.BUILD_NUMBER}"
+        if (!commit['subject'] || commit['subject'] != msg) {
+            error "Failed to verify commit subject:\nCommit: ${commit}\nExpected subject: ${msg}"
         }
     }
 

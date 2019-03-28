@@ -139,16 +139,19 @@ class GitHub {
 
     /**
      * Commit changes
+     * @param  message     git commit message
      */
-    void commit(Map args = [:]) {
+    void commit(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
         if (args.size() > 0) {
             this.init(args)
         }
 
-        def message = args['message'] ?
-            args['message'] :
-            "Automated commit from ${env.JOB_NAME}#${env.BUILD_NUMBER} by \"${this.username}\" \"${this.email}\""
+        def message = args['message'] ? args['message'] : ''
+        // validate arguments
+        if (!message) {
+            throw new InvalidArgumentException('message')
+        }
 
         this.command("git add . && git commit -m '${message}'")
     }
