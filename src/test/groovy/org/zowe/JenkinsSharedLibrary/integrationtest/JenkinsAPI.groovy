@@ -324,7 +324,7 @@ class JenkinsAPI {
 
         if (!foundFolder) {
             logger.fine("Folder \"${folder}\" doesn't exist, should be created")
-            createJob(folder, 'testFolder.xml')
+            createJob(folder, 'folder.xml')
         } else {
             logger.fine("Folder \"${folder}\" exists already")
         }
@@ -345,7 +345,7 @@ class JenkinsAPI {
 
         String xml = loadJobTemplate(template)
         macros.each {
-            k, v -> xml = xml.replaceAll('\\{' + k + '\\}', v)
+            k, v -> xml = xml.replace('{' + k + '}', v)
         }
         Map result = post(getJobUrl(parentFolder, '/createItem', ['name': name]), xml, [
             'Content-Type': 'application/xml'

@@ -16,6 +16,7 @@ import java.util.logging.Logger
 import java.util.logging.Level
 import java.util.logging.Handler
 import java.util.logging.ConsoleHandler
+import org.apache.commons.lang3.StringEscapeUtils
 
 /**
  * Various static methods which doesn't have a class.
@@ -52,6 +53,15 @@ class Utils {
     static String getUriQueryString(Map params = [:]) {
         // convert params to querystring
         return params.collect { k, v -> k + '=' + URLEncoder.encode(v, 'UTF-8') }.join('&')
+    }
+
+    /**
+     * Escape special characters in text to make it safe to put in XML
+     * @param  params     text to escape
+     * @return            escaped text
+     */
+    static String escapeXml(String text) {
+        return StringEscapeUtils.escapeXml11(text)
     }
 
     /**
