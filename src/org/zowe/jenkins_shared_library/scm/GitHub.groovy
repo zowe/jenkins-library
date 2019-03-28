@@ -157,6 +157,14 @@ class GitHub {
     }
 
     /**
+     * Commit changes
+     * @param  message     git commit message
+     */
+    void commit(String message) {
+        this.commit(['message': message])
+    }
+
+    /**
      * Get last commit information
      *
      * @param fields    what information of the commit should be returned. Available fields are:
