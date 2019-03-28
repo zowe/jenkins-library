@@ -192,7 +192,7 @@ class GitHub {
             'body'      : '%b',
         ]
         formats.each { entry ->
-            if (fields[entry.key]) {
+            if (fields.contains(entry.key)) {
                 result[entry.key] = this.command("git show --format=\"${entry.value}\" -s HEAD")
             }
         }
