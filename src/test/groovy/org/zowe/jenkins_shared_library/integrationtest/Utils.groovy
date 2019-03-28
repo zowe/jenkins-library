@@ -10,12 +10,12 @@
 
 package org.zowe.jenkins_shared_library.integrationtest
 
-import java.time.Instant
 import java.net.URLEncoder
-import java.util.logging.Logger
-import java.util.logging.Level
-import java.util.logging.Handler
+import java.time.Instant
 import java.util.logging.ConsoleHandler
+import java.util.logging.Handler
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.apache.commons.lang3.StringEscapeUtils
 
 /**

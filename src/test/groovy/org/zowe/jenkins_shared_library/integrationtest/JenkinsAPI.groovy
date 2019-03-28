@@ -12,12 +12,12 @@ package org.zowe.jenkins_shared_library.integrationtest
 
 import groovy.json.JsonSlurper
 import java.net.URLEncoder
-import java.util.logging.Logger
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
-import org.awaitility.Duration
+import java.util.logging.Logger
 import org.awaitility.Awaitility
-import static org.hamcrest.Matchers.*;
+import org.awaitility.Duration
+import static org.hamcrest.Matchers.*
 
 /**
  * Class to handle API request/response with Jenkins server

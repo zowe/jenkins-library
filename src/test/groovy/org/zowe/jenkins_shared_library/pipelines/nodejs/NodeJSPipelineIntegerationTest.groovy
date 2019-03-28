@@ -8,10 +8,10 @@
  * Copyright IBM Corporation 2019
  */
 
-import org.junit.*
-import static groovy.test.GroovyAssert.*
 import java.util.logging.Logger
+import org.junit.*
 import org.zowe.jenkins_shared_library.integrationtest.*
+import static groovy.test.GroovyAssert.*
 
 /**
  * Test {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline}
@@ -23,38 +23,13 @@ import org.zowe.jenkins_shared_library.integrationtest.*
  * - start with default parameter and the job should success
  * - test a PATCH release
  */
-class NodeJsPipelineIntegerationTest {
-    /**
-     * JenkinsAPI instance
-     */
-    JenkinsAPI api
-    /**
-     * Logger object
-     */
-    Logger logger
-
-    /**
-     * The test job name. After test is done, the job should be deleted.
-     */
-    String testJobName
-
-    /**
-     * Full test job name including parent folders
-     */
-    List<String> fullTestJobName
-
+class NodeJsPipelineIntegerationTest extends IntegrationTest {
     @Before
     void initTestJob() {
-        // init logger
-        logger = Utils.getLogger(Class.getSimpleName())
-
-        // init JenkinsAPI
-        api = JenkinsAPI.init()
+        super.initTestJob()
 
         // init test job name
-        testJobName = "nodejs-example-${Utils.getTimestamp()}"
-        fullTestJobName = [Constants.INTEGRATION_TEST_JENKINS_FOLDER, testJobName]
-        logger.fine("Test job \"${fullTestJobName}\" will be created for testing")
+        _initTestJobName('nodejs-multibranch')
 
         // create test job
         api.createJob(
@@ -74,14 +49,6 @@ class NodeJsPipelineIntegerationTest {
         // will start building master
         job.add('master')
         api.fetchJobParameters(job)
-    }
-
-    @After
-    void deleteTestJob() {
-        // delete the test job if exists
-        if (api && testJobName) {
-            // api.deleteJob(fullTestJobName)
-        }
     }
 
     @Test

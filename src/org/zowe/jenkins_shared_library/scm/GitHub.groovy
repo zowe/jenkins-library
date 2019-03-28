@@ -100,6 +100,13 @@ class GitHub {
         }
     }
 
+    /**
+     * Clone a repository
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param  shallow           if do a shallow
+     */
     void cloneRepository(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
         if (args.size() > 0) {
