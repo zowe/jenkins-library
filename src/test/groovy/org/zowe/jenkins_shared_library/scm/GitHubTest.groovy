@@ -20,8 +20,7 @@ import static groovy.test.GroovyAssert.*
  *
  * Then will run several validations on the job:
  *
- * - start with default parameter and the job should success
- * - test a PATCH release
+ * - start with parameter pointing to the library branch to test
  */
 class GitHubTest extends IntegrationTest {
     @Before

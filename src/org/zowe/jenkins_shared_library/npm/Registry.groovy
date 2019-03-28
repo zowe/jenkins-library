@@ -17,12 +17,12 @@ class Registry {
     /**
      * Constant of .npmrc file name
      */
-    public static final NPMRC_FILE = '~/.npmrc'
+    public static final String NPMRC_FILE = '~/.npmrc'
 
     /**
      * Constant of package.json file name
      */
-    public static final PACKAGE_JSON = 'pacakge.json'
+    public static final String PACKAGE_JSON = 'pacakge.json'
 
     /**
      * Reference to the groovy pipeline variable.

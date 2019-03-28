@@ -22,12 +22,12 @@ class GitHub {
     /**
      * github domain name
      */
-    public static final GITHUB_DOMAIN = 'github.com'
+    public static final String GITHUB_DOMAIN = 'github.com'
 
     /**
      * Default branch name
      */
-    public static final DEFAULT_BRANCH = 'master'
+    public static final String DEFAULT_BRANCH = 'master'
 
     /**
      * github user name
@@ -63,15 +63,11 @@ class GitHub {
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
-     * @param options  Options to initialize npm registry instance
+     * @param options  Options to initialize npm registry instance.
      */
-    GitHub(steps, Map options = [:]) {
-        this.steps = steps
-
+    GitHub(Map options) throws InvalidArgumentException {
         // init default property values
-        if (options.size() > 0) {
-            this.init(options)
-        }
+        this.init(options)
     }
 
     /**
@@ -82,21 +78,27 @@ class GitHub {
      * @param   email                       github email
      */
     void init(Map args = [:]) {
+        if (args['steps']) {
+            this.steps = args['steps']
+        } else {
+            throw new InvalidArgumentException('steps')
+        }
+
         if (args['username']) {
-            username = args['username']
+            this.username = args['username']
             this.steps.sh "git config --global user.name \"${username}\""
         }
         if (args['email']) {
-            email = args['email']
+            this.email = args['email']
             this.steps.sh "git config --global user.email \"${email}\""
         }
 
         if (args['usernamePasswordCredential']) {
-            usernamePasswordCredential = args['usernamePasswordCredential']
+            this.usernamePasswordCredential = args['usernamePasswordCredential']
         }
 
         if (args['repository']) {
-            repository = args['repository']
+            this.repository = args['repository']
         }
     }
 
