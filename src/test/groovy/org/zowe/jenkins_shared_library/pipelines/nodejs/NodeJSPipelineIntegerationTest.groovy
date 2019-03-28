@@ -23,6 +23,7 @@ import static groovy.test.GroovyAssert.*
  * - start with default parameter and the job should success
  * - test a PATCH release
  */
+@Ignore
 class NodeJsPipelineIntegerationTest extends IntegrationTest {
     @Before
     void initTestJob() {
