@@ -216,7 +216,7 @@ class GitHub {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
 
-        withCredentials([usernamePassword(
+        this.steps.withCredentials([this.steps.usernamePassword(
             credentialsId: usernamePasswordCredential,
             passwordVariable: 'PASSWORD',
             usernameVariable: 'USERNAME'
