@@ -52,6 +52,11 @@ class GitHub {
     String repository
 
     /**
+     * Folder where the repository is cloned to
+     */
+    String folder
+
+    /**
      * Constructs the class.
      *
      * <p>When invoking from a Jenkins pipeline script, the Pipeline must be passed
@@ -92,6 +97,9 @@ class GitHub {
         if (args['repository']) {
             this.repository = args['repository']
         }
+        if (args['folder']) {
+            this.folder = args['folder']
+        }
     }
 
     /**
@@ -99,7 +107,9 @@ class GitHub {
      *
      * Use similar parameters like init() method and with these extra:
      *
-     * @param  shallow           if do a shallow
+     * @param  shallow       if do a shallow clone (with depth 1)
+     * @param  branch        branch to checkout
+     * @param  folder        which folder to save the cloned files
      */
     void cloneRepository(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
@@ -113,18 +123,75 @@ class GitHub {
 
         def depthOpt = args['shallow'] ? ' --depth 1' : ''
         def branchOpt = args['branch'] ? " -b '${args['branch']}'" : ''
-        def folderOpt = args['targetFolder'] ? " '${args['targetFolder']}'" : ''
+        def folderOpt = args['folder'] ? " '${args['folder']}'" : ''
 
         this.steps.sh "git clone ${depthOpt} 'https://${GITHUB_DOMAIN}/${repository}.git'${branchOpt}${folderOpt}"
+    }
+
+    /**
+     * Issue git command and get stdout return
+     * @param  command     git command
+     * @return             stdout log
+     */
+    String command(String command) {
+        return this.steps.sh(script: "cd '${this.folder}' && ${command}", returnStdout: true).trim()
     }
 
     /**
      * Commit changes
      */
     void commit(Map args = [:]) {
-        throw new UnderConstructionException('GitHub.commit() method is not implemented yet.')
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        def message = args['message'] ?
+            args['message'] :
+            "Automated commit from ${env.JOB_NAME}#${env.BUILD_NUMBER} by \"${this.username}\" \"${this.email}\""
+
+        this.command("git add . && git commit -m '${message}'")
     }
 
+    /**
+     * Get last commit information
+     *
+     * @param fields    what information of the commit should be returned. Available fields are:
+     *                  - hash
+     *                  - shortHash
+     *                  - author
+     *                  - email
+     *                  - timestamp
+     *                  - date
+     *                  - subject
+     *                  - body
+     * @return          last commit information map with fields asked for
+     */
+    Map getLastCommit(List fields = ['hash']) {
+        Map result = []
+
+        Map formats = [
+            'hash'      : '%H',
+            'shortHash' : '%h',
+            'author'    : '%an',
+            'email'     : '%ae',
+            'timestamp' : '%at',
+            'date'      : '%aD',
+            'subject'   : '%s',
+            'body'      : '%b',
+        ]
+        formats.each { entry ->
+            if (fields[entry.key]) {
+                result[entry.key] = this.command("git show --format=\"${entry.value}\" -s HEAD")
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Push all local changes
+     */
     void push(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
         if (args.size() > 0) {
@@ -143,9 +210,38 @@ class GitHub {
             passwordVariable: 'PASSWORD',
             usernameVariable: 'USERNAME'
         )]) {
-            this.steps.sh "git push 'https://${USERNAME}:${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git'"
+            this.command("git push 'https://${USERNAME}:${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git'")
         }
     }
+
+    /**
+     * Check if current working tree is clean or not
+     * @return         boolean to tell if it's clean or not
+     */
+    Boolean isClean(Map args = [:]) {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        String status = this.command('git status --porcelain')
+        return status == ''
+    }
+
+    /**
+     * Check if current branch is synced with remote
+     * @return         boolean to tell if it's synced or not
+     */
+    Boolean isSynced(Map args = [:]) {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        String status = this.command('git status')
+        return status.matches("Your branch is up to date with '[^']+'.")
+    }
+
 
     /**
      * Tag the branch

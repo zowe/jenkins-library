@@ -63,15 +63,9 @@ class Registry {
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
-     * @param options  Options to initialize npm registry instance
      */
-    Registry(steps, Map options = [:]) {
+    Registry(steps) {
         this.steps = steps
-
-        // init default property values
-        if (options.size() > 0) {
-            this.init(options)
-        }
     }
 
     /**
