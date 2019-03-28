@@ -179,7 +179,7 @@ class GitHub {
      * @return          last commit information map with fields asked for
      */
     Map getLastCommit(List fields = ['hash']) {
-        Map result = []
+        Map result = [:]
 
         Map formats = [
             'hash'      : '%H',

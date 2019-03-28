@@ -66,7 +66,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             error 'Working tree is not clean. There are changes not committed.'
         }
         // check result
-        def commit = getLastCommit(['subject'])
+        def commit = github.getLastCommit(['subject'])
         if (!commit['subject'] || commit['subject'] != msg) {
             error "Failed to verify commit subject:\nCommit: ${commit}\nExpected subject: ${msg}"
         }
