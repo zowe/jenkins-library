@@ -63,11 +63,9 @@ class GitHub {
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
-     * @param options  Options to initialize npm registry instance.
      */
-    GitHub(Map options) throws InvalidArgumentException {
-        // init default property values
-        this.init(options)
+    GitHub(steps) {
+        this.steps = steps
     }
 
     /**
@@ -78,12 +76,6 @@ class GitHub {
      * @param   email                       github email
      */
     void init(Map args = [:]) {
-        if (args['steps']) {
-            this.steps = args['steps']
-        } else {
-            throw new InvalidArgumentException('steps')
-        }
-
         if (args['username']) {
             this.username = args['username']
             this.steps.sh "git config --global user.name \"${username}\""

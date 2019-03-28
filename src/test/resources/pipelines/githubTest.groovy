@@ -8,14 +8,17 @@ def github
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('init') {
-        github = lib.scm.GitHub.new([
-            'steps'                      : _this,
+        github = lib.scm.GitHub.new(_this)
+        echo "github: ${github}"
+        if (!github) {
+            error 'Failed to initialize GitHub instance.'
+        }
+        github.init([
             'repository'                 : 'zowe/jenkins-library-fvt-nodejs',
             'username'                   : env.GITHUB_USERNAME,
             'email'                      : env.GITHUB_EMAIL,
             'usernamePasswordCredential' : env.GITHUB_CREDENTIAL,
         ])
-        echo "github: ${github}"
     }
 
     stage('clone') {
