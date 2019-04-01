@@ -287,8 +287,14 @@ class GitHub {
             this.init(args)
         }
 
-        String status = this.command('git status')
-        return status.matches("Your branch is up to date with '[^']+'.")
+        String remote = args['remote'] ? args['remote'] : 'origin'
+        // update remote
+        this.command("git fetch ${remote}")
+        // get last hash
+        String localHash = this.command("git rev-parse ${this.branch}")
+        String remoteHash = this.command("git rev-parse ${remote}/${this.branch}")
+
+        return localHash == remoteHash
     }
 
 
