@@ -81,11 +81,22 @@ class GitHub {
     /**
      * Initialize github properties
      * @param   repository                  repository name
+     * @param   branch                      branch name to clone/push
+     * @param   folder                      target folder
      * @param   usernamePasswordCredential  github username/password credential
-     * @param   username                    github username
-     * @param   email                       github email
+     * @param   username                    github user.name config
+     * @param   email                       github user.email config
      */
     void init(Map args = [:]) {
+        if (args['repository']) {
+            this.repository = args['repository']
+        }
+        if (args['branch']) {
+            this.branch = args['branch']
+        } else {
+            this.branch = DEFAULT_BRANCH
+        }
+
         if (args['username']) {
             this.username = args['username']
             this.steps.sh "git config --global user.name \"${username}\""
@@ -97,18 +108,22 @@ class GitHub {
 
         if (args['usernamePasswordCredential']) {
             this.usernamePasswordCredential = args['usernamePasswordCredential']
+
+            // using https repository, indicate git push to check ~/.git-credentials
+            this.steps.sh 'git config credential.helper store'
+
+            this.steps.withCredentials([this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )]) {
+                // FIXME: encode username/passsword?
+                this.steps.sh "echo \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}\" > ~/.git-credentials")
+            }
         }
 
-        if (args['repository']) {
-            this.repository = args['repository']
-        }
         if (args['folder']) {
             this.folder = args['folder']
-        }
-        if (args['branch']) {
-            this.branch = args['branch']
-        } else {
-            this.branch = DEFAULT_BRANCH
         }
     }
 

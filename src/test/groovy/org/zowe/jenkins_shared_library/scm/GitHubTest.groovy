@@ -11,6 +11,7 @@
 import java.util.logging.Logger
 import org.junit.*
 import static org.hamcrest.CoreMatchers.*;
+import org.hamcrest.collection.IsMapContaining
 import org.zowe.jenkins_shared_library.integrationtest.*
 import static groovy.test.GroovyAssert.*
 
@@ -66,8 +67,8 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
 
     @Test
     void testBuildInformation() {
-        assertThat('Build result', buildInformation, hasKey('number'));
-        assertThat('Build result', buildInformation, hasKey('result'));
+        assertThat('Build result', buildInformation, IsMapContaining.hasKey('number'));
+        assertThat('Build result', buildInformation, IsMapContaining.hasKey('result'));
         assertThat('Build result', buildInformation['result'], equalTo('SUCCESS'));
         assertThat('Build console log', buildLog, not(equalTo('')))
     }
