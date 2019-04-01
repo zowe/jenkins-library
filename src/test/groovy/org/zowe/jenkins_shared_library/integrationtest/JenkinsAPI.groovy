@@ -544,11 +544,11 @@ class JenkinsAPI {
     String getBuildResult(List<String> name, Integer buildNumber) throws JenkinsAPIException {
         logger.finer("Checking build ${name}#${buildNumber} result ...")
 
-        Map result = getBuildInformation(name, buildNumber)
+        Map info = getBuildInformation(name, buildNumber)
 
-        if (result && result['result']) {
-            logger.finer("Build ${name}#${buildNumber} result is ${result['result']}")
-            return result['result']
+        if (info && info['result']) {
+            logger.finer("Build ${name}#${buildNumber} result is ${info['result']}")
+            return info['result']
         } else {
             throw new JenkinsAPIException("Failed to find build result of ${name}#{$buildNumber}: ${result['body']}")
         }
@@ -578,9 +578,9 @@ class JenkinsAPI {
      * Start a job and wait until it's finished
      *
      * @param  name   paths to find the job. For example: ['in-my-folder', 'with-job', 'my-branch']
-     * @return              SUCCESS, FAILURE, UNSTABLE etc
+     * @return              build information map
      */
-    String startJobAndGetResult(List<String> name, Map params = [:]) {
+    Map startJobAndGetBuildInformation(List<String> name, Map params = [:]) {
         // get old last build number
         Integer oldLastBuildNumber = getLastBuildNumber(name)
 
@@ -603,7 +603,7 @@ class JenkinsAPI {
             .atMost(1, TimeUnit.HOURS)
             .until(isBuildFinishedCallable(name, lastBuildNumber))
 
-        return getBuildResult(name, lastBuildNumber)
+        return getBuildInformation(name, lastBuildNumber)
     }
 
     /**
@@ -618,6 +618,6 @@ class JenkinsAPI {
     void fetchJobParameters(List<String> name) {
         logger.finer("Fetching jon ${name} parameters ...")
 
-        startJobAndGetResult name
+        startJobAndGetBuildInformation name
     }
 }

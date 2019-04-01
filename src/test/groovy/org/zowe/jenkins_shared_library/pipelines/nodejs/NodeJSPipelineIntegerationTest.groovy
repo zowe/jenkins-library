@@ -57,11 +57,11 @@ class NodeJsPipelineIntegerationTest extends IntegrationTest {
         List job = fullTestJobName.collect()
         // will start building master
         job.add('master')
-        def result = api.startJobAndGetResult(job, [
+        def info = api.startJobAndGetBuildInformation(job, [
             'FETCH_PARAMETER_ONLY': 'false',
             'LIBRARY_BRANCH': System.getProperty('library.branch')
         ])
 
-        assertEquals("SUCCESS", result)
+        assertEquals("SUCCESS", info['result'])
     }
 }

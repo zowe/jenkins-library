@@ -47,12 +47,12 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
             ]
         )
 
-        buildResult = api.startJobAndGetResult(fullTestJobName, [
+        buildInformation = api.startJobAndGetBuildInformation(fullTestJobName, [
             'LIBRARY_BRANCH': System.getProperty('library.branch')
         ])
 
-        if (buildResult && buildResult['number']) {
-            buildLog = getBuildLog(fullTestJobName, buildResult['number'])
+        if (buildInformation && buildInformation['number']) {
+            buildLog = getBuildLog(fullTestJobName, buildInformation['number'])
         }
     }
 
@@ -65,10 +65,10 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
     }
 
     @Test
-    void testBuildResult() {
-        assertThat('Build result', buildResult, hasKey('number'));
-        assertThat('Build result', buildResult, hasKey('result'));
-        assertThat('Build result', buildResult['result'], equalTo('SUCCESS'));
+    void testBuildInformation() {
+        assertThat('Build result', buildInformation, hasKey('number'));
+        assertThat('Build result', buildInformation, hasKey('result'));
+        assertThat('Build result', buildInformation['result'], equalTo('SUCCESS'));
         assertThat('Build console log', buildLog, not(equalTo('')))
     }
 

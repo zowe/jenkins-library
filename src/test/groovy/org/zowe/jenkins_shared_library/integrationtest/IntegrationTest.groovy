@@ -45,9 +45,9 @@ class IntegrationTest {
     static List<String> fullTestJobName
 
     /**
-     * Build result
+     * Build information
      */
-    static Map buildResult
+    static Map buildInformation
 
     /**
      * Build console log
