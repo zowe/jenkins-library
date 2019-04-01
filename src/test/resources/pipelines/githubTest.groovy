@@ -37,7 +37,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to clone the repository
      */
     stage('clone') {
-        github.cloneRepository(['folder': CLONE_DIRECTORY, 'shallow': true])
+        github.cloneRepository(['folder': CLONE_DIRECTORY])
         echo ">>>>>>>>>> Full list of clone result: >>>>>>>>>>"
         sh "ls -la '${CLONE_DIRECTORY}'"
         // after clone to local, these files should exist
