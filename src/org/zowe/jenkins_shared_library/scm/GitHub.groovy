@@ -225,7 +225,7 @@ class GitHub {
             passwordVariable: 'PASSWORD',
             usernameVariable: 'USERNAME'
         )]) {
-            this.command("git push 'https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git'")
+            this.command("git push \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git\"")
         }
     }
 
