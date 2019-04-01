@@ -45,6 +45,16 @@ class IntegrationTest {
     protected List<String> fullTestJobName
 
     /**
+     * Build result
+     */
+    protected Map buildResult
+
+    /**
+     * Build console log
+     */
+    protected String buildLog
+
+    /**
      * Init test jon name
      * @param  namePrefix        prefix of the job name
      */
@@ -55,20 +65,12 @@ class IntegrationTest {
         logger.fine("Test job \"${fullTestJobName}\" will be created for testing")
     }
 
-    @Before
+    @BeforeAll
     void initTestJob() {
         // init logger
         logger = Utils.getLogger(Class.getSimpleName())
 
         // init JenkinsAPI
         api = JenkinsAPI.init()
-    }
-
-    @After
-    void deleteTestJob() {
-        // delete the test job if exists
-        if (api && testJobName) {
-            // api.deleteJob(fullTestJobName)
-        }
     }
 }

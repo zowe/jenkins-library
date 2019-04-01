@@ -52,6 +52,11 @@ class GitHub {
     String repository
 
     /**
+     * Github branch to checkout
+     */
+    String branch
+
+    /**
      * Folder where the repository is cloned to
      */
     String folder
@@ -100,6 +105,11 @@ class GitHub {
         if (args['folder']) {
             this.folder = args['folder']
         }
+        if (args['branch']) {
+            this.branch = args['branch']
+        } else {
+            this.branch = DEFAULT_BRANCH
+        }
     }
 
     /**
@@ -107,7 +117,6 @@ class GitHub {
      *
      * Use similar parameters like init() method and with these extra:
      *
-     * @param  shallow       if do a shallow clone (with depth 1)
      * @param  branch        branch to checkout
      * @param  folder        which folder to save the cloned files
      */
@@ -120,12 +129,25 @@ class GitHub {
         if (!repository) {
             throw new InvalidArgumentException('repository')
         }
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
 
-        def depthOpt = args['shallow'] ? ' --depth 1' : ''
-        def branchOpt = args['branch'] ? " -b '${args['branch']}'" : ''
-        def folderOpt = args['folder'] ? " '${args['folder']}'" : ''
-
-        this.steps.sh "git clone ${depthOpt} 'https://${GITHUB_DOMAIN}/${repository}.git'${branchOpt}${folderOpt}"
+        if (args['folder']) {
+            this.steps.dir(args['folder']) {
+                this.steps.git(
+                    url           : "https://${GITHUB_DOMAIN}/${repository}.git",
+                    credentialsId : usernamePasswordCredential,
+                    branch        : args['branch']
+                )
+            }
+        } else {
+            this.steps.git(
+                url           : "https://${GITHUB_DOMAIN}/${repository}.git",
+                credentialsId : usernamePasswordCredential,
+                branch        : args['branch']
+            )
+        }
     }
 
     /**
@@ -212,21 +234,8 @@ class GitHub {
         if (args.size() > 0) {
             this.init(args)
         }
-        // validate arguments
-        if (!repository) {
-            throw new InvalidArgumentException('repository')
-        }
-        if (!usernamePasswordCredential) {
-            throw new InvalidArgumentException('usernamePasswordCredential')
-        }
 
-        this.steps.withCredentials([this.steps.usernamePassword(
-            credentialsId: usernamePasswordCredential,
-            passwordVariable: 'PASSWORD',
-            usernameVariable: 'USERNAME'
-        )]) {
-            this.command("git push \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git\"")
-        }
+        this.command("git push origin ${this.branch}")
     }
 
     /**
@@ -259,9 +268,15 @@ class GitHub {
 
 
     /**
-     * Tag the branch
+     * Tag the branch.
+     *
+     * Note: currently only support lightweighted tag.
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param  tag           tag name to be created
      */
     void tag(Map args = [:]) {
-        throw new UnderConstructionException('GitHub.tag() method is not implemented yet.')
+        this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
     }
 }

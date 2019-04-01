@@ -519,6 +519,22 @@ class JenkinsAPI {
     }
 
     /**
+     * Get build information
+     *
+     * @param  name         paths to find the job. For example: ['in-my-folder', 'with-job', 'my-branch']
+     * @param  buildNumber  build number
+     * @return              map of build information includes: number, result, timestamp, etc
+     */
+    String getBuildInformation(List<String> name, Integer buildNumber) {
+        logger.finer("Checking build ${name}#${buildNumber} information ...")
+
+        Map result = get(getJobUrl(name, "/${buildNumber}/api/json"))
+
+        logger.finest("Build ${name}#${buildNumber} information is:\n${result['body']}")
+        return result['body']
+    }
+
+    /**
      * Get build result
      *
      * @param  name         paths to find the job. For example: ['in-my-folder', 'with-job', 'my-branch']
@@ -528,13 +544,33 @@ class JenkinsAPI {
     String getBuildResult(List<String> name, Integer buildNumber) throws JenkinsAPIException {
         logger.finer("Checking build ${name}#${buildNumber} result ...")
 
-        Map result = get(getJobUrl(name, "/${buildNumber}/api/json"))
+        def result = getBuildInformation(name, buildNumber)
 
-        if (result['body'] && result['body']['result']) {
-            logger.finer("Build ${name}#${buildNumber} result is ${result['body']['result']}")
-            return result['body']['result']
+        if (result && result['result']) {
+            logger.finer("Build ${name}#${buildNumber} result is ${result['result']}")
+            return result['result']
         } else {
             throw new JenkinsAPIException("Failed to find build result of ${name}#{$buildNumber}: ${result['body']}")
+        }
+    }
+
+    /**
+     * Get build console log
+     *
+     * @param  name         paths to find the job. For example: ['in-my-folder', 'with-job', 'my-branch']
+     * @param  buildNumber  build number
+     * @return              SUCCESS, FAILURE, UNSTABLE etc
+     */
+    String getBuildLog(List<String> name, Integer buildNumber) throws JenkinsAPIException {
+        logger.finer("Checking build ${name}#${buildNumber} console log ...")
+
+        Map result = get(getJobUrl(name, "/${buildNumber}/logText/progressiveText?start=0"))
+
+        if (result['body']) {
+            logger.finest("Build ${name}#${buildNumber} console log is:\n${result['body']}")
+            return result['body']
+        } else {
+            throw new JenkinsAPIException("Failed to find build console log of ${name}#{$buildNumber}: ${result['body']}")
         }
     }
 

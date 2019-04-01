@@ -29,6 +29,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             'email'                      : env.GITHUB_EMAIL,
             'usernamePasswordCredential' : env.GITHUB_CREDENTIAL,
         ])
+
+        echo "[GITHUB_TEST] init successfully"
     }
 
     /**
@@ -50,6 +52,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         if (logsCount != '1') {
             error 'There are more than one line of logs, not a shallow clone.'
         }
+
+        echo "[GITHUB_TEST] clone successfully"
     }
 
     /**
@@ -70,6 +74,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         if (!commit['subject'] || commit['subject'] != msg) {
             error "Failed to verify commit subject:\nCommit: ${commit}\nExpected subject: ${msg}"
         }
+
+        echo "[GITHUB_TEST] commit successfully"
     }
 
     /**
@@ -81,12 +87,25 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         if (!github.isSynced()) {
             error 'Branch is not synced with remote, there are commits not pushed or remote have been updated.'
         }
+
+        echo "[GITHUB_TEST] push successfully"
     }
 
     /**
      * Should be able to tag branch
      */
     stage('tag') {
-        echo "pending"
+        def tag = "${env.JOB_NAME}#${env.BUILD_NUMBER}".replaceAll("[^a-zA-Z0-9]", '-')
+        github.tag(['tag': tag])
+        def remotedTags = github.command("git ls-remote --tags").split("\n")
+        def foundTag = false
+        remotedTags.each{
+            if (it.contains('refs/tags/v0.91.1')) { foundTag = true }
+        }
+        if (!foundTag) {
+            error 'Failed to create tag'
+        }
+
+        echo "[GITHUB_TEST] tag successfully"
     }
 }

@@ -23,7 +23,7 @@ import static groovy.test.GroovyAssert.*
  * - start with parameter pointing to the library branch to test
  */
 class GitHubTest extends IntegrationTest {
-    @Before
+    @BeforeAll
     void initTestJob() {
         super.initTestJob()
 
@@ -45,14 +45,54 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
                 'fvt-script'       : Utils.escapeXml(script),
             ]
         )
-    }
 
-    @Test
-    void testDefaultBuild() {
-        def result = api.startJobAndGetResult(fullTestJobName, [
+        buildResult = api.startJobAndGetResult(fullTestJobName, [
             'LIBRARY_BRANCH': System.getProperty('library.branch')
         ])
 
-        assertEquals("SUCCESS", result)
+        if (buildResult && buildResult['number']) {
+            buildLog = getBuildLog(fullTestJobName, buildResult['number'])
+        }
+    }
+
+    @AfterAll
+    void deleteTestJob() {
+        // delete the test job if exists
+        if (api && testJobName) {
+            // api.deleteJob(fullTestJobName)
+        }
+    }
+
+    @Test
+    void testBuildResult() {
+        assertTrue('Build result doesn\'t have \'number\' defined', buildResult.containsKey('number'))
+        assertTrue('Build result doesn\'t have \'result\' defined', buildResult.containsKey('result'))
+        assertTrue("Build result should be SUCESS but got ${buildResult['result']}", buildResult['result'] == 'SUCCESS')
+        assertTrue('Build log is empty', buildLog != '')
+    }
+
+    @Test
+    void testInit() {
+        assertTrue(buildLog.contains('[GITHUB_TEST] init successfully'))
+    }
+
+    @Test
+    void testClone() {
+        assertTrue(buildLog.contains('[GITHUB_TEST] clone successfully'))
+    }
+
+    @Test
+    void testCommit() {
+        assertTrue(buildLog.contains('[GITHUB_TEST] commit successfully'))
+    }
+
+    @Test
+    void testPush() {
+        assertTrue(buildLog.contains('[GITHUB_TEST] push successfully'))
+    }
+
+    @Test
+    void testTag() {
+        assertTrue(buildLog.contains('[GITHUB_TEST] tag successfully'))
     }
 }
