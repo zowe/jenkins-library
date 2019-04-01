@@ -28,45 +28,44 @@ class IntegrationTest {
     /**
      * JenkinsAPI instance
      */
-    protected JenkinsAPI api
+    static JenkinsAPI api
     /**
      * Logger object
      */
-    protected Logger logger
+    static Logger logger
 
     /**
      * The test job name. After test is done, the job should be deleted.
      */
-    protected String testJobName
+    static String testJobName
 
     /**
      * Full test job name including parent folders
      */
-    protected List<String> fullTestJobName
+    static List<String> fullTestJobName
 
     /**
      * Build result
      */
-    protected Map buildResult
+    static Map buildResult
 
     /**
      * Build console log
      */
-    protected String buildLog
+    static String buildLog
 
     /**
      * Init test jon name
      * @param  namePrefix        prefix of the job name
      */
-    void _initTestJobName(String namePrefix = 'test') {
+    public static void _initTestJobName(String namePrefix = 'test') {
             // init test job name
         testJobName = "${namePrefix}-${Utils.getTimestamp()}"
         fullTestJobName = [Constants.INTEGRATION_TEST_JENKINS_FOLDER, testJobName]
         logger.fine("Test job \"${fullTestJobName}\" will be created for testing")
     }
 
-    @BeforeAll
-    void initTestJob() {
+    public static void initTestJob() {
         // init logger
         logger = Utils.getLogger(Class.getSimpleName())
 

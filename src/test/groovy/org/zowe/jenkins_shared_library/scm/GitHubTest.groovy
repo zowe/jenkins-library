@@ -10,6 +10,7 @@
 
 import java.util.logging.Logger
 import org.junit.*
+import static org.hamcrest.CoreMatchers.*;
 import org.zowe.jenkins_shared_library.integrationtest.*
 import static groovy.test.GroovyAssert.*
 
@@ -23,8 +24,8 @@ import static groovy.test.GroovyAssert.*
  * - start with parameter pointing to the library branch to test
  */
 class GitHubTest extends IntegrationTest {
-    @BeforeAll
-    void initTestJob() {
+    @BeforeClass
+    public static void initTestJob() {
         super.initTestJob()
 
         // init test job name
@@ -55,8 +56,8 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
         }
     }
 
-    @AfterAll
-    void deleteTestJob() {
+    @AfterClass
+    public static void deleteTestJob() {
         // delete the test job if exists
         if (api && testJobName) {
             // api.deleteJob(fullTestJobName)
@@ -65,34 +66,34 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
 
     @Test
     void testBuildResult() {
-        assertTrue('Build result doesn\'t have \'number\' defined', buildResult.containsKey('number'))
-        assertTrue('Build result doesn\'t have \'result\' defined', buildResult.containsKey('result'))
-        assertTrue("Build result should be SUCESS but got ${buildResult['result']}", buildResult['result'] == 'SUCCESS')
-        assertTrue('Build log is empty', buildLog != '')
+        assertThat('Build result', buildResult, hasKey('number'));
+        assertThat('Build result', buildResult, hasKey('result'));
+        assertThat('Build result', buildResult['result'], equalTo('SUCCESS'));
+        assertThat('Build console log', buildLog, not(equalTo('')))
     }
 
     @Test
     void testInit() {
-        assertTrue(buildLog.contains('[GITHUB_TEST] init successfully'))
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] init successfully'))
     }
 
     @Test
     void testClone() {
-        assertTrue(buildLog.contains('[GITHUB_TEST] clone successfully'))
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] clone successfully'))
     }
 
     @Test
     void testCommit() {
-        assertTrue(buildLog.contains('[GITHUB_TEST] commit successfully'))
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] commit successfully'))
     }
 
     @Test
     void testPush() {
-        assertTrue(buildLog.contains('[GITHUB_TEST] push successfully'))
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] push successfully'))
     }
 
     @Test
     void testTag() {
-        assertTrue(buildLog.contains('[GITHUB_TEST] tag successfully'))
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] tag successfully'))
     }
 }

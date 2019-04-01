@@ -138,14 +138,18 @@ class GitHub {
                 this.steps.git(
                     url           : "https://${GITHUB_DOMAIN}/${repository}.git",
                     credentialsId : usernamePasswordCredential,
-                    branch        : args['branch']
+                    branch        : args['branch'],
+                    changelog     : false,
+                    poll          : false
                 )
             }
         } else {
             this.steps.git(
                 url           : "https://${GITHUB_DOMAIN}/${repository}.git",
                 credentialsId : usernamePasswordCredential,
-                branch        : args['branch']
+                branch        : args['branch'],
+                changelog     : false,
+                poll          : false
             )
         }
     }
