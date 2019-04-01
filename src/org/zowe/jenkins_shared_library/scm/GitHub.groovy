@@ -126,28 +126,28 @@ class GitHub {
             this.init(args)
         }
         // validate arguments
-        if (!repository) {
+        if (!this.repository) {
             throw new InvalidArgumentException('repository')
         }
-        if (!usernamePasswordCredential) {
+        if (!this.usernamePasswordCredential) {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
 
-        if (args['folder']) {
-            this.steps.dir(args['folder']) {
+        if (this.folder) {
+            this.steps.dir(this.folder) {
                 this.steps.git(
-                    url           : "https://${GITHUB_DOMAIN}/${repository}.git",
-                    credentialsId : usernamePasswordCredential,
-                    branch        : args['branch'],
+                    url           : "https://${GITHUB_DOMAIN}/${this.repository}.git",
+                    credentialsId : this.usernamePasswordCredential,
+                    branch        : this.branch,
                     changelog     : false,
                     poll          : false
                 )
             }
         } else {
             this.steps.git(
-                url           : "https://${GITHUB_DOMAIN}/${repository}.git",
-                credentialsId : usernamePasswordCredential,
-                branch        : args['branch'],
+                url           : "https://${GITHUB_DOMAIN}/${this.repository}.git",
+                credentialsId : this.usernamePasswordCredential,
+                branch        : this.branch,
                 changelog     : false,
                 poll          : false
             )
