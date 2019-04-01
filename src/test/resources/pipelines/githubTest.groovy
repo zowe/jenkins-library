@@ -47,11 +47,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             !fileExists("${CLONE_DIRECTORY}/Jenkinsfile")) {
             error 'Failed to clone repository, expected file doesn\'t exist'
         }
-        // should be shallow clone
-        def logsCount =github.command('git log --oneline | wc -l')
-        if (logsCount != '1') {
-            error 'There are more than one line of logs, not a shallow clone.'
-        }
 
         echo "[GITHUB_TEST] clone successfully"
     }
