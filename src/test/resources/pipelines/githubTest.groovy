@@ -10,6 +10,8 @@ def github
 
 // this repository will be used for testing
 def TEST_REPORSITORY = 'zowe/jenkins-library-fvt-nodejs'
+// branch to run test
+def TEST_BRANCH = 'master'
 
 // the folder name where the repository will be cloned to
 def CLONE_DIRECTORY = '.tmp-git'
@@ -25,6 +27,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         }
         github.init([
             'repository'                 : TEST_REPORSITORY,
+            'branch'                     : TEST_BRANCH,
+            'folder'                     : CLONE_DIRECTORY,
             'username'                   : env.GITHUB_USERNAME,
             'email'                      : env.GITHUB_EMAIL,
             'usernamePasswordCredential' : env.GITHUB_CREDENTIAL,
@@ -37,7 +41,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to clone the repository
      */
     stage('clone') {
-        github.cloneRepository(['folder': CLONE_DIRECTORY])
+        github.cloneRepository()
         echo ">>>>>>>>>> Full list of clone result: >>>>>>>>>>"
         sh "ls -la '${CLONE_DIRECTORY}'"
         // after clone to local, these files should exist
@@ -95,7 +99,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         def remotedTags = github.command("git ls-remote --tags").split("\n")
         def foundTag = false
         remotedTags.each{
-            if (it.contains('refs/tags/v0.91.1')) { foundTag = true }
+            if (it.contains("refs/tags/${tag}")) { foundTag = true }
         }
         if (!foundTag) {
             error 'Failed to create tag'
