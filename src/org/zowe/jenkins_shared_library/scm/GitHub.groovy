@@ -97,21 +97,21 @@ class GitHub {
             this.branch = DEFAULT_BRANCH
         }
 
+        if (args['folder']) {
+            this.folder = args['folder']
+        }
+
         if (args['username']) {
             this.username = args['username']
-            this.steps.sh "git config --global user.name \"${username}\""
         }
         if (args['email']) {
             this.email = args['email']
-            this.steps.sh "git config --global user.email \"${email}\""
         }
 
         if (args['usernamePasswordCredential']) {
             this.usernamePasswordCredential = args['usernamePasswordCredential']
 
-            // using https repository, indicate git push to check ~/.git-credentials
-            this.steps.sh 'git config credential.helper store'
-
+            // write ~/.git-credentials to provide credential for push
             this.steps.withCredentials([this.steps.usernamePassword(
                 credentialsId: this.usernamePasswordCredential,
                 passwordVariable: 'PASSWORD',
@@ -120,10 +120,6 @@ class GitHub {
                 // FIXME: encode username/passsword?
                 this.steps.sh "echo \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}\" > ~/.git-credentials"
             }
-        }
-
-        if (args['folder']) {
-            this.folder = args['folder']
         }
     }
 
@@ -167,7 +163,17 @@ class GitHub {
                 poll          : false
             )
         }
-    }
+
+        // git configs for the repository
+        if (this.username) {
+            this.command("git config user.name \"${this.username}\"")
+        }
+        if (this.email) {
+            this.command("git config user.email \"${this.email}\"")
+        }
+        // using https repository, indicate git push to check ~/.git-credentials
+        this.command('git config credential.helper store')
+}
 
     /**
      * Issue git command and get stdout return
