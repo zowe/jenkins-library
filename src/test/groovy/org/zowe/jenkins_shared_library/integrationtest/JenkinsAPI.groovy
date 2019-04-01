@@ -525,7 +525,7 @@ class JenkinsAPI {
      * @param  buildNumber  build number
      * @return              map of build information includes: number, result, timestamp, etc
      */
-    String getBuildInformation(List<String> name, Integer buildNumber) {
+    Map getBuildInformation(List<String> name, Integer buildNumber) {
         logger.finer("Checking build ${name}#${buildNumber} information ...")
 
         Map result = get(getJobUrl(name, "/${buildNumber}/api/json"))
@@ -544,7 +544,7 @@ class JenkinsAPI {
     String getBuildResult(List<String> name, Integer buildNumber) throws JenkinsAPIException {
         logger.finer("Checking build ${name}#${buildNumber} result ...")
 
-        def result = getBuildInformation(name, buildNumber)
+        Map result = getBuildInformation(name, buildNumber)
 
         if (result && result['result']) {
             logger.finer("Build ${name}#${buildNumber} result is ${result['result']}")
