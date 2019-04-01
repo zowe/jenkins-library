@@ -52,7 +52,7 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
         ])
 
         if (buildInformation && buildInformation['number']) {
-            buildLog = getBuildLog(fullTestJobName, buildInformation['number'])
+            buildLog = api.getBuildLog(fullTestJobName, buildInformation['number'])
         }
     }
 
