@@ -134,7 +134,11 @@ class GitHub {
      * @return             stdout log
      */
     String command(String command) {
-        return this.steps.sh(script: "cd '${this.folder}' && ${command}", returnStdout: true).trim()
+        if (this.folder) {
+            command = "cd '${this.folder}' && ${command}"
+        }
+
+        return this.steps.sh(script: command, returnStdout: true).trim()
     }
 
     /**
@@ -221,7 +225,7 @@ class GitHub {
             passwordVariable: 'PASSWORD',
             usernameVariable: 'USERNAME'
         )]) {
-            this.command("git push 'https://${USERNAME}:${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git'")
+            this.command("git push 'https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}/${repository}.git'")
         }
     }
 

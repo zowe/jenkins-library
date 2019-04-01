@@ -31,9 +31,10 @@ class GitHubTest extends IntegrationTest {
         _initTestJobName('github')
 
         // create test job
-        def envVars = """GITHUB_USERNAME='${System.getProperty('github.username')}'
-GITHUB_EMAIL='${System.getProperty('github.email')}'
-GITHUB_CREDENTIAL='${System.getProperty('github.credential')}'"""
+        def envVars = """GITHUB_USERNAME=${System.getProperty('github.username')}
+GITHUB_EMAIL=${System.getProperty('github.email')}
+GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
+"""
         def script = Utils.loadResource('/pipelines/githubTest.groovy')
         api.createJob(
             testJobName,
