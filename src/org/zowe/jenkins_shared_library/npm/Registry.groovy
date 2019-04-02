@@ -256,7 +256,12 @@ npm config set always-auth true
 
         // run npm version
         this.steps.dir(tempFolder) {
-            this.steps.sh "npm version ${version}"
+            def res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
+            if (res.contains('Git working directory not clean.')) {
+                throw new Exception('Working directory is not clean')
+            } else if (res !=~ /^v[0-9]+\.[0-9]+\.[0-9]+$/) {
+                throw new Exception("Bump version failed: ${res}")
+            }
         }
 
         // push version changes
