@@ -138,7 +138,7 @@ class Registry {
             if (pkg) {
                 if (pkg['name']) {
                     info['name'] = pkg['name']
-                    def matches = info['name'] =~ /^(@[^\/]+)\/(.+)$/
+                    def matches = info['name'] =~ /^@([^\/]+)\/(.+)$/
                     if (matches && matches[0]) {
                         info['scope'] = matches[0][1]
                         this.scope = info['scope']
