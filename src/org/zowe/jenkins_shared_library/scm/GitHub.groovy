@@ -279,7 +279,15 @@ class GitHub {
         }
 
         String status = this.command('git status --porcelain')
-        return status == ''
+        def res = status == ''
+
+        if (res) {
+            this.steps.echo "Working directory is clean."
+        } else {
+            this.steps.echo "Working directory is not clean:\n${status}"
+        }
+
+        return res
     }
 
     /**
@@ -299,7 +307,17 @@ class GitHub {
         String localHash = this.command("git rev-parse ${this.branch}")
         String remoteHash = this.command("git rev-parse ${remote}/${this.branch}")
 
-        return localHash == remoteHash
+        def res = localHash == remoteHash
+
+        if (res) {
+            this.steps.echo "Working directory is synced with remote."
+        } else {
+            this.steps.echo "Working directory is not synced with remote:\n" +
+                "local : ${localHash}\n" +
+                "remote: ${remoteHash}" +
+        }
+
+        return res
     }
 
     /**

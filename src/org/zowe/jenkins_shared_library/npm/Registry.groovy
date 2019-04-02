@@ -247,6 +247,8 @@ npm config set always-auth true
 
         // get temp folder for cloning
         def tempFolder = _getTempfolder()
+        def oldBranch = github.getBranch()
+        def oldFolder = github.getFolder()
 
         this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
         // clone to temp folder
@@ -276,5 +278,9 @@ npm config set always-auth true
         // remove temp folder
         this.steps.echo "Removing temporary folder ${tempFolder} ..."
         this.steps.sh "rm -fr ${tempFolder}"
+
+        // set values back
+        github.setBranch(oldBranch)
+        github.setFolder(oldFolder)
     }
 }
