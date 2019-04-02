@@ -314,7 +314,7 @@ class GitHub {
         } else {
             this.steps.echo "Working directory is not synced with remote:\n" +
                 "local : ${localHash}\n" +
-                "remote: ${remoteHash}" +
+                "remote: ${remoteHash}"
         }
 
         return res
