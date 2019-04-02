@@ -22,7 +22,7 @@ class Registry {
     /**
      * Constant of package.json file name
      */
-    public static final String PACKAGE_JSON = 'pacakge.json'
+    public static final String PACKAGE_JSON = 'package.json'
 
     /**
      * Reference to the groovy pipeline variable.

@@ -45,7 +45,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         echo ">>>>>>>>>> Full list of clone result: >>>>>>>>>>"
         sh "ls -la '${CLONE_DIRECTORY}'"
         // after clone to local, these files should exist
-        // - pacakge.json
+        // - package.json
         // - Jenkinsfile
         if (!fileExists("${CLONE_DIRECTORY}/package.json") ||
             !fileExists("${CLONE_DIRECTORY}/Jenkinsfile")) {
