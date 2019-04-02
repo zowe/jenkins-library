@@ -24,7 +24,7 @@ import static groovy.test.GroovyAssert.*
  *
  * - start with parameter pointing to the library branch to test
  */
-class RegistryTest extends IntegrationTest {
+class NpmRegistryTest extends IntegrationTest {
     @BeforeClass
     public static void setup() {
         def envVars = """GITHUB_USERNAME=${System.getProperty('github.username')}

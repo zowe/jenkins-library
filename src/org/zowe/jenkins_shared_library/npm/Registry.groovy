@@ -89,10 +89,12 @@ class Registry {
         }
         if (args['registry']) {
             this.registry = args['registry']
-        }
-        if (!this.registry) {
+        } else {
             // try to detect from package.json if not defined
-            this.registry = this.getRegistryFromPackageJson()
+            String registryInPackageJson = this.getRegistryFromPackageJson()
+            if (registryInPackageJson) {
+                this.registry = registryInPackageJson
+            }
         }
         if (args['scope']) {
             this.scope = args['scope']
@@ -114,7 +116,7 @@ class Registry {
     String getRegistryFromPackageJson(Map args = [:]) {
         String registry
 
-        if (this.packageJsonFile && fileExists(this.packageJsonFile)) {
+        if (this.packageJsonFile && this.steps.fileExists(this.packageJsonFile)) {
             def pkg = this.steps.readJSON(file: this.packageJsonFile)
             if (pkg && pkg['publishConfig'] && pkg['publishConfig']['registry']) {
                 registry = pkg['publishConfig']['registry']
@@ -131,7 +133,7 @@ class Registry {
     Map getPackageInfo() {
         Map info = [:]
 
-        if (this.packageJsonFile && fileExists(this.packageJsonFile)) {
+        if (this.packageJsonFile && this.steps.fileExists(this.packageJsonFile)) {
             def pkg = this.steps.readJSON(file: this.packageJsonFile)
             if (pkg) {
                 if (pkg['name']) {
@@ -139,6 +141,7 @@ class Registry {
                     def matches = info['name'] =~ /^(@[^\/]+)\/(.+)$/
                     if (matches && matches[0]) {
                         info['scope'] = matches[0][1]
+                        this.scope = info['scope']
                         info['name'] = matches[0][2]
                     }
                 }
