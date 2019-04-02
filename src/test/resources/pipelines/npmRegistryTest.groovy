@@ -107,9 +107,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             error "NPM version trunks are not correctly extracted from package.json."
         }
         newVersionChecked = info['versionTrunks']
-        if (newVersionChecked['major'] !== lastVersionChecked['major'] ||
-            newVersionChecked['minor'] !== lastVersionChecked['minor'] ||
-            newVersionChecked['patch'] !== lastVersionChecked['patch'] + 1) {
+        if (newVersionChecked['major'] != lastVersionChecked['major'] ||
+            newVersionChecked['minor'] != lastVersionChecked['minor'] ||
+            newVersionChecked['patch'] != lastVersionChecked['patch'] + 1) {
             error "Patch level versioning does not properly bumped from \"${lastVersionChecked}\" to \"${newVersionChecked}\"."
         }
 
