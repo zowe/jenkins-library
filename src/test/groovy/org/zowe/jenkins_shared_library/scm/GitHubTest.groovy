@@ -24,6 +24,7 @@ import static groovy.test.GroovyAssert.*
  *
  * - start with parameter pointing to the library branch to test
  */
+@Ignore
 class GitHubTest extends IntegrationTest {
     @BeforeClass
     public static void setup() {
