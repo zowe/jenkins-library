@@ -22,16 +22,27 @@ def EXPECTED_SCOPE = 'zowe'
 // expected registry
 def EXPECTED_REGISTRY = 'https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-local-release/'
 
-// the folder name where the repository will be cloned to
-def CLONE_DIRECTORY = '.tmp-git'
-
 node ('ibm-jenkins-slave-nvm-jnlp') {
     /**
      * Initialize npm registry and github object
      */
     stage('init') {
+
+        // init github
+        github = lib.scm.GitHub.new(this)
+        if (!github) {
+            error 'Failed to initialize GitHub instance.'
+        }
+        github.init([
+            'repository'                 : "${TEST_OWNER}/${TEST_REPORSITORY}",
+            'branch'                     : TEST_BRANCH,
+            'username'                   : env.GITHUB_USERNAME,
+            'email'                      : env.GITHUB_EMAIL,
+            'usernamePasswordCredential' : env.GITHUB_CREDENTIAL,
+        ])
+
         // checkout code
-        checkout scm
+        github.cloneRepository()
 
         // init npm registry
         npmRegistry = lib.npm.Registry.new(this)
@@ -41,20 +52,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         npmRegistry.init([
             'email'                      : env.NPM_EMAIL,
             'tokenCredential'            : env.NPM_CREDENTIAL,
-        ])
-
-        // init github
-        github = lib.scm.GitHub.new(this)
-        if (!github) {
-            error 'Failed to initialize GitHub instance.'
-        }
-        github.init([
-            'repository'                 : TEST_REPORSITORY,
-            'branch'                     : TEST_BRANCH,
-            'folder'                     : CLONE_DIRECTORY,
-            'username'                   : env.GITHUB_USERNAME,
-            'email'                      : env.GITHUB_EMAIL,
-            'usernamePasswordCredential' : env.GITHUB_CREDENTIAL,
         ])
 
         echo "[NPM_REGISTRY_TEST] init successfully"
