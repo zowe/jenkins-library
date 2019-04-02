@@ -26,42 +26,24 @@ import static groovy.test.GroovyAssert.*
  */
 class GitHubTest extends IntegrationTest {
     @BeforeClass
-    public static void initTestJob() {
-        super.initTestJob()
-
-        // init test job name
-        _initTestJobName('github')
-
-        // create test job
+    public static void setup() {
         def envVars = """GITHUB_USERNAME=${System.getProperty('github.username')}
 GITHUB_EMAIL=${System.getProperty('github.email')}
 GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
 """
-        def script = Utils.loadResource('/pipelines/githubTest.groovy')
-        api.createJob(
-            testJobName,
-            'pipeline.xml',
-            [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
-            [
-                'fvt-env-vars'     : Utils.escapeXml(envVars),
-                'fvt-script'       : Utils.escapeXml(script),
-            ]
-        )
 
-        buildInformation = api.startJobAndGetBuildInformation(fullTestJobName, [
-            'LIBRARY_BRANCH': System.getProperty('library.branch')
+        initPipelineJob([
+            'name'      : 'github',
+            'pipeline'  : 'githubTest',
+            'env-vars'  : envVars,
         ])
-
-        if (buildInformation && buildInformation['number']) {
-            buildLog = api.getBuildLog(fullTestJobName, buildInformation['number'])
-        }
     }
 
     @AfterClass
-    public static void deleteTestJob() {
+    public static void teardown() {
         // delete the test job if exists
-        if (api && testJobName) {
-            // api.deleteJob(fullTestJobName)
+        if (jenkins && testJobName) {
+            // jenkins.deleteJob(fullTestJobName)
         }
     }
 

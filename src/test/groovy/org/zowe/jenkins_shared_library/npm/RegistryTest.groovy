@@ -10,36 +10,35 @@
 
 import java.util.logging.Logger
 import org.junit.*
+import static org.hamcrest.CoreMatchers.*;
+import org.hamcrest.collection.IsMapContaining
 import org.zowe.jenkins_shared_library.integrationtest.*
 import static groovy.test.GroovyAssert.*
 
 /**
- * Test {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline}
+ * Test {@link org.zowe.jenkins_shared_library.npm.Registry}
  *
  * The test case will create a test Jenkins job and attach the current library to it.
  *
  * Then will run several validations on the job:
  *
- * - start with default parameter and the job should success
- * - test a PATCH release
+ * - start with parameter pointing to the library branch to test
  */
 @Ignore
-class NodeJsPipelineIntegerationTest extends IntegrationTest {
-    // this github owner will be used for testing
-    static final String TEST_OWNER = 'zowe'
-    // this github repository will be used for testing
-    static final String TEST_REPORSITORY = 'jenkins-library-fvt-nodejs'
-    // branch to run test
-    static final String TEST_BRANCH = 'master'
-
+class RegistryTest extends IntegrationTest {
     @BeforeClass
     public static void setup() {
-        initMultiBranchPipelineJob([
-            'name'           : 'nodejs-multibranch',
-            'git-credential' : System.getProperty('github.credential'),
-            'git-owner'      : TEST_OWNER,
-            'git-repository' : TEST_REPORSITORY,
-            'branch'         : TEST_BRANCH,
+        def envVars = """GITHUB_USERNAME=${System.getProperty('github.username')}
+GITHUB_EMAIL=${System.getProperty('github.email')}
+GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
+NPM_EMAIL=${System.getProperty('npm.email')}
+NPM_CREDENTIAL=${System.getProperty('npm.credential')}
+"""
+
+        initPipelineJob([
+            'name'      : 'npm-registry',
+            'pipeline'  : 'npmRegistryTest',
+            'env-vars'  : envVars,
         ])
     }
 
@@ -57,5 +56,15 @@ class NodeJsPipelineIntegerationTest extends IntegrationTest {
         assertThat('Build result', buildInformation, IsMapContaining.hasKey('result'));
         assertThat('Build result', buildInformation['result'], equalTo('SUCCESS'));
         assertThat('Build console log', buildLog, not(equalTo('')))
+    }
+
+    @Test
+    void testInit() {
+        assertThat('Build console log', buildLog, containsString('[NPM_REGISTRY_TEST] init successfully'))
+    }
+
+    @Test
+    void testCheckPackageInformation() {
+        assertThat('Build console log', buildLog, containsString('[NPM_REGISTRY_TEST] check-info successfully'))
     }
 }

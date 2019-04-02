@@ -35,6 +35,11 @@ class Registry {
     String registry = 'https://registry.npmjs.org/'
 
     /**
+     * npm package scope
+     */
+    String scope
+
+    /**
      * Jenkins credential ID for NPM token
      *
      * The content of token could be base64 encoded "username:password"
@@ -47,9 +52,9 @@ class Registry {
     String email
 
     /**
-     * GitHub instance
+     * package.json file name, default is PACKAGE_JSON
      */
-    GitHub github
+    String packageJsonFile
 
     /**
      * Constructs the class.
@@ -73,45 +78,93 @@ class Registry {
      * @param   registry         the registry URL
      * @param   tokenCredential  Jenkins credential ID for NPM token
      * @param   email            NPM user email
+     * @param   packageJsonFile  package.json file name
      */
     void init(Map args = [:]) {
-        if (args['registry']) {
-            registry = args['registry']
+        if (args['packageJsonFile']) {
+            this.packageJsonFile = args['packageJsonFile']
         }
-        if (!registry) {
+        if (!this.packageJsonFile) {
+            this.packageJsonFile = PACKAGE_JSON
+        }
+        if (args['registry']) {
+            this.registry = args['registry']
+        }
+        if (!this.registry) {
             // try to detect from package.json if not defined
-            registry = this.detect()
+            this.registry = this.getRegistryFromPackageJson()
+        }
+        if (args['scope']) {
+            this.scope = args['scope']
         }
         if (args['email']) {
-            email = args['email']
+            this.email = args['email']
         }
         if (args['tokenCredential']) {
-            tokenCredential = args['tokenCredential']
-        }
-        if (args['github']) {
-            github = args['github']
+            this.tokenCredential = args['tokenCredential']
         }
     }
 
     /**
-    * Detect npm registry from package.json
-    *
-    * @param  file     file name of package.json.
-    * @return          the registry url if found
-    */
-    String detect(Map args = [:]) {
+     * Detect npm registry from package.json
+     *
+     * @param  packageJsonFile    file name of package.json.
+     * @return                    the registry url if found
+     */
+    String getRegistryFromPackageJson(Map args = [:]) {
         String registry
 
-        def file = args['file'] ? args['file'] : PACKAGE_JSON
-
-        if (fileExists(file)) {
-            def pkg = this.steps.readJSON(file: file)
+        if (this.packageJsonFile && fileExists(this.packageJsonFile)) {
+            def pkg = this.steps.readJSON(file: this.packageJsonFile)
             if (pkg && pkg['publishConfig'] && pkg['publishConfig']['registry']) {
                 registry = pkg['publishConfig']['registry']
             }
         }
 
         return registry
+    }
+
+    /**
+     * Get current package information from package.json
+     * @return             current package information including name, version, description, license, etc
+     */
+    Map getPackageInfo() {
+        Map info = [:]
+
+        if (this.packageJsonFile && fileExists(this.packageJsonFile)) {
+            def pkg = this.steps.readJSON(file: this.packageJsonFile)
+            if (pkg) {
+                if (pkg['name']) {
+                    info['name'] = pkg['name']
+                    def matches = info['name'] =~ /^(@[^\/]+)\/(.+)$/
+                    if (matches && matches[0]) {
+                        info['scope'] = matches[0][1]
+                        info['name'] = matches[0][2]
+                    }
+                }
+                if (pkg['description']) {
+                    info['description'] = pkg['description']
+                }
+                if (pkg['version']) {
+                    info['version'] = pkg['version']
+                    def matches = info['version'] =~ /^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$/
+                    if (matches && matches[0]) {
+                        info['versions'] = [:]
+                        info['versions']['major'] = matches[0][1]
+                        info['versions']['minor'] = matches[0][2]
+                        info['versions']['patch'] = matches[0][3]
+                        info['versions']['metadata'] = matches[0][4]
+                    } else {
+                        this.steps.echo "WARNING: version \"${info['version']}\" is not a semantic version."
+                    }
+                }
+                if (pkg['license']) {
+                    info['license'] = pkg['license']
+                }
+            }
+        }
+
+        return info
     }
 
     /**
@@ -123,8 +176,6 @@ class Registry {
      * @return                   username who login
      */
     String login(Map args = [:]) throws InvalidArgumentException {
-        def steps = this.steps
-
         // init with arguments
         if (args.size() > 0) {
             this.init(args)
@@ -140,25 +191,25 @@ class Registry {
             throw new InvalidArgumentException('token')
         }
 
-        steps.echo "login to npm registry: ${registry}"
+        this.steps.echo "login to npm registry: ${registry}"
 
         // create if it's not existed
         // backup current .npmrc
-        steps.sh "touch ${NPMRC_FILE} && mv ${NPMRC_FILE} ${NPMRC_FILE}-bak"
+        this.steps.sh "touch ${NPMRC_FILE} && mv ${NPMRC_FILE} ${NPMRC_FILE}-bak"
 
         // update auth in .npmrc
-        steps.withCredentials([string(credentialsId: tokenCredential, variable: 'TOKEN')]) {
-            steps.sh """
-npm config set registry ${registry}
-npm config set _auth ${TOKEN}
-npm config set email ${email}
+        this.steps.withCredentials([string(credentialsId: tokenCredential, variable: 'TOKEN')]) {
+            this.steps.sh """
+npm config set registry ${this.registry}
+npm config set _auth \${TOKEN}
+npm config set email ${this.email}
 npm config set always-auth true
 """
         }
 
         // get login information
-        def whoami = steps.sh(script: "npm whoami", returnStdout: true).trim()
-        steps.echo "npm user: ${whoami}"
+        def whoami = this.steps.sh(script: "npm whoami", returnStdout: true).trim()
+        this.steps.echo "npm user: ${whoami}"
 
         return whoami
     }
@@ -169,7 +220,14 @@ npm config set always-auth true
         return ".tmp-npm-registry-${ts}"
     }
 
-    void version(String branch, String version = 'PATCH') throws InvalidArgumentException {
+    /**
+     * Declare a new version of npm package
+     *
+     * @param github         GitHub instance must have been initialized with repository, credential, etc
+     * @param branch         which branch to release
+     * @param version        what kind of version bump we should make
+     */
+    void version(GitHub github, String branch, String version = 'PATCH') throws InvalidArgumentException {
         // validate arguments
         if (!github) {
             throw new InvalidArgumentException('github')
@@ -177,30 +235,28 @@ npm config set always-auth true
         if (!branch) {
             throw new InvalidArgumentException('branch')
         }
+
+        // get temp folder for cloning
         def tempFolder = _getTempfolder()
 
-        github.clone([
-            'branch'      : branch,
-            'shallow'     : true,
-            'targetFolder': tempFolder
+        // clone to temp folder
+        github.cloneRepository([
+            'branch'   : branch,
+            'folder'   : tempFolder
         ])
 
-        github.push()
-
-        withCredentials([usernamePassword(
-            credentialsId: crendential,
-            passwordVariable: 'GIT_PASSWORD',
-            usernameVariable: 'GIT_USERNAME'
-        )]) {
-        // checkout repository, bump version and push back
-        sh """
-git clone --depth 1 https://github.com/${repository}.git -b "${branch}" "${tempFolder}"
-cd ${tempFolder}
-npm version ${version}
-git push 'https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repository}.git'
-cd ..
-rm -fr ${tempFolder}
-"""
+        // run npm version
+        this.steps.dir(tempFolder) {
+            this.steps.sh "npm version ${version}"
         }
+
+        // push version changes
+        github.push()
+        if (!github.isSynced()) {
+            throw new Exception('Branch is not synced with remote after npm version.')
+        }
+
+        // remove temp folder
+        this.steps.sh "rm -fr ${tempFolder}"
     }
 }
