@@ -153,9 +153,9 @@ class Registry {
                     def matches = info['version'] =~ /^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$/
                     if (matches && matches[0]) {
                         info['versionTrunks'] = [:]
-                        info['versionTrunks']['major'] = matches[0][1]
-                        info['versionTrunks']['minor'] = matches[0][2]
-                        info['versionTrunks']['patch'] = matches[0][3]
+                        info['versionTrunks']['major'] = matches[0][1].toInteger()
+                        info['versionTrunks']['minor'] = matches[0][2].toInteger()
+                        info['versionTrunks']['patch'] = matches[0][3].toInteger()
                         info['versionTrunks']['metadata'] = matches[0][4]
                     } else {
                         this.steps.echo "WARNING: version \"${info['version']}\" is not a semantic version."
