@@ -30,6 +30,7 @@ class NpmRegistryTest extends IntegrationTest {
         def envVars = """GITHUB_USERNAME=${System.getProperty('github.username')}
 GITHUB_EMAIL=${System.getProperty('github.email')}
 GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
+NPM_USERNAME=${System.getProperty('npm.username')}
 NPM_EMAIL=${System.getProperty('npm.email')}
 NPM_CREDENTIAL=${System.getProperty('npm.credential')}
 """
@@ -67,5 +68,15 @@ NPM_CREDENTIAL=${System.getProperty('npm.credential')}
     @Test
     void testCheckPackageInformation() {
         assertThat('Build console log', buildLog, containsString('[NPM_REGISTRY_TEST] check-info successfully'))
+    }
+
+    @Test
+    void testLogin() {
+        assertThat('Build console log', buildLog, containsString('[NPM_REGISTRY_TEST] login successfully'))
+    }
+
+    @Test
+    void testPatch() {
+        assertThat('Build console log', buildLog, containsString('[NPM_REGISTRY_TEST] patch successfully'))
     }
 }

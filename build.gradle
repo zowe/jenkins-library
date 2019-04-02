@@ -91,6 +91,7 @@ test {
         'github.username',
         'github.email',
         'github.credential',
+        'npm.username',
         'npm.email',
         'npm.credential',
     ]) {

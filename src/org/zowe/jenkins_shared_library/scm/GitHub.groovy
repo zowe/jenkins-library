@@ -30,6 +30,11 @@ class GitHub {
     public static final String DEFAULT_BRANCH = 'master'
 
     /**
+     * Default remote name
+     */
+    public static final String DEFAULT_REMOTE = 'origin'
+
+    /**
      * github user name
      */
     String username
@@ -287,7 +292,7 @@ class GitHub {
             this.init(args)
         }
 
-        String remote = args['remote'] ? args['remote'] : 'origin'
+        String remote = args['remote'] ? args['remote'] : DEFAULT_REMOTE
         // update remote
         this.command("git fetch ${remote}")
         // get last hash
@@ -297,6 +302,20 @@ class GitHub {
         return localHash == remoteHash
     }
 
+    /**
+     * Reset current branch to origin
+     *
+     * Use similar parameters like init() method and with these extra:
+     */
+    void reset(Map args = [:]) {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        String remote = args['remote'] ? args['remote'] : DEFAULT_REMOTE
+        this.command("git fetch \"${remote}\" && git reset --hard ${remote}/${this.branch}")
+    }
 
     /**
      * Tag the branch.

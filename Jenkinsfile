@@ -17,6 +17,7 @@ def JENKINS_CREDENTIAL = 'jenkins-credential'
 def GITHUB_USERNAME = 'Zowe Robot'
 def GITHUB_EMAIL = 'zowe.robot@gmail.com'
 def GITHUB_CREDENTIAL = 'zowe-robot-github'
+def NPM_USERNAME = 'giza-jenkins'
 def NPM_EMAIL = 'giza-jenkins@gmail.com'
 def NPM_CREDENTIAL= 'giza-jenkins-basicAuth'
 
@@ -67,6 +68,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
   -Pgithub.username='${GITHUB_USERNAME}' \
   -Pgithub.email='${GITHUB_EMAIL}' \
   -Pgithub.credential='${GITHUB_CREDENTIAL}' \
+  -Pnpm.username='${NPM_USERNAME}' \
   -Pnpm.email='${NPM_EMAIL}' \
   -Pnpm.credential='${NPM_CREDENTIAL}'
 """
