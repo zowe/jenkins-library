@@ -30,6 +30,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Initialize npm registry and github object
      */
     stage('init') {
+        // checkout code
+        checkout scm
+
         // init npm registry
         npmRegistry = lib.npm.Registry.new(this)
         if (!npmRegistry) {
