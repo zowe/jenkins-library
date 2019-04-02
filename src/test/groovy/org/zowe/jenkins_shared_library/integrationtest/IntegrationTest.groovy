@@ -88,7 +88,7 @@ class IntegrationTest {
      *
      * @param  name          prefix of the job name
      * @param  pipeline      pipeline template name to create the job
-     * @param  env           environment variables for the pipeline. optional.
+     * @param  env-var       environment variables for the pipeline. optional.
      */
     public static void initPipelineJob(Map args = [:]) throws InvalidArgumentException {
         // validate arguments
@@ -106,14 +106,14 @@ class IntegrationTest {
         _initTestJobName(args['name'])
 
         // create test job
-        def envs = args.containsKey('env') ? args['env'] : ''
+        def envVars = args.containsKey('env-vars') ? args['env-vars'] : ''
         def script = Utils.loadResource("/pipelines/${args['pipeline']}.groovy")
         jenkins.createJob(
             this.testJobName,
             'pipeline.xml',
             [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
             [
-                'fvt-env-vars'     : Utils.escapeXml(envs),
+                'fvt-env-vars'     : Utils.escapeXml(envVars),
                 'fvt-script'       : Utils.escapeXml(script),
             ]
         )
