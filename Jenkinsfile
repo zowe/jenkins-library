@@ -92,6 +92,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('render-doc') {
-        sh './gradlew groovydoc'
+        sh 'ls -la'
+        sh 'git status'
+        sh './gradlew groovydoc --debug'
     }
 }
