@@ -248,6 +248,7 @@ npm config set always-auth true
         // get temp folder for cloning
         def tempFolder = _getTempfolder()
 
+        this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
         // clone to temp folder
         github.cloneRepository([
             'branch'   : branch,
@@ -255,22 +256,25 @@ npm config set always-auth true
         ])
 
         // run npm version
+        this.steps.echo "Making a \"${version}\" version bump ..."
         this.steps.dir(tempFolder) {
             def res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
             if (res.contains('Git working directory not clean.')) {
                 throw new Exception('Working directory is not clean')
-            } else if (res !=~ /^v[0-9]+\.[0-9]+\.[0-9]+$/) {
+            } else if (!(res ==~ /^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
                 throw new Exception("Bump version failed: ${res}")
             }
         }
 
         // push version changes
+        this.steps.echo "Pushing ${branch} to remote ..."
         github.push()
         if (!github.isSynced()) {
             throw new Exception('Branch is not synced with remote after npm version.')
         }
 
         // remove temp folder
+        this.steps.echo "Removing temporary folder ${tempFolder} ..."
         this.steps.sh "rm -fr ${tempFolder}"
     }
 }
