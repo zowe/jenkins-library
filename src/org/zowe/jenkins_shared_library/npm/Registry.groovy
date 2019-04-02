@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.npm
 
+import java.time.Instant
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
 
