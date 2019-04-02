@@ -201,7 +201,12 @@ class Registry {
         this.steps.sh "touch ${NPMRC_FILE} && mv ${NPMRC_FILE} ${NPMRC_FILE}-bak"
 
         // update auth in .npmrc
-        this.steps.withCredentials([string(credentialsId: tokenCredential, variable: 'TOKEN')]) {
+        this.steps.withCredentials([
+            this.steps.string(
+                credentialsId: tokenCredential,
+                variable: 'TOKEN'
+            )
+        ]) {
             this.steps.sh """
 npm config set registry ${this.registry}
 npm config set _auth \${TOKEN}
