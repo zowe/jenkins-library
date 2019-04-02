@@ -46,8 +46,10 @@ class NodeJsPipelineIntegerationTest extends IntegrationTest {
     @AfterClass
     public static void teardown() {
         // delete the test job if exists
-        if (jenkins && testJobName) {
-            // jenkins.deleteJob(fullTestJobName)
+        if (jenkins && testJobName &&
+            buildInformation && buildInformation.containsKey('result') &&
+            buildInformation['result'] == 'SUCCESS') {
+            jenkins.deleteJob(fullTestJobName)
         }
     }
 
