@@ -13,6 +13,7 @@ package org.zowe.jenkins_shared_library.integrationtest
 import java.util.logging.Logger
 import org.junit.*
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
+import org.zowe.jenkins_shared_library.Utils
 import static groovy.test.GroovyAssert.*
 
 /**
@@ -107,7 +108,7 @@ class IntegrationTest {
 
         // create test job
         def envVars = args.containsKey('env-vars') ? args['env-vars'] : ''
-        def script = Utils.loadResource("/pipelines/${args['pipeline']}.groovy")
+        def script = Utils.loadResource("src/test/resources/pipelines/${args['pipeline']}.groovy")
         jenkins.createJob(
             this.testJobName,
             'pipeline.xml',

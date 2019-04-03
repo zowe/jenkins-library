@@ -18,6 +18,7 @@ import java.util.logging.Logger
 import org.awaitility.Awaitility
 import org.awaitility.Duration
 import static org.hamcrest.Matchers.*
+import org.zowe.jenkins_shared_library.Utils
 
 /**
  * Class to handle API request/response with Jenkins server
@@ -126,7 +127,7 @@ class JenkinsAPI {
      * @return              template content
      */
     static String loadJobTemplate(String template) throws IOException {
-        return Utils.loadResource("/jobTemplates/${template}")
+        return Utils.loadResource("src/test/resources/jobTemplates/${template}")
     }
 
     /**

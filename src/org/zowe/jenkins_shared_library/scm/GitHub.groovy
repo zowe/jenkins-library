@@ -10,10 +10,17 @@
 
 package org.zowe.jenkins_shared_library.scm
 
+import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
+import org.zowe.jenkins_shared_library.Utils
 
 class GitHub {
+    /**
+     * logger object to write logs
+     */
+    Logger logger
+
     /**
      * Reference to the groovy pipeline variable.
      */
@@ -80,6 +87,10 @@ class GitHub {
      * @param steps    The workflow steps object provided by the Jenkins pipeline
      */
     GitHub(steps) {
+        // init logger
+        logger = Utils.getLogger(Class.getSimpleName())
+
+        // init jenkins instance property
         this.steps = steps
     }
 
@@ -282,9 +293,9 @@ class GitHub {
         def res = status == ''
 
         if (res) {
-            this.steps.echo "Working directory is clean."
+            this.logger.fine("Working directory is clean.")
         } else {
-            this.steps.echo "Working directory is not clean:\n${status}"
+            this.logger.fine("Working directory is not clean:\n${status}")
         }
 
         return res
@@ -310,11 +321,11 @@ class GitHub {
         def res = localHash == remoteHash
 
         if (res) {
-            this.steps.echo "Working directory is synced with remote."
+            this.logger.fine("Working directory is synced with remote.")
         } else {
-            this.steps.echo "Working directory is not synced with remote:\n" +
+            this.logger.fine("Working directory is not synced with remote:\n" +
                 "local : ${localHash}\n" +
-                "remote: ${remoteHash}"
+                "remote: ${remoteHash}")
         }
 
         return res

@@ -8,11 +8,13 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library.integrationtest
+package org.zowe.jenkins_shared_library
+
+import java.util.logging.Level
 
 class Constants {
     /**
-     * The folder name which we hold all integration test jobs into
+     * Default logging level
      */
-    static final String INTEGRATION_TEST_JENKINS_FOLDER = 'jenkins-library-integration-tests'
+    static Level DEFAULT_LOGGING_LEVEL = Level.INFO;
 }

@@ -11,10 +11,17 @@
 package org.zowe.jenkins_shared_library.npm
 
 import java.time.Instant
+import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
+import org.zowe.jenkins_shared_library.Utils
 
 class Registry {
+    /**
+     * logger object to write logs
+     */
+    Logger logger
+
     /**
      * Constant of .npmrc file name
      */
@@ -71,6 +78,10 @@ class Registry {
      * @param steps    The workflow steps object provided by the Jenkins pipeline
      */
     Registry(steps) {
+        // init logger
+        logger = Utils.getLogger(Class.getSimpleName())
+
+        // init jenkins instance property
         this.steps = steps
     }
 
@@ -159,7 +170,7 @@ class Registry {
                         info['versionTrunks']['patch'] = matches[0][3].toInteger()
                         info['versionTrunks']['metadata'] = matches[0][4]
                     } else {
-                        this.steps.echo "WARNING: version \"${info['version']}\" is not a semantic version."
+                        this.logger.warn("Version \"${info['version']}\" is not a semantic version.")
                     }
                 }
                 if (pkg['license']) {
@@ -195,7 +206,7 @@ class Registry {
             throw new InvalidArgumentException('token')
         }
 
-        this.steps.echo "login to npm registry: ${registry}"
+        this.logger.info("login to npm registry: ${registry}")
 
         // create if it's not existed
         // backup current .npmrc
@@ -218,15 +229,9 @@ npm config set always-auth true
 
         // get login information
         def whoami = this.steps.sh(script: "npm whoami", returnStdout: true).trim()
-        this.steps.echo "npm user: ${whoami}"
+        this.logger.info("npm user: ${whoami}")
 
         return whoami
-    }
-
-    String _getTempfolder() {
-        String ts = Instant.now().toString().replaceAll(/[^0-9]/, '')
-
-        return ".tmp-npm-registry-${ts}"
     }
 
     /**
@@ -246,11 +251,11 @@ npm config set always-auth true
         }
 
         // get temp folder for cloning
-        def tempFolder = _getTempfolder()
+        def tempFolder = ".tmp-npm-registry-${Utils.getTimestamp()}"
         def oldBranch = github.getBranch()
         def oldFolder = github.getFolder()
 
-        this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
+        this.logger.fine("Cloning ${branch} into ${tempFolder} ...")
         // clone to temp folder
         github.cloneRepository([
             'branch'   : branch,
@@ -258,7 +263,7 @@ npm config set always-auth true
         ])
 
         // run npm version
-        this.steps.echo "Making a \"${version}\" version bump ..."
+        this.logger.fine("Making a \"${version}\" version bump ...")
         this.steps.dir(tempFolder) {
             def res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
             if (res.contains('Git working directory not clean.')) {
@@ -269,14 +274,14 @@ npm config set always-auth true
         }
 
         // push version changes
-        this.steps.echo "Pushing ${branch} to remote ..."
+        this.logger.fine("Pushing ${branch} to remote ...")
         github.push()
         if (!github.isSynced()) {
             throw new Exception('Branch is not synced with remote after npm version.')
         }
 
         // remove temp folder
-        this.steps.echo "Removing temporary folder ${tempFolder} ..."
+        this.logger.fine("Removing temporary folder ${tempFolder} ...")
         this.steps.sh "rm -fr ${tempFolder}"
 
         // set values back

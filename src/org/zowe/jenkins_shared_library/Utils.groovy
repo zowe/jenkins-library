@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library.integrationtest
+package org.zowe.jenkins_shared_library
 
 import java.net.URLEncoder
 import java.time.Instant
@@ -31,7 +31,7 @@ class Utils {
      * @throws IOException if failed to read the file
      */
     static String loadResource(String path) throws IOException {
-        return new File("src/test/resources${path}").getText('UTF-8');
+        return new File(path).getText('UTF-8');
     }
 
     /**
