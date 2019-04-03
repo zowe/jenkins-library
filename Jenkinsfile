@@ -57,7 +57,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             }
           }
         }
-        if (hasCommitShouldNotBeSkipped) {
+        if (!hasCommitShouldNotBeSkipped) {
           // CI_SKIP spotted in all change logs
           currentBuild.result = 'NOT_BUILT'
           error("Skip build due to all change logs are marked as ${CI_SKIP}")
