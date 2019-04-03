@@ -17,7 +17,7 @@ abstract class ArtifactBase {
     /**
      * logger object to write logs
      */
-    Logger logger
+    transient Logger logger
 
     /**
      * Reference to the groovy pipeline variable.

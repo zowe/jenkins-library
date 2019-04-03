@@ -20,7 +20,7 @@ class Registry {
     /**
      * logger object to write logs
      */
-    Logger logger
+    transient Logger logger
 
     /**
      * Constant of .npmrc file name

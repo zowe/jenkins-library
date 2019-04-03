@@ -54,7 +54,7 @@ class JenkinsAPI {
     /**
      * logger object to write logs
      */
-    Logger logger
+    transient Logger logger
 
     /**
      * Construct
