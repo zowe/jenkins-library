@@ -92,6 +92,24 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('render-doc') {
+        // generate doc
         sh './gradlew groovydoc'
+        // check if there are changes on docs
+        def docsUpdated = sh(script: "git status --porcelain | grep docs", returnStdout: true).trim()
+        if (docsUpdated) {
+          // commit changes
+          sh 'git add docs'
+          sh "git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\""
+          // push changes
+          withCredentials([
+            usernamePassword(
+              credentialsId    : GITHUB_CREDENTIAL,
+              passwordVariable : 'PASSWORD',
+              usernameVariable : 'USERNAME'
+            )
+          ]) {
+            sh "git push https://${USERNAME}:${PASSWORD}@github.com/zowe/jenkins-library"
+          }
+        }
     }
 }

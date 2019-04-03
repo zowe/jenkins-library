@@ -122,8 +122,8 @@ test {
     }
 }
 
-// groovydoc {
-//     // destinationDir     "docs/groovydoc"
-//     // source   sourceSets.main.groovy
-//     includes ["org.zowe.*"]
-// }
+groovydoc {
+    source             sourceSets.main.groovy
+    includes           ["org.zowe.*"]
+    destinationDir     file("docs")
+}
