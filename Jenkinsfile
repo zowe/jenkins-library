@@ -49,9 +49,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
         // check if we should skip the build
         currentBuild.changeSets.each{ changeSet ->
-          echo "Changeset: $changeSet"
-          changeSet.each{ commit ->
-            echo "commit: ${commit}"
+          echo "Changeset: ${changeSet} - ${changeSet.getKind()}"
+          changeSet.each{ entry ->
+            echo "entry: ${entry.getMsg()}"
           }
         }
         // def lastCommit = sh(script: "git show --format=\"%s :: %b\" -s HEAD", returnStdout: true).trim()
