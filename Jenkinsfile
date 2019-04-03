@@ -21,6 +21,9 @@ def NPM_USERNAME = 'giza-jenkins'
 def NPM_EMAIL = 'giza-jenkins@gmail.com'
 def NPM_CREDENTIAL= 'giza-jenkins-basicAuth'
 
+// other constants
+def CI_SKIP = '[ci skip]'
+
 def opts = []
 // keep last 20 builds for regular branches, no keep for pull requests
 opts.push(buildDiscarder(logRotator(numToKeepStr: (isPullRequest ? '' : '20'))))
@@ -43,6 +46,19 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {
         // checkout source code
         checkout scm
+
+        // check if we should skip the build
+        currentBuild.changeSets.each{
+          echo "$it"
+        }
+        // def lastCommit = sh(script: "git show --format=\"%s :: %b\" -s HEAD", returnStdout: true).trim()
+        // if (lastCommit.contains(CI_SKIP)) {
+        //   // CI_SKIP spotted in the git commit
+        //   currentBuild.result = 'NOT_BUILT'
+        //   error("Skipped due to last commit marked as ${CI_SKIP}")
+        // }
+
+        echo "aborting..."
 
         // check if it's pull request
         echo "Current branch is ${env.BRANCH_NAME}"
@@ -102,7 +118,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
           sh """git config --global user.email "${GITHUB_EMAIL}"
 git config --global user.name "${GITHUB_USERNAME}"
 git add docs
-git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
+git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER} ${CI_SKIP}\"
 """
           // push changes
           withCredentials([
@@ -112,7 +128,8 @@ git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
               usernameVariable : 'USERNAME'
             )
           ]) {
-            sh "git push https://${USERNAME}:${PASSWORD}@github.com/zowe/jenkins-library"
+            sh "git push https://${USERNAME}:${PASSWORD}@github.com/zowe/jenkins-library HEAD:${env.BRANCH_NAME}"
+            echo "Documentation updated."
           }
         }
     }
