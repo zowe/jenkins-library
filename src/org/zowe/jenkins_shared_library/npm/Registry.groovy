@@ -20,7 +20,7 @@ class Registry {
     /**
      * logger object to write logs
      */
-    transient Logger logger
+    private static final Logger logger = Utils.getLogger(Class.getSimpleName())
 
     /**
      * Constant of .npmrc file name
@@ -78,9 +78,6 @@ class Registry {
      * @param steps    The workflow steps object provided by the Jenkins pipeline
      */
     Registry(steps) {
-        // init logger
-        logger = Utils.getLogger(Class.getSimpleName())
-
         // init jenkins instance property
         this.steps = steps
     }

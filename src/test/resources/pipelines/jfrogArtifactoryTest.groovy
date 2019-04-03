@@ -6,19 +6,19 @@ echo "Jenkins library branch ${params.LIBRARY_BRANCH} will be used to build."
 def lib = library("jenkins-library@${params.LIBRARY_BRANCH}").org.zowe.jenkins_shared_library
 
 // global var for JFrogArtifactory object
-def artifactory
+def jfrog
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     /**
-     * Initialize npm registry and github object
+     * Initialize JFrogArtifactory object
      */
     stage('init') {
         // init artifactory
-        artifactory = lib.scm.GitHub.new(this)
-        if (!artifactory) {
+        jfrog = lib.artifact.JFrogArtifactory.new(this)
+        if (!jfrog) {
             error 'Failed to initialize GitHub instance.'
         }
-        artifactory.init([
+        jfrog.init([
             'url'                        : env.ARTIFACTORY_URL,
             'usernamePasswordCredential' : env.ARTIFACTORY_CREDENTIAL,
         ])
@@ -30,19 +30,24 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to get artifact information
      */
     stage('getArtifact') {
-        String pattern = 'libs-release-local/org/zowe/1.0.0/zowe-1.0.0.pax'
-        String expectedBuildName = 'zowe-promote-publish :: master'
+        String pattern             = 'libs-release-local/org/zowe/1.0.0/zowe-1.0.0.pax'
+        String expectedBuildName   = 'zowe-promote-publish :: master'
         String expectedBuildNumber = '50'
 
+        // get artifact
         Map artifact = artifactory.getArtifact(pattern)
+
+        // validate resolved artifact path
         if (!artifact || !artifact['path']) {
             error "Failed to find \"${pattern}\""
         }
 
+        // validate build name
         if (!artifact || !artifact['build.name'] || artifact['build.name'] != expectedBuildName) {
             error "Artifact build name \"${artifact['build.name']}\" is not expected as \"${expectedBuildName}\"."
         }
 
+        // validate build number
         if (!artifact || !artifact['build.number'] || artifact['build.number'] != expectedBuildNumber) {
             error "Artifact build number \"${artifact['build.number']}\" is not expected as \"${expectedBuildNumber}\"."
         }

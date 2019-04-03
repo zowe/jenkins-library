@@ -19,7 +19,7 @@ class GitHub {
     /**
      * logger object to write logs
      */
-    transient Logger logger
+    private static final Logger logger = Utils.getLogger(Class.getSimpleName())
 
     /**
      * Reference to the groovy pipeline variable.
@@ -87,10 +87,6 @@ class GitHub {
      * @param steps    The workflow steps object provided by the Jenkins pipeline
      */
     GitHub(steps) {
-        // init logger
-        logger = Utils.getLogger(Class.getSimpleName())
-
-        // init jenkins instance property
         this.steps = steps
     }
 
