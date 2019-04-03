@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library.artifact
 
 import com.cloudbees.groovy.cps.NonCPS
+import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 
