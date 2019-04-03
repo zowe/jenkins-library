@@ -17,7 +17,7 @@ abstract class ArtifactBase {
     /**
      * logger object to write logs
      */
-    transient Logger logger
+    protected static transient Logger logger
 
     /**
      * Reference to the groovy pipeline variable.
@@ -39,7 +39,9 @@ abstract class ArtifactBase {
      */
     ArtifactBase(steps) {
         // init logger
-        logger = Utils.getLogger(Class.getSimpleName())
+        if (!logger) {
+            logger = Utils.getLogger(Class.getSimpleName())
+        }
 
         // init jenkins instance property
         this.steps = steps

@@ -10,8 +10,6 @@
 
 package org.zowe.jenkins_shared_library.artifact
 
-import com.cloudbees.groovy.cps.NonCPS
-import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 
@@ -19,11 +17,6 @@ import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
  * Operating artifacts with jFrog Artifatory CLI commands or API
  */
 class JFrogArtifactory extends ArtifactBase {
-    /**
-     * logger object to write logs
-     */
-    transient Logger logger
-
     /**
      * CLI config name
      */
