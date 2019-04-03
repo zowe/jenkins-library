@@ -94,6 +94,8 @@ test {
         'npm.username',
         'npm.email',
         'npm.credential',
+        'artifactory.url',
+        'artifactory.credential',
     ]) {
         systemProperty prop, project.getProperty(prop)
     }

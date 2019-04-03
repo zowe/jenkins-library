@@ -20,6 +20,8 @@ def GITHUB_CREDENTIAL = 'zowe-robot-github'
 def NPM_USERNAME = 'giza-jenkins'
 def NPM_EMAIL = 'giza-jenkins@gmail.com'
 def NPM_CREDENTIAL= 'giza-jenkins-basicAuth'
+def ARTIFACTORY_URL = 'https://gizaartifactory.jfrog.io/gizaartifactory'
+def ARTIFACTORY_CREDENTIAL = 'GizaArtifactory'
 
 // other constants
 def CI_SKIP = '[ci skip]'
@@ -89,7 +91,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
   -Pgithub.credential='${GITHUB_CREDENTIAL}' \
   -Pnpm.username='${NPM_USERNAME}' \
   -Pnpm.email='${NPM_EMAIL}' \
-  -Pnpm.credential='${NPM_CREDENTIAL}'
+  -Pnpm.credential='${NPM_CREDENTIAL}' \
+  -Partifactory.url='${ARTIFACTORY_URL}' \
+  -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}'
 """
             }
         } catch (e) {
