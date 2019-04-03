@@ -76,7 +76,7 @@ class Utils {
 
         // get configured logging level
         String logLevel = System.getProperty("logLevel")
-        Level level = logLevel.isEmpty() ? Constants.DEFAULT_LOGGING_LEVEL : Level.parse(logLevel)
+        Level level = logLevel ? Level.parse(logLevel) : Constants.DEFAULT_LOGGING_LEVEL
 
         // init logger
         Logger logger = Logger.getLogger(name)
