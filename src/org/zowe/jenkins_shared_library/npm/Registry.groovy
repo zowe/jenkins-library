@@ -20,7 +20,7 @@ class Registry {
     /**
      * logger object to write logs
      */
-    private static final Logger logger = Utils.getLogger(Class.getSimpleName())
+    private static transient Logger logger = Utils.getLogger(Class.getSimpleName())
 
     /**
      * Constant of .npmrc file name

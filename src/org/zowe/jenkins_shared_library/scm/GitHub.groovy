@@ -19,7 +19,7 @@ class GitHub {
     /**
      * logger object to write logs
      */
-    private static final Logger logger = Utils.getLogger(Class.getSimpleName())
+    private static transient Logger logger = Utils.getLogger(Class.getSimpleName())
 
     /**
      * Reference to the groovy pipeline variable.
