@@ -34,7 +34,7 @@ class IntegrationTest {
     /**
      * Logger object
      */
-    static Logger logger
+    static transient Logger logger
 
     /**
      * The test job name. After test is done, the job should be deleted.
