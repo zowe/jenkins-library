@@ -97,9 +97,13 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // check if there are changes on docs
         def docsUpdated = sh(script: "git status --porcelain | grep docs", returnStdout: true).trim()
         if (docsUpdated) {
+          echo "These documentation are changed:\n${docsUpdated}"
           // commit changes
-          sh 'git add docs'
-          sh "git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\""
+          sh """git config --global user.email "${GITHUB_EMAIL}"
+git config --global user.name "${GITHUB_USERNAME}"
+git add docs
+git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
+"""
           // push changes
           withCredentials([
             usernamePassword(
