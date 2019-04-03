@@ -48,20 +48,20 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         checkout scm
 
         // check if we should skip the build
+        // def lastCommit = sh(script: "git show --format=\"%s :: %b\" -s HEAD", returnStdout: true).trim()
+        Boolean hasCommitShouldNotBeSkipped = false
         currentBuild.changeSets.each{ changeSet ->
-          echo "Changeset: ${changeSet} - ${changeSet.getKind()}"
           changeSet.each{ entry ->
-            echo "entry: ${entry.getMsg()}"
+            if (!entry.getMsg().contains(CI_SKIP)) {
+              hasCommitShouldNotBeSkipped = true
+            }
           }
         }
-        // def lastCommit = sh(script: "git show --format=\"%s :: %b\" -s HEAD", returnStdout: true).trim()
-        // if (lastCommit.contains(CI_SKIP)) {
-        //   // CI_SKIP spotted in the git commit
-        //   currentBuild.result = 'NOT_BUILT'
-        //   error("Skipped due to last commit marked as ${CI_SKIP}")
-        // }
-
-        error "aborting..."
+        if (hasCommitShouldNotBeSkipped) {
+          // CI_SKIP spotted in all change logs
+          currentBuild.result = 'NOT_BUILT'
+          error("Skip build due to all change logs are marked as ${CI_SKIP}")
+        }
 
         // check if it's pull request
         echo "Current branch is ${env.BRANCH_NAME}"
