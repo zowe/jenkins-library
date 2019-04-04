@@ -92,7 +92,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             script: "ls -1 ${downloadFolder} | wc -l",
             returnStdout: true
         ).trim()
-        if (downloaded !== "${expected}") {
+        if (downloaded != "${expected}") {
             error "Failed to download expected artifacts."
         }
 
