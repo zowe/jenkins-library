@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library
 import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.Utils
 
-class TestX {
+class TestX implements Serializable {
     /**
      * logger object to write logs
      */
@@ -39,7 +39,7 @@ class TestX {
      */
     TestX(steps) {
         this.steps = steps
-        // setupTransients()
+        setupTransients()
     }
 
     private void setupTransients() {
