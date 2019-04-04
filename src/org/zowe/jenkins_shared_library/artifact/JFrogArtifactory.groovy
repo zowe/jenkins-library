@@ -294,8 +294,9 @@ class JFrogArtifactory implements ArtifactInterface {
             "- Build number : ${env.BUILD_NUMBER}"
 
         // prepare build info
-        // attach git information to build info
+        // attach git information to build info if exists
         this.steps.sh "jfrog rt bc '${buildName}' ${env.BUILD_NUMBER} && " +
+                      "[ -f \".git/HEAD\" ] && " +
                       "jfrog rt bag '${buildName}' ${env.BUILD_NUMBER} ."
 
         // upload and attach with build info
