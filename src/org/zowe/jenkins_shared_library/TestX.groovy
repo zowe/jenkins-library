@@ -17,7 +17,7 @@ class TestX {
     /**
      * logger object to write logs
      */
-    private transient Logger
+    private transient Logger logger
 
     /**
      * Reference to the groovy pipeline variable.
