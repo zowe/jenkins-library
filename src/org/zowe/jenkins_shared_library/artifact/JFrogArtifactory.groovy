@@ -247,7 +247,7 @@ class JFrogArtifactory implements ArtifactInterface {
 
         // validate download result
         if (downloadResultObject['status'] != 'success' || downloadResultObject['totals']['failure'] != 0) {
-            throw new ArtifactException("Artifact downloading is has failures or not successful.")
+            throw new ArtifactException("Artifact downloading has failure(s) or not successful.")
 
             if (expectedArtifacts > 0) {
                 if (downloadResultObject['totals']['success'] != expectedArtifacts) {
@@ -266,9 +266,78 @@ class JFrogArtifactory implements ArtifactInterface {
 
     /**
      * Upload an artifact
+     *
+     * Requires these environment variables:
+     * - JOB_NAME
+     * - BUILD_NUMBER
+     *
+     * @param  from              path to local artifact
+     * @param  to                path on remote
      */
     void upload(Map args = [:]) {
-        throw new UnderConstructionException('Under construction')
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!args['from']) {
+            throw new InvalidArgumentException('from')
+        }
+        if (!args['to']) {
+            throw new InvalidArgumentException('to')
+        }
+
+        def buildName = env.JOB_NAME.replace('/', ' :: ')
+        this.steps.echo "Uploading artifact \"${args['from']}\" to \"${args['to']}\"\n" +
+            "- Build name   : ${buildName}" +
+            "- Build number : ${env.BUILD_NUMBER}"
+
+        // prepare build info
+        // attach git information to build info
+        this.steps.sh "jfrog rt bc '${buildName}' ${env.BUILD_NUMBER} && " +
+                      "jfrog rt bag '${buildName}' ${env.BUILD_NUMBER} ."
+
+        // upload and attach with build info
+        def uploadResult = this.steps.sh(
+            script: "jfrog rt u \"${args['from']}\" \"${args['to']}\"" +
+                    " --build-name=\"${buildName}\"" +
+                    " --build-number=${env.BUILD_NUMBER}" +
+                    " --flat",
+            returnStdout: true
+        ).trim()
+
+        def uploadResultObject = readJSON(text: uploadResult)
+        this.steps.echo "Artifact upload result:\n" +
+            "- status  : ${uploadResultObject['status']}\n" +
+            "- success : ${uploadResultObject['totals']['success']}\n" +
+            "- failure : ${uploadResultObject['totals']['failure']}"
+
+        // validate upload result
+        if (uploadResultObject['status'] != 'success' ||
+            uploadResultObject['totals']['success'] != 1 || uploadResultObject['totals']['failure'] != 0) {
+            throw new ArtifactException("Artifact uploading has failure(s) or not successful.")
+        }
+
+        // add environment variables to build info
+        // sh "jfrog rt bce '${buildName}' ${env.BUILD_NUMBER}"
+        // publish build info
+        this.steps.sh "jfrog rt bp '${buildName}' ${env.BUILD_NUMBER} --build-url=${env.BUILD_URL}"
+
+        this.steps.echo "Artifact uploading is successful."
+    }
+
+    /**
+     * Upload an artifact
+     *
+     * Requires these environment variables:
+     * - JOB_NAME
+     * - BUILD_NUMBER
+     *
+     * @param  from              path to local artifact
+     * @param  to                path on remote
+     */
+    void upload(String from, String to) {
+        this.upload(from: from, to: to)
     }
 
     /**

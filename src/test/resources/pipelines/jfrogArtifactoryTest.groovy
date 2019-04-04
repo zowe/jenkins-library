@@ -97,4 +97,17 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
         echo "[JFROG_ARTIFACTORY_TEST] download successfully"
     }
+
+    /**
+     * Should be able to upload artifact
+     */
+    stage('upload') {
+        String testArtifact = ".tmp-artifact"
+        sh "echo test > ${testArtifact}"
+
+        // download the artifacts
+        jfrog.upload(testArtifact, "libs-snapshot-local/org/zowe/jenkins-library-test")
+
+        echo "[JFROG_ARTIFACTORY_TEST] upload successfully"
+    }
 }
