@@ -8,7 +8,7 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library.scm
+package org.zowe.jenkins_shared_library
 
 import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.Utils
