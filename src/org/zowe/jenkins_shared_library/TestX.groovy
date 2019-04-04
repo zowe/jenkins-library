@@ -56,4 +56,13 @@ class TestX {
         logger.info("info - running init ...")
         this.steps.echo "echo - running init ..."
     }
+
+    /**
+     * Initialize github properties
+     */
+    void other(Map args = [:]) {
+        setupTransients()
+        logger.info("info - running other ...")
+        this.steps.echo "echo - running other ..."
+    }
 }
