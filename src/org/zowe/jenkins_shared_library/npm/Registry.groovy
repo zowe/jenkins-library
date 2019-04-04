@@ -10,18 +10,11 @@
 
 package org.zowe.jenkins_shared_library.npm
 
-import java.time.Instant
-import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.Utils
 
 class Registry {
-    /**
-     * logger object to write logs
-     */
-    private static transient Logger logger = Utils.getLogger(Class.getSimpleName())
-
     /**
      * Constant of .npmrc file name
      */
@@ -167,7 +160,7 @@ class Registry {
                         info['versionTrunks']['patch'] = matches[0][3].toInteger()
                         info['versionTrunks']['metadata'] = matches[0][4]
                     } else {
-                        this.logger.warn("Version \"${info['version']}\" is not a semantic version.")
+                        this.steps.echo "WARNING: Version \"${info['version']}\" is not a semantic version."
                     }
                 }
                 if (pkg['license']) {
@@ -203,7 +196,7 @@ class Registry {
             throw new InvalidArgumentException('token')
         }
 
-        this.logger.info("login to npm registry: ${registry}")
+        this.steps.echo "login to npm registry: ${registry}"
 
         // create if it's not existed
         // backup current .npmrc
@@ -226,7 +219,7 @@ npm config set always-auth true
 
         // get login information
         def whoami = this.steps.sh(script: "npm whoami", returnStdout: true).trim()
-        this.logger.info("npm user: ${whoami}")
+        this.steps.echo "npm user: ${whoami}"
 
         return whoami
     }
@@ -252,7 +245,7 @@ npm config set always-auth true
         def oldBranch = github.getBranch()
         def oldFolder = github.getFolder()
 
-        this.logger.fine("Cloning ${branch} into ${tempFolder} ...")
+        this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
         // clone to temp folder
         github.cloneRepository([
             'branch'   : branch,
@@ -260,7 +253,7 @@ npm config set always-auth true
         ])
 
         // run npm version
-        this.logger.fine("Making a \"${version}\" version bump ...")
+        this.steps.echo "Making a \"${version}\" version bump ..."
         this.steps.dir(tempFolder) {
             def res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
             if (res.contains('Git working directory not clean.')) {
@@ -271,14 +264,14 @@ npm config set always-auth true
         }
 
         // push version changes
-        this.logger.fine("Pushing ${branch} to remote ...")
+        this.steps.echo "Pushing ${branch} to remote ..."
         github.push()
         if (!github.isSynced()) {
             throw new Exception('Branch is not synced with remote after npm version.')
         }
 
         // remove temp folder
-        this.logger.fine("Removing temporary folder ${tempFolder} ...")
+        this.steps.echo "Removing temporary folder ${tempFolder} ..."
         this.steps.sh "rm -fr ${tempFolder}"
 
         // set values back

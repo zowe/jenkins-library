@@ -10,15 +10,9 @@
 
 package org.zowe.jenkins_shared_library.artifact
 
-import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.Utils
 
 abstract class ArtifactBase {
-    /**
-     * logger object to write logs
-     */
-    protected static transient Logger logger
-
     /**
      * Reference to the groovy pipeline variable.
      */
@@ -38,12 +32,6 @@ abstract class ArtifactBase {
      * @param steps    The workflow steps object provided by the Jenkins pipeline
      */
     ArtifactBase(steps) {
-        // init logger
-        if (!logger) {
-            logger = Utils.getLogger(Class.getSimpleName())
-        }
-
-        // init jenkins instance property
         this.steps = steps
     }
 

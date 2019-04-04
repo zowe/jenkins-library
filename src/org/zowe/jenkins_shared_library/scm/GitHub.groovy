@@ -10,17 +10,11 @@
 
 package org.zowe.jenkins_shared_library.scm
 
-import java.util.logging.Logger
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
 
 class GitHub {
-    /**
-     * logger object to write logs
-     */
-    private static transient Logger logger = Utils.getLogger(Class.getSimpleName())
-
     /**
      * Reference to the groovy pipeline variable.
      */
@@ -289,9 +283,9 @@ class GitHub {
         def res = status == ''
 
         if (res) {
-            this.logger.fine("Working directory is clean.")
+            this.steps.echo "Working directory is clean."
         } else {
-            this.logger.fine("Working directory is not clean:\n${status}")
+            this.steps.echo "Working directory is not clean:\n${status}"
         }
 
         return res
@@ -317,11 +311,11 @@ class GitHub {
         def res = localHash == remoteHash
 
         if (res) {
-            this.logger.fine("Working directory is synced with remote.")
+            this.steps.echo "Working directory is synced with remote."
         } else {
-            this.logger.fine("Working directory is not synced with remote:\n" +
+            this.steps.echo "Working directory is not synced with remote:\n" +
                 "local : ${localHash}\n" +
-                "remote: ${remoteHash}")
+                "remote: ${remoteHash}"
         }
 
         return res

@@ -106,13 +106,13 @@ class JFrogArtifactory extends ArtifactBase {
                 searchOptionText = "in build ${args['build-name']}"
             }
         }
-        this.logger.fine("Searching artifact \"${args['pattern']}\"${searchOptionText} ...")
+        this.steps.echo "Searching artifact \"${args['pattern']}\"${searchOptionText} ..."
 
         def resultText = this.steps.sh(
             script: "jfrog rt search ${searchOptions} \"${args['pattern']}\"",
             returnStdout: true
         ).trim()
-        this.logger.finest("Raw search result:\n${resultText}")
+        this.steps.echo "Raw search result:\n${resultText}"
         /**
          * Example result:
          *
@@ -160,9 +160,9 @@ class JFrogArtifactory extends ArtifactBase {
             result[key] = val
         }
 
-        this.logger.fine("Found artifact:")
+        this.steps.echo "Found artifact:"
         result.each { k, v ->
-            this.logger.fine("- ${k} = ${v}")
+            this.steps.echo "- ${k} = ${v}"
         }
 
         return result
