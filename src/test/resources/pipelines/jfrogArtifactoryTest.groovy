@@ -106,7 +106,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         sh "echo test > ${testArtifact}"
 
         // download the artifacts
-        jfrog.upload(testArtifact, "libs-snapshot-local/org/zowe/jenkins-library-test")
+        jfrog.upload(testArtifact, "libs-snapshot-local/org/zowe/jenkins-library-test/test-artifactory-upload.txt")
 
         echo "[JFROG_ARTIFACTORY_TEST] upload successfully"
     }
