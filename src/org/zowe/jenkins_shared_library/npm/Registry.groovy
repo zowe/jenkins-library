@@ -244,7 +244,7 @@ npm config set always-auth true
         if (!args['branch']) {
             throw new InvalidArgumentException('branch')
         }
-        version = args.containsKey('version') ? args['version'] : 'PATCH'
+        def version = args.containsKey('version') ? args['version'] : 'PATCH'
 
         // get temp folder for cloning
         def tempFolder = ".tmp-npm-registry-${Utils.getTimestamp()}"
