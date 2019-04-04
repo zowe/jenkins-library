@@ -86,7 +86,10 @@ class JFrogArtifactory implements ArtifactInterface {
                     usernameVariable: 'USERNAME'
                 )
             ]) {
-                this.steps.sh "jfrog rt config ${CLI_CONFIG_NAME} --url=${this.url} --user=\${USERNAME} --password=\${PASSWORD}"
+                this.steps.sh "jfrog rt config ${CLI_CONFIG_NAME}" +
+                              " --url=${this.url}" +
+                              " --user=\${USERNAME}" +
+                              " --password=\${PASSWORD}"
             }
         }
     }
@@ -356,8 +359,11 @@ class JFrogArtifactory implements ArtifactInterface {
             this.init(args)
         }
         // validate arguments
-        if (!args['spec'] && !args['specContent'] && !(args['pattern'] && args['target'])) {
-            throw new InvalidArgumentException('spec')
+        if (!url) {
+            throw new InvalidArgumentException('url')
+        }
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
         }
 
         def spec = ''
@@ -379,8 +385,8 @@ class JFrogArtifactory implements ArtifactInterface {
         }
 
         def server = this.steps.Artifactory.newServer(
-            'url'              : env.ARTIFACTORY_URL,
-            'credentialsId'    : env.ARTIFACTORY_CREDENTIAL
+            'url'              : url,
+            'credentialsId'    : usernamePasswordCredential
         )
         def buildInfo = server.upload(spec: spec)
         server.publishBuildInfo buildInfo
