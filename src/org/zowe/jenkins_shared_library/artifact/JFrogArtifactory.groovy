@@ -240,10 +240,10 @@ class JFrogArtifactory implements ArtifactInterface {
         ).trim()
 
         def downloadResultObject = this.steps.readJSON(text: downloadResult)
-        this.steps.echo "artifactory download result:\n" +
-            "status  : ${downloadResultObject['status']}\n" +
-            "success : ${downloadResultObject['totals']['success']}\n" +
-            "failure : ${downloadResultObject['totals']['failure']}"
+        this.steps.echo "Artifact download result:\n" +
+            "- status  : ${downloadResultObject['status']}\n" +
+            "- success : ${downloadResultObject['totals']['success']}\n" +
+            "- failure : ${downloadResultObject['totals']['failure']}"
 
         // validate download result
         if (downloadResultObject['status'] != 'success' || downloadResultObject['totals']['failure'] != 0) {

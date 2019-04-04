@@ -87,7 +87,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         jfrog.download(specContent: spec, expected: expected)
 
         // verify downloaded files
-        ${downloadFolder}
         def downloaded = sh(
             script: "ls -1 ${downloadFolder} | wc -l",
             returnStdout: true
