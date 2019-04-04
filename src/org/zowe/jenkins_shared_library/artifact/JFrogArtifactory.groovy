@@ -64,7 +64,6 @@ class JFrogArtifactory extends AbstractArtifact {
      * @param   url                          the artifactory URL
      * @param   usernamePasswordCredential   Artifactory username/password credential ID
      */
-    @NonCPS
     void init(Map args = [:]) {
         if (args['url']) {
             this.url = args['url']
