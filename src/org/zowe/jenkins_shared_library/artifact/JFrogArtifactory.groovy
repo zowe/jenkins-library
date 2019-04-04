@@ -249,7 +249,7 @@ class JFrogArtifactory implements ArtifactInterface {
         if (downloadResultObject['status'] != 'success' || downloadResultObject['totals']['failure'] != 0) {
             throw new ArtifactException("Artifact downloading is has failures or not successful.")
 
-            if (expectedArtifacts > 0)
+            if (expectedArtifacts > 0) {
                 if (downloadResultObject['totals']['success'] != expectedArtifacts) {
                     throw new ArtifactException("Expected ${expectedArtifacts} artifact(s) to be downloaded but only got ${downloadResultObject['totals']['success']}.")
                 }
