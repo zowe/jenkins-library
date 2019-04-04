@@ -109,8 +109,8 @@ class JFrogArtifactory implements ArtifactInterface {
         if (!url) {
             throw new InvalidArgumentException('url')
         }
-        if (!credential) {
-            throw new InvalidArgumentException('credential')
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
         }
 
         Map result = [:]

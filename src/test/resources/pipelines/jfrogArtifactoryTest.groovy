@@ -35,7 +35,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         String expectedBuildNumber = '50'
 
         // get artifact
-        Map artifact = artifactory.getArtifact(pattern)
+        Map artifact = jfrog.getArtifact(pattern)
 
         // validate resolved artifact path
         if (!artifact || !artifact['path']) {
