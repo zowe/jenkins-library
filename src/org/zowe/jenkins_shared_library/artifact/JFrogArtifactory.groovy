@@ -17,7 +17,7 @@ import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 /**
  * Operating artifacts with jFrog Artifatory CLI commands or API
  */
-class JFrogArtifactory extends ArtifactBase {
+class JFrogArtifactory extends AbstractArtifact {
     /**
      * CLI config name
      */
@@ -41,6 +41,23 @@ class JFrogArtifactory extends ArtifactBase {
      * Artifactory username/password credential
      */
     String usernamePasswordCredential
+
+    /**
+     * Constructs the class.
+     *
+     * <p>When invoking from a Jenkins pipeline script, the Pipeline must be passed
+     * the current environment of the Jenkinsfile to have access to the steps.</p>
+     *
+     * @Example
+     * <pre>
+     * def o = new JFrogArtifactory(this)
+     * </pre>
+     *
+     * @param steps    The workflow steps object provided by the Jenkins pipeline
+     */
+    JFrogArtifactory(steps) {
+        this.steps = steps
+    }
 
     /**
      * Initialize npm registry properties

@@ -12,7 +12,7 @@ package org.zowe.jenkins_shared_library.artifact
 
 import org.zowe.jenkins_shared_library.Utils
 
-abstract class ArtifactBase {
+abstract class AbstractArtifact {
     /**
      * Reference to the groovy pipeline variable.
      */
@@ -26,12 +26,12 @@ abstract class ArtifactBase {
      *
      * @Example
      * <pre>
-     * def o = new ArtifactBase(this)
+     * def o = new AbstractArtifact(this)
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
      */
-    ArtifactBase(steps) {
+    AbstractArtifact(steps) {
         this.steps = steps
     }
 
