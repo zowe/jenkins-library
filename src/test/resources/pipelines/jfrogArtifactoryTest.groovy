@@ -107,7 +107,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         def target = "libs-snapshot-local/org/zowe/jenkins-library-test/test-artifactory-upload.txt"
 
         // upload the artifact
-        jfrog.upload(testArtifact, target)
+        jfrog.upload(testArtifact, target, [
+            'library-test': 1
+        ])
 
         echo "[JFROG_ARTIFACTORY_TEST] upload successfully"
     }

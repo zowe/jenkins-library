@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.artifact
 
+import java.net.URLEncoder
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
@@ -352,6 +353,7 @@ class JFrogArtifactory implements ArtifactInterface {
      * @param  specContent      jfrog cli upload specification content text.
      * @param  pattern          pattern to find local artifact(s)
      * @param  target           target path on remote Artifactory
+     * @param  properties       a map of extra properties we want to add to the artifact
      */
     void upload(Map args = [:]) {
         // init with arguments
@@ -372,11 +374,19 @@ class JFrogArtifactory implements ArtifactInterface {
         } else if (args.containsKey('specContent')) {
             spec = args['specContent']
         } else if (args.containsKey('pattern') && args.containsKey('target')) {
+            def extraProperties = ''
+            if (args.containsKey('properties')) {
+                // convert params to querystring
+                extraProperties = args['properties'].collect {
+                    k, v -> k + '=' + URLEncoder.encode("${v}", 'UTF-8')
+                }.join(';')
+            }
             spec = """{
   "files": [
     {
       "pattern": "${args['pattern']}",
-      "target": "${args['target']}"
+      "target": "${args['target']}",
+      "properties": ${extraProperties}
     }
  ]
 }"""
@@ -397,15 +407,12 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Upload an artifact
      *
-     * Requires these environment variables:
-     * - JOB_NAME
-     * - BUILD_NUMBER
-     *
      * @param  pattern           pattern to find local artifact(s)
      * @param  target            target path on remote Artifactory
+     * @param  properties        a map of extra properties we want to add to the artifact
      */
-    void upload(String pattern, String target) {
-        this.upload(pattern: pattern, target: target)
+    void upload(String pattern, String target, Map properties = [:]) {
+        this.upload(pattern: pattern, target: target, properties: properties)
     }
 
     /**
