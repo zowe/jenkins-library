@@ -181,11 +181,11 @@ class JFrogArtifactory implements ArtifactInterface {
             result[key] = val
         }
 
-        String resultText = "Found artifact:\n"
+        String readble = "Found artifact:\n"
         result.each { k, v ->
-            resultText += "- ${k} = ${v}\n"
+            readble += "- ${k} = ${v}\n"
         }
-        this.steps.echo resultText
+        this.steps.echo readble
 
         return result
     }
