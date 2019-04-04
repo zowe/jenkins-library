@@ -386,7 +386,7 @@ class JFrogArtifactory implements ArtifactInterface {
     {
       "pattern": "${args['pattern']}",
       "target": "${args['target']}",
-      "properties": ${extraProperties}
+      "properties": "${extraProperties}"
     }
  ]
 }"""
