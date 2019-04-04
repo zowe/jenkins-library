@@ -294,10 +294,11 @@ class JFrogArtifactory implements ArtifactInterface {
             "- Build number : ${env.BUILD_NUMBER}"
 
         // prepare build info
+        this.steps.sh "jfrog rt bc '${buildName}' ${env.BUILD_NUMBER}" +
         // attach git information to build info if exists
-        this.steps.sh "jfrog rt bc '${buildName}' ${env.BUILD_NUMBER} && " +
-                      "[ -f \".git/HEAD\" ] && " +
-                      "jfrog rt bag '${buildName}' ${env.BUILD_NUMBER} ."
+        if (this.steps.fileExists('.git/HEAD')) {
+            this.steps.sh "jfrog rt bag '${buildName}' ${env.BUILD_NUMBER} ."
+        }
 
         // upload and attach with build info
         def uploadResult = this.steps.sh(
