@@ -234,7 +234,7 @@ class JFrogArtifactory implements ArtifactInterface {
         def expectedArtifacts = args.containsKey('expected') ? args['expected'] : -1
 
         // download
-        def downloadResult = sh(
+        def downloadResult = this.steps.sh(
             script: "jfrog rt dl --spec=\"${specFile}\"",
             returnStdout: true
         ).trim()
