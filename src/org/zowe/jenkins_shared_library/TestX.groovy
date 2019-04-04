@@ -39,7 +39,7 @@ class TestX {
      */
     TestX(steps) {
         this.steps = steps
-        setupTransients()
+        // setupTransients()
     }
 
     private void setupTransients() {
