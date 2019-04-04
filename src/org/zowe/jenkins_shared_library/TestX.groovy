@@ -17,7 +17,7 @@ class TestX {
     /**
      * logger object to write logs
      */
-    private static transient Logger logger = Utils.getLogger(Class.getSimpleName())
+    private transient Logger
 
     /**
      * Reference to the groovy pipeline variable.
@@ -39,12 +39,20 @@ class TestX {
      */
     TestX(steps) {
         this.steps = steps
+        setupTransients()
+    }
+
+    private void setupTransients() {
+        if (!logger) {
+            logger = Utils.getLogger(Class.getSimpleName())
+        }
     }
 
     /**
      * Initialize github properties
      */
     void init(Map args = [:]) {
+        setupTransients()
         logger.info("info - running init ...")
         this.steps.echo "echo - running init ..."
     }
