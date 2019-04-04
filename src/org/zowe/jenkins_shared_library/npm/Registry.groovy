@@ -231,24 +231,30 @@ npm config set always-auth true
      * @param branch         which branch to release
      * @param version        what kind of version bump we should make
      */
-    void version(GitHub github, String branch, String version = 'PATCH') throws InvalidArgumentException {
+    void version(Map args = [:]) throws InvalidArgumentException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
         // validate arguments
-        if (!github) {
+        if (!args['github']) {
             throw new InvalidArgumentException('github')
         }
-        if (!branch) {
+        if (!args['branch']) {
             throw new InvalidArgumentException('branch')
         }
+        version = args.containsKey('version') ? args['version'] : 'PATCH'
 
         // get temp folder for cloning
         def tempFolder = ".tmp-npm-registry-${Utils.getTimestamp()}"
-        def oldBranch = github.getBranch()
-        def oldFolder = github.getFolder()
+        def oldBranch = args['github'].getBranch()
+        def oldFolder = args['github'].getFolder()
 
-        this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
+        this.steps.echo "Cloning ${args['branch']} into ${tempFolder} ..."
         // clone to temp folder
-        github.cloneRepository([
-            'branch'   : branch,
+        args['github'].cloneRepository([
+            'branch'   : args['branch'],
             'folder'   : tempFolder
         ])
 
@@ -264,9 +270,9 @@ npm config set always-auth true
         }
 
         // push version changes
-        this.steps.echo "Pushing ${branch} to remote ..."
-        github.push()
-        if (!github.isSynced()) {
+        this.steps.echo "Pushing ${args['branch']} to remote ..."
+        args['github'].push()
+        if (!args['github'].isSynced()) {
             throw new Exception('Branch is not synced with remote after npm version.')
         }
 
@@ -275,7 +281,22 @@ npm config set always-auth true
         this.steps.sh "rm -fr ${tempFolder}"
 
         // set values back
-        github.setBranch(oldBranch)
-        github.setFolder(oldFolder)
+        args['github'].setBranch(oldBranch)
+        args['github'].setFolder(oldFolder)
+    }
+
+    /**
+     * Declare a new version of npm package
+     *
+     * @param github         GitHub instance must have been initialized with repository, credential, etc
+     * @param branch         which branch to release
+     * @param version        what kind of version bump we should make
+     */
+    void version(GitHub github, String branch, String version = 'PATCH') {
+        this.version([
+            'github'  : github,
+            'branch'  : branch,
+            'version' : version,
+        ])
     }
 }

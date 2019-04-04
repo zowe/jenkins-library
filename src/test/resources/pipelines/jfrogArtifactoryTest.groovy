@@ -54,4 +54,48 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
         echo "[JFROG_ARTIFACTORY_TEST] getArtifact successfully"
     }
+
+    /**
+     * Should be able to download artifacts
+     */
+    stage('download') {
+        String downloadFolder = ".tmp-artifacts"
+        String spec = """{
+    "files": [
+        {
+            "pattern": "libs-release-local/org/zowe/explorer-jes/0.0.*/explorer-jes-0.0.*.pax",
+            "target": "${downloadFolder}/",
+            "flat": "true",
+            "sortBy": ["created"],
+            "sortOrder": "desc",
+            "limit": 1
+        },
+        {
+            "pattern": "libs-release-local/org/zowe/explorer-mvs/0.0.*/explorer-mvs-0.0.*.pax",
+            "target": "${downloadFolder}/",
+            "flat": "true",
+            "sortBy": ["created"],
+            "sortOrder": "desc",
+            "limit": 1
+        }
+    ]
+}
+"""
+        Integer expected = 2
+
+        // download the artifacts
+        jfrog.download(specContent: spec, expected: expected)
+
+        // verify downloaded files
+        ${downloadFolder}
+        def downloaded = sh(
+            script: "ls -1 ${downloadFolder} | wc -l",
+            returnStdout: true
+        ).trim()
+        if (downloaded !== "${expected}") {
+            error "Failed to download expected artifacts."
+        }
+
+        echo "[JFROG_ARTIFACTORY_TEST] download successfully"
+    }
 }

@@ -346,6 +346,11 @@ class GitHub {
      * @param  tag           tag name to be created
      */
     void tag(Map args = [:]) {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
         this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
     }
 }

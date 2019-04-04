@@ -181,10 +181,11 @@ class JFrogArtifactory implements ArtifactInterface {
             result[key] = val
         }
 
-        this.steps.echo "Found artifact:"
+        String resultText = "Found artifact:\n"
         result.each { k, v ->
-            this.steps.echo "- ${k} = ${v}"
+            resultText += "- ${k} = ${v}\n"
         }
+        this.steps.echo resultText
 
         return result
     }
@@ -208,9 +209,59 @@ class JFrogArtifactory implements ArtifactInterface {
 
     /**
      * Download artifacts
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param   spec            jfrog cli download specification file. optional.
+     * @param   specContent     jfrog cli download specification content text.
+     *                          Will be ignored if 'spec' is defined, will be .
+     *                          required if 'spec' is not defined.
+     * @param   expected        if we need to check download count. optional.
      */
-    void download(Map args = [:]) {
-        throw new UnderConstructionException('Under construction')
+    void download(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!args['spec'] && !args['specContent']) {
+            throw new InvalidArgumentException('spec')
+        }
+
+        def tmpFile = ".tmp-down-artifact-spec-${Utils.getTimestamp()}.json"
+        def specFile = args.containsKey('spec') ? args['spec'] : tmpFile
+        this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
+        def expectedArtifacts = args.containsKey('expected') ? args['expected'] : -1
+
+        // download
+        def downloadResult = sh(
+            script: "jfrog rt dl --spec=\"${specFile}\"",
+            returnStdout: true
+        ).trim()
+
+        def downloadResultObject = this.steps.readJSON(text: downloadResult)
+        this.steps.echo "artifactory download result:\n" +
+            "status  : ${downloadResultObject['status']}\n" +
+            "success : ${downloadResultObject['totals']['success']}\n" +
+            "failure : ${downloadResultObject['totals']['failure']}"
+
+        // validate download result
+        if (downloadResultObject['status'] != 'success' || downloadResultObject['totals']['failure'] != 0) {
+            throw new ArtifactException("Artifact downloading is has failures or not successful.")
+
+            if (expectedArtifacts > 0)
+                if (downloadResultObject['totals']['success'] != expectedArtifacts) {
+                    throw new ArtifactException("Expected ${expectedArtifacts} artifact(s) to be downloaded but only got ${downloadResultObject['totals']['success']}.")
+                }
+            }
+        }
+
+        // remove spec file if it's temporary
+        if (this.steps.fileExists(tmpFile)) {
+            this.steps.sh("rm ${tmpFile}")
+        }
+
+        this.steps.echo "Artifact downloading is successful."
     }
 
     /**
