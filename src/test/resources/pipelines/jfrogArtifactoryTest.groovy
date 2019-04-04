@@ -104,9 +104,10 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('upload') {
         String testArtifact = ".tmp-artifact"
         sh "echo test > ${testArtifact}"
+        def target = "libs-snapshot-local/org/zowe/jenkins-library-test/test-artifactory-upload.txt"
 
         // upload the artifact
-        jfrog.upload(testArtifact, "libs-snapshot-local/org/zowe/jenkins-library-test/test-artifactory-upload.txt")
+        jfrog.upload(testArtifact, target)
 
         echo "[JFROG_ARTIFACTORY_TEST] upload successfully"
     }
