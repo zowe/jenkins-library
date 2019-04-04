@@ -44,6 +44,7 @@ class TestX {
 
     private void setupTransients() {
         if (!logger) {
+            this.steps.echo "setupTransientssetupTransients"
             logger = Utils.getLogger(Class.getSimpleName())
         }
     }
