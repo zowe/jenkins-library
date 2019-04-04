@@ -16,30 +16,30 @@ interface ArtifactInterface {
     /**
      * Init artifactory configuration
      */
-    void init(Map args = [:])
+    void init(Map args)
 
     /**
      * Get artifact information
      */
-    Map getArtifact(Map args = [:])
+    Map getArtifact(Map args)
 
     /**
      * Download artifacts
      */
-    void download(Map args = [:])
+    void download(Map args)
 
     /**
      * Upload an artifact
      */
-    void upload(Map args = [:])
+    void upload(Map args)
 
     /**
      * Search artifacts with pattern
      */
-    void search(Map args = [:])
+    void search(Map args)
 
     /**
      * Promote artifact
      */
-    void promote(Map args = [:])
+    void promote(Map args)
 }
