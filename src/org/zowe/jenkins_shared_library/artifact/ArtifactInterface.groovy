@@ -10,8 +10,6 @@
 
 package org.zowe.jenkins_shared_library.artifact
 
-import org.zowe.jenkins_shared_library.Utils
-
 interface ArtifactInterface {
     /**
      * Init artifactory configuration
