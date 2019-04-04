@@ -94,6 +94,8 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Get detail information of an artifact
      *
+     * NOTE: this is implemented with jFrog CLI
+     *
      * Use similar parameters like init() method and with these extra:
      *
      * @param   pattern            path pattern to find the artifact
@@ -193,6 +195,8 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Get detail information of an artifact
      *
+     * NOTE: this is implemented with jFrog CLI
+     *
      * Use similar parameters like init() method and with these extra:
      *
      * @param   pattern            path pattern to find the artifact
@@ -209,6 +213,9 @@ class JFrogArtifactory implements ArtifactInterface {
 
     /**
      * Download artifacts
+     *
+     * NOTE: this is implemented with jFrog CLI. The reason is sortBy in download spec is not
+     *       supported by Jenkins Artifactory plugin.
      *
      * Use similar parameters like init() method and with these extra:
      *
@@ -271,25 +278,25 @@ class JFrogArtifactory implements ArtifactInterface {
      * - JOB_NAME
      * - BUILD_NUMBER
      *
-     * @param  from              path to local artifact
-     * @param  to                path on remote
+     * @param  pattern           pattern to find local artifact(s)
+     * @param  target            target path on remote Artifactory
      */
-    void upload(Map args = [:]) {
+    void uploadWithCli(Map args = [:]) {
         // init with arguments
-        if (args.size() > 0) {
+           if (args.size() > 0) {
             this.init(args)
         }
         // validate arguments
-        if (!args['from']) {
-            throw new InvalidArgumentException('from')
+        if (!args['pattern']) {
+            throw new InvalidArgumentException('pattern')
         }
-        if (!args['to']) {
-            throw new InvalidArgumentException('to')
+        if (!args['target']) {
+            throw new InvalidArgumentException('target')
         }
 
         def env = this.steps.env
         def buildName = env.JOB_NAME.replace('/', ' :: ')
-        this.steps.echo "Uploading artifact \"${args['from']}\" to \"${args['to']}\"\n" +
+        this.steps.echo "Uploading artifact \"${args['pattern']}\" to \"${args['target']}\"\n" +
             "- Build name   : ${buildName}" +
             "- Build number : ${env.BUILD_NUMBER}"
 
@@ -302,7 +309,7 @@ class JFrogArtifactory implements ArtifactInterface {
 
         // upload and attach with build info
         def uploadResult = this.steps.sh(
-            script: "jfrog rt u \"${args['from']}\" \"${args['to']}\"" +
+            script: "jfrog rt u \"${args['pattern']}\" \"${args['target']}\"" +
                     " --build-name=\"${buildName}\"" +
                     " --build-number=${env.BUILD_NUMBER}" +
                     " --flat",
@@ -332,15 +339,67 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Upload an artifact
      *
+     * You can choose one of three ways to upload:
+     *
+     * - specify "spec" which pointing to a file
+     * - specify "specContent" which is upload specification text
+     * - specify "pattern" and "target", these information will be rendered into upload specification
+     *
+     * @param  spec             jfrog cli upload specification file. optional.
+     * @param  specContent      jfrog cli upload specification content text.
+     * @param  pattern          pattern to find local artifact(s)
+     * @param  target           target path on remote Artifactory
+     */
+    void upload(Map args = [:]) {
+        // init with arguments
+           if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!args['spec'] && !args['specContent'] && !(args['pattern'] && args['target'])) {
+            throw new InvalidArgumentException('spec')
+        }
+
+        def spec = ''
+        if (args.containsKey('spec')) {
+            spec = this.steps.readFile(encoding: 'UTF-8', file: args['spec'])
+        } else if (args.containsKey('specContent')) {
+            spec = args['specContent']
+        } else if (args.containsKey('pattern') && args.containsKey('target')) {
+            spec = """{
+  "files": [
+    {
+      "pattern": "${args['pattern']}",
+      "target": "${args['target']}"
+    }
+ ]
+}"""
+        } else {
+            throw new InvalidArgumentException('spec')
+        }
+
+        def server = this.steps.Artifactory.newServer(
+            'url'              : env.ARTIFACTORY_URL,
+            'credentialsId'    : env.ARTIFACTORY_CREDENTIAL
+        )
+        def buildInfo = server.upload(spec: spec)
+        server.publishBuildInfo buildInfo
+
+        this.steps.echo "Artifact uploading is successful."
+    }
+
+    /**
+     * Upload an artifact
+     *
      * Requires these environment variables:
      * - JOB_NAME
      * - BUILD_NUMBER
      *
-     * @param  from              path to local artifact
-     * @param  to                path on remote
+     * @param  pattern           pattern to find local artifact(s)
+     * @param  target            target path on remote Artifactory
      */
-    void upload(String from, String to) {
-        this.upload(from: from, to: to)
+    void upload(String pattern, String target) {
+        this.upload(pattern: pattern, target: target)
     }
 
     /**
