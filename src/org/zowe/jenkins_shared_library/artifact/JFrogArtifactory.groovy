@@ -287,6 +287,7 @@ class JFrogArtifactory implements ArtifactInterface {
             throw new InvalidArgumentException('to')
         }
 
+        def env = this.steps.env
         def buildName = env.JOB_NAME.replace('/', ' :: ')
         this.steps.echo "Uploading artifact \"${args['from']}\" to \"${args['to']}\"\n" +
             "- Build name   : ${buildName}" +
