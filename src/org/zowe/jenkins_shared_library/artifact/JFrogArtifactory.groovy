@@ -17,7 +17,12 @@ import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 /**
  * Operating artifacts with jFrog Artifatory CLI commands or API
  */
-class JFrogArtifactory extends AbstractArtifact {
+class JFrogArtifactory implements ArtifactInterface {
+    /**
+     * Reference to the groovy pipeline variable.
+     */
+    def steps
+
     /**
      * CLI config name
      */
