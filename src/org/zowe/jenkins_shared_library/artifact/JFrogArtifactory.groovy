@@ -472,7 +472,7 @@ class JFrogArtifactory implements ArtifactInterface {
 
         // extract file name if not provided
         def targetName
-        if (args.containsKey('targetName')) {
+        if (args.containsKey('targetName') && args['targetName']) {
             targetName = args['targetName']
         } else {
             def sourceFilenameTrunks = source['path'].split('/')
