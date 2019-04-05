@@ -11,7 +11,9 @@
 package org.zowe.jenkins_shared_library
 
 import java.net.URLEncoder
+import java.time.format.DateTimeFormatter
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.logging.ConsoleHandler
 import java.util.logging.Handler
 import java.util.logging.Level
@@ -35,14 +37,126 @@ class Utils {
     }
 
     /**
+     * Sanitize branch name so it can only contains:
+     * - letters
+     * - numbers
+     * - dash
+     *
+     * @param  branch      branch name
+     * @return             sanitized branch name
+     */
+    static String sanitizeBranchName(String branch) {
+        if (branch.startsWith('origin/')) {
+            branch = branch.substring(7)
+        }
+        branch = branch.replaceAll(/[^a-zA-Z0-9]/, '-')
+                       .replaceAll(/[\-]+/, '-')
+                       .toLowerCase()
+
+        return branch
+    }
+
+    /**
      * Get current timestamp in a format of YYYYMMDDHHMMSSMMM.
      *
      * The result only includes numbers.
      *
      * @return  timestamp string
      */
-    static String getTimestamp() {
-        return Instant.now().toString().replaceAll(/[^0-9]/, '')
+    static String getTimestamp(String format = "yyyyMMddHHmmss") {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(format))
+        // return Instant.now().toString().replaceAll(/[^0-9]/, '')
+    }
+
+    /**
+     * Get Build Identifier
+     *
+     * Example output:
+     *    - 20180101.010101-pr-11-1       PR-11 branch build #1 at 20180101.010101
+     *    - 20180101.010101-13            master branch build #13 at 20180101.010101
+     *    - 20180101-010101-13            master branch build #13 using "%Y%m%d-%H%M%S" format
+     *
+     * @param  env                        Jenkins environment variable
+     * @param  includeTimestamp           Boolean|String, default is true. If add timstamp to the build identifier, or specify a
+     *                                    formatting string. Support format is using Java DateTimeFormatter:
+     *                                    https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     * @param  excludeBranches            List|String, The branches should not be excluded from identifier. Set it to
+     *                                    '__ALL__' to completely exclude branch name from the
+     *                                    identifier.
+     * @param  includeBuildNumber         Boolean, default is true. If add build number to the build identifier
+     * @return                            build identifier
+     */
+    static String getBuildIdentifier(env, Map args = [:]) {
+        def defaultTimestamp = "yyyyMMdd.HHmmss"
+        def now = LocalDateTime.now()
+        def ts = '';
+        def result = []
+
+        // check args and provide default values
+        def includeTimestamp = args.containsKey('includeTimestamp') ? args['includeTimestamp'] : true;
+        List excludeBranches = []
+        if (args.containsKey('excludeBranches')) {
+            if (args['excludeBranches'] instanceof String) {
+                excludeBranches = args['excludeBranches'].split(',')*.trim()*.toLowerCase()
+            } else if (args['excludeBranches'] instanceof List) {
+                excludeBranches = args['excludeBranches']*.toLowerCase()
+            }
+        }
+        def includeBuildNumber = args.containsKey('includeBuildNumber') ? args['includeBuildNumber'] : true;
+
+        // handle includeTimestamp
+        if (includeTimestamp instanceof String && includeTimestamp != '') {
+            ts = now.format(DateTimeFormatter.ofPattern(includeTimestamp))
+        } else if (includeTimestamp instanceof Boolean && includeTimestamp) {
+            ts = now.format(DateTimeFormatter.ofPattern(defaultTimestamp))
+        }
+        if (ts) {
+            result << ts
+        }
+
+        // handle excludeBranches
+        if (!(excludeBranches.size() == 1 && excludeBranches[0] == '__all__') &&
+            env && env.BRANCH_NAME
+        ) {
+            def branch = env.BRANCH_NAME
+            if (!excludeBranches.contains(branch)) {
+                result << sanitizeBranchName(branch)
+            }
+        }
+
+        // handle includeBuildNumber
+        if (includeBuildNumber && env && env.BUILD_NUMBER) {
+            result << env.BUILD_NUMBER
+        }
+
+        return result.join('-')
+    }
+
+    /**
+     * Get release identifier from branch name
+     *
+     * Example output:
+     *    - SNAPSHOT             default release name on master branch
+     *    - pr-13                pull request #13
+     *
+     * Usage examples:
+     * - getReleaseIdentifier(env, ['master': 'snapshot', 'staging': 'latest'])
+     *
+     * @param  mappings                  mappings of branch name and identifier
+     * @return                           branch identifier
+     */
+    static String getReleaseIdentifier(env, Map mappings = ['master': 'SNAPSHOT']) {
+        def branch = sanitizeBranchName(env.BRANCH_NAME)
+        def result = branch
+
+        for (entry in mappings) {
+            if (branch == entry.key.toLowerCase()) {
+                result = entry.value
+                break
+            }
+        }
+
+        return result
     }
 
     /**
@@ -52,7 +166,7 @@ class Utils {
      */
     static String getUriQueryString(Map params = [:]) {
         // convert params to querystring
-        return params.collect { k, v -> k + '=' + URLEncoder.encode(v, 'UTF-8') }.join('&')
+        return params.collect { k, v -> k + '=' + URLEncoder.encode("${v}", 'UTF-8') }.join('&')
     }
 
     /**
