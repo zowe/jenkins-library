@@ -464,10 +464,10 @@ class JFrogArtifactory implements ArtifactInterface {
             throw new InvalidArgumentException('source', 'path property is missing from source artifact information.')
         }
 
-        //
+        // sanitize targetPath
         def targetPath = args['targetPath']
         if (targetPath.endsWith('/')) {
-            targetPath = targetPath.substring(0, targetPath.length() - 1)​
+            targetPath = targetPath.substring(0, targetPath.length() - 1)
         }
 
         // extract file name if not provided
