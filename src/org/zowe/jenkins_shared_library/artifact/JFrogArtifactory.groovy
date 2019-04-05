@@ -536,7 +536,7 @@ class JFrogArtifactory implements ArtifactInterface {
             script: "jfrog rt set-props \"${targetFullPath}\" \"" + props.join(';') + "\"",
             returnStdout: true
         ).trim()
-        def setPropsResultObject = readJSON(text: setPropsResult)
+        def setPropsResultObject = this.steps.readJSON(text: setPropsResult)
         this.steps.echo "Artifact promoting result:\n" +
             "- status  : ${setPropsResultObject['status']}\n" +
             "- success : ${setPropsResultObject['totals']['success']}\n" +
