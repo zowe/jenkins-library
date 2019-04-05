@@ -449,31 +449,48 @@ class JFrogArtifactory implements ArtifactInterface {
         if (!args.containsKey('targetPath')) {
             throw new InvalidArgumentException('targetPath')
         }
-        if (!args['source'].containsKey('path')) {
+
+        // get soruce artifact information if not present
+        Map source
+        if (args['source'] instanceof Map) {
+            source = args['source']
+        } else if (args['source'] instanceof String) {
+            source = this.getArtifact(args['source'])
+        } else {
+            throw new InvalidArgumentException('source')
+        }
+
+        if (!source.containsKey('path')) {
             throw new InvalidArgumentException('source', 'path property is missing from source artifact information.')
         }
 
-        def env = this.steps.env
-        def buildTimestamp = args['source'].containsKey('build.timestamp') ? args['source']['build.timestamp'] : ''
-        def buildName      = args['source'].containsKey('build.name') ? args['source']['build.name'] : ''
-        def buildNumber    = args['source'].containsKey('build.number') ? args['source']['build.number'] : ''
+        //
+        def targetPath = args['targetPath']
+        if (targetPath.endsWith('/')) {
+            targetPath = targetPath.substring(0, targetPath.length() - 1)​
+        }
 
         // extract file name if not provided
         def targetName
         if (args.containsKey('targetName')) {
             targetName = args['targetName']
         } else {
-            def sourceFilenameTrunks = args['source']['path'].split('/')
+            def sourceFilenameTrunks = source['path'].split('/')
             if (sourceFilenameTrunks.size() < 1) {
-                throw new ArtifactException("Invalid artifact: ${args['source']['path']}")
+                throw new ArtifactException("Invalid artifact: ${source['path']}")
             }
             targetName = sourceFilenameTrunks[-1]
         }
 
-        def targetFullPath = "${targetPath}/${args['targetName']}"
+        def env = this.steps.env
+        def buildTimestamp = source.containsKey('build.timestamp') ? source['build.timestamp'] : ''
+        def buildName      = source.containsKey('build.name') ? source['build.name'] : ''
+        def buildNumber    = source.containsKey('build.number') ? source['build.number'] : ''
+
+        def targetFullPath = "${targetPath}/${targetName}"
 
         // variables prepared, ready to promote
-        this.steps.echo """Promoting artifact: ${args['source']['path']}
+        this.steps.echo """Promoting artifact: ${source['path']}
 - to              : ${targetFullPath}
 - build name      : ${buildName}
 - build number    : ${buildNumber}
