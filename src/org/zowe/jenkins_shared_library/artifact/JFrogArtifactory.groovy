@@ -175,23 +175,22 @@ class JFrogArtifactory implements ArtifactInterface {
         }
         result['path'] = artifactInfo.path
 
-        // append build information
-        ['build.timestamp', 'build.name', 'build.number', 'build.parentName', 'build.parentNumber'].each { key ->
-            def val = artifactInfo.props.get(key)
+        // append artifact properties
+        artifactInfo.props.each { prop ->
             // think this should be a bug
-            // readJSON returns val as net.sf.json.JSONArray
+            // readJSON returns value as net.sf.json.JSONArray
             // this step is a workaround
-            if (val.getClass().toString().endsWith('JSONArray')) {
-                val = val.get(0)
+            if (prop.value.getClass().toString().endsWith('JSONArray')) {
+                prop.value = prop.value.get(0)
             }
-            result[key] = val
+            result[prop.key] = prop.value
         }
 
-        String readble = "Found artifact:\n"
+        String readable = "Found artifact:\n"
         result.each { k, v ->
-            readble += "- ${k} = ${v}\n"
+            readable += "- ${k} = ${v}\n"
         }
-        this.steps.echo readble
+        this.steps.echo readable
 
         return result
     }
