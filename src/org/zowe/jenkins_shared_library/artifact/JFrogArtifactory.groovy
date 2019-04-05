@@ -180,10 +180,11 @@ class JFrogArtifactory implements ArtifactInterface {
             // think this should be a bug
             // readJSON returns value as net.sf.json.JSONArray
             // this step is a workaround
-            if (prop.value.getClass().toString().endsWith('JSONArray')) {
-                prop.value = prop.value.get(0)
+            def val = prop.value
+            if (val.getClass().toString().endsWith('JSONArray')) {
+                val = val.get(0)
             }
-            result[prop.key] = prop.value
+            result[prop.key] = val
         }
 
         String readable = "Found artifact:\n"
