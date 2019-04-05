@@ -98,7 +98,9 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Get detail information of an artifact
      *
-     * NOTE: this is implemented with jFrog CLI
+     * NOTE: this is implemented with jFrog CLI.
+     *
+     * NOTE: if found more than one artifacts, only the first one will be returned.
      *
      * Use similar parameters like init() method and with these extra:
      *
@@ -139,7 +141,7 @@ class JFrogArtifactory implements ArtifactInterface {
             script: "jfrog rt search ${searchOptions} \"${args['pattern']}\"",
             returnStdout: true
         ).trim()
-        this.steps.echo "Raw search result:\n${resultText}"
+        // this.steps.echo "Raw search result:\n${resultText}"
         /**
          * Example result:
          *
@@ -376,7 +378,9 @@ class JFrogArtifactory implements ArtifactInterface {
         } else if (args.containsKey('pattern') && args.containsKey('target')) {
             def extraProperties = ''
             if (args.containsKey('properties')) {
-                // convert params to querystring
+                // convert params to required format
+                // NOTE: because of the way of passing properties, all property values
+                //       are converted to string
                 extraProperties = args['properties'].collect {
                     k, v -> k + '=' + URLEncoder.encode("${v}", 'UTF-8')
                 }.join(';')
@@ -416,16 +420,126 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
-     * Search artifacts with pattern
+     * Promote artifact
+     *
+     * Requires these environment variables:
+     * - JOB_NAME
+     * - BUILD_NUMBER
+     *
+     * @param  source            information of the artifact will be promoted.
+     * @param  targetPath        target path on remote Artifactory
+     * @param  targetName        target artifact name. optional, default to original name
+     * @return                   full path to the promoted artifact
      */
-    void search(Map args = [:]) {
-        throw new UnderConstructionException('Under construction')
-    }
+    String promote(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+        // init with arguments
+           if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!url) {
+            throw new InvalidArgumentException('url')
+        }
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+        if (!args.containsKey('source')) {
+            throw new InvalidArgumentException('source')
+        }
+        if (!args.containsKey('targetPath')) {
+            throw new InvalidArgumentException('targetPath')
+        }
+        if (!args['source'].containsKey('path')) {
+            throw new InvalidArgumentException('source', 'path property is missing from source artifact information.')
+        }
 
+        def env = this.steps.env
+        def buildTimestamp = args['source'].containsKey('build.timestamp') ? args['source']['build.timestamp'] : ''
+        def buildName      = args['source'].containsKey('build.name') ? args['source']['build.name'] : ''
+        def buildNumber    = args['source'].containsKey('build.number') ? args['source']['build.number'] : ''
+
+        // extract file name if not provided
+        def targetName
+        if (args.containsKey('targetName')) {
+            targetName = args['targetName']
+        } else {
+            def sourceFilenameTrunks = args['source']['path'].split('/')
+            if (sourceFilenameTrunks.size() < 1) {
+                throw new ArtifactException("Invalid artifact: ${args['source']['path']}")
+            }
+            targetName = sourceFilenameTrunks[-1]
+        }
+
+        def targetFullPath = "${targetPath}/${args['targetName']}"
+
+        // variables prepared, ready to promote
+        this.steps.echo """Promoting artifact: ${args['source']['path']}
+- to              : ${targetFullPath}
+- build name      : ${buildName}
+- build number    : ${buildNumber}
+- build timestamp : ${buildTimestamp}
+"""
+
+        // promote (copy) artifact
+        def promoteResult = this.steps.sh(
+            script: "jfrog rt copy --flat \"${source.path}\" \"${targetFullPath}\"",
+            returnStdout: true
+        ).trim()
+
+        // validate result
+        def promoteResultObject = this.steps.readJSON(text: promoteResult)
+        this.steps.echo "Artifact promoting result:\n" +
+            "- status  : ${promoteResultObject['status']}\n" +
+            "- success : ${promoteResultObject['totals']['success']}\n" +
+            "- failure : ${promoteResultObject['totals']['failure']}"
+        if (promoteResultObject['status'] != 'success' ||
+            promoteResultObject['totals']['success'] != 1 || promoteResultObject['totals']['failure'] != 0) {
+            throw new ArtifactException("Artifact is not promoted successfully.")
+        }
+
+        // prepare artifact property
+        def props = []
+        def currentBuildName = env.JOB_NAME.replace('/', ' :: ')
+        props << "build.name=${currentBuildName}"
+        props << "build.number=${env.BUILD_NUMBER}"
+        if (buildName) {
+            props << "build.parentName=${buildName}"
+        }
+        if (buildNumber) {
+            props << "build.parentNumber=${buildNumber}"
+        }
+        if (buildTimestamp) {
+            props << "build.timestamp=${buildTimestamp}"
+        }
+
+        // update artifact property
+        this.steps.echo "Updating artifact properties:\n${props.join("\n")}"
+
+        def setPropsResult = this.steps.sh(
+            script: "jfrog rt set-props \"${targetFullPath}\" \"" + props.join(';') + "\"",
+            returnStdout: true
+        ).trim()
+        def setPropsResultObject = readJSON(text: setPropsResult)
+        this.steps.echo "Artifact promoting result:\n" +
+            "- status  : ${setPropsResultObject['status']}\n" +
+            "- success : ${setPropsResultObject['totals']['success']}\n" +
+            "- failure : ${setPropsResultObject['totals']['failure']}"
+        if (setPropsResultObject['status'] != 'success' ||
+            setPropsResultObject['totals']['success'] != 1 || setPropsResultObject['totals']['failure'] != 0) {
+            throw new ArtifactException("Artifact property is not updated successfully.")
+        }
+
+        return targetFullPath
+    }
     /**
      * Promote artifact
+     *
+     * @param  source            information of the artifact will be promoted.
+     * @param  targetPath        target path on remote Artifactory
+     * @param  targetName        target artifact name. optional, default to original name
+     * @return                   full path to the promoted artifact
      */
-    void promote(Map args = [:]) {
-        throw new UnderConstructionException('Under construction')
+    String promote(String source, String targetPath, String targetName = '') {
+        return this.promote([source: source, targetPath: targetPath, targetName: targetName])
     }
 }

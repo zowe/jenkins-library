@@ -32,12 +32,9 @@ interface ArtifactInterface {
     void upload(Map args)
 
     /**
-     * Search artifacts with pattern
-     */
-    void search(Map args)
-
-    /**
      * Promote artifact
+     *
+     * @return                   full path to the promoted artifact
      */
-    void promote(Map args)
+    String promote(Map args)
 }

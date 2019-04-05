@@ -8,6 +8,13 @@ def lib = library("jenkins-library@${params.LIBRARY_BRANCH}").org.zowe.jenkins_s
 // global var for JFrogArtifactory object
 def jfrog
 
+// test constants
+String testLocalArtifact = ".tmp-artifact"
+String testRemoteArtifact = "test-artifactory-upload.txt"
+Integer testPropValue    = 1
+String snapshotArtifact  = "libs-snapshot-local/org/zowe/jenkins-library-test/${testRemoteArtifact}"
+String releaseFolder     = "libs-release-local/org/zowe/jenkins-library-test/"
+
 node ('ibm-jenkins-slave-nvm-jnlp') {
     /**
      * Initialize JFrogArtifactory object
@@ -102,15 +109,36 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to upload artifact
      */
     stage('upload') {
-        String testArtifact = ".tmp-artifact"
-        sh "echo test > ${testArtifact}"
-        def target = "libs-snapshot-local/org/zowe/jenkins-library-test/test-artifactory-upload.txt"
+        // prepare artifact
+        sh "echo test > ${testLocalArtifact}"
 
         // upload the artifact
-        jfrog.upload(testArtifact, target, [
-            'library-test': 1
+        jfrog.upload(testLocalArtifact, snapshotArtifact, [
+            'test.key': testPropValue
         ])
 
+        // get artifact
+        Map artifact = jfrog.getArtifact(snapshotArtifact)
+        // NOTE: property value should be converted to string
+        if (!artifact || artifact['test.key'] != "${testPropValue}") {
+            error 'Artifact property "test.key" is not set correctly.'
+        }
+
         echo "[JFROG_ARTIFACTORY_TEST] upload successfully"
+    }
+
+    /**
+     * Should be able to promote artifact
+     *
+     * Will use artifact uploaded from upload stage
+     */
+    stage('promote') {
+        def result = jfrog.promote(snapshotArtifact, releaseFolder)
+
+        if (result != "${releaseFolder}${testRemoteArtifact}") {
+            error "Promote result \"${result}\" is not as expected \"${releaseFolder}${testRemoteArtifact}\"."
+        }
+
+        echo "[JFROG_ARTIFACTORY_TEST] promote successfully"
     }
 }
