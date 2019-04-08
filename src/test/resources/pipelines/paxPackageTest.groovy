@@ -139,5 +139,7 @@ echo "[${hookPostPackaging}] ended."
         }
 
         // echo "[PAX_PACKAGE_TEST] unpack successfully"
+
+        error "stop here"
     }
 }
