@@ -9,11 +9,11 @@ def lib = library("jenkins-library@${params.LIBRARY_BRANCH}").org.zowe.jenkins_s
 def jfrog
 
 // test constants
-String testLocalArtifact = ".tmp-artifact"
+String testLocalArtifact  = ".tmp-artifact"
 String testRemoteArtifact = "test-artifactory-upload.txt"
-Integer testPropValue    = 1
-String snapshotArtifact  = "libs-snapshot-local/org/zowe/jenkins-library-test/${testRemoteArtifact}"
-String releaseFolder     = "libs-release-local/org/zowe/jenkins-library-test/"
+Integer testPropValue     = 1
+String snapshotArtifact   = "libs-snapshot-local/org/zowe/jenkins-library-test/${testRemoteArtifact}"
+String releaseFolder      = "libs-release-local/org/zowe/jenkins-library-test/"
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     /**

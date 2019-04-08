@@ -11,10 +11,10 @@ def github
 // this repository will be used for testing
 def TEST_REPORSITORY = 'zowe/jenkins-library-fvt-nodejs'
 // branch to run test
-def TEST_BRANCH = 'master'
+def TEST_BRANCH      = 'master'
 
 // the folder name where the repository will be cloned to
-def CLONE_DIRECTORY = '.tmp-git'
+def CLONE_DIRECTORY  = '.tmp-git'
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     /**

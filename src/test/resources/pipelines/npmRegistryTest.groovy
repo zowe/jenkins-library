@@ -12,14 +12,14 @@ def npmRegistry
 def github
 
 // this repository will be used for testing
-def TEST_OWNER = 'zowe'
+def TEST_OWNER        = 'zowe'
 // this repository will be used for testing
-def TEST_REPORSITORY = 'jenkins-library-fvt-nodejs'
+def TEST_REPORSITORY  = 'jenkins-library-fvt-nodejs'
 // branch to run test
-def TEST_BRANCH = 'master'
+def TEST_BRANCH       = 'master'
 
 // expected scope
-def EXPECTED_SCOPE = 'zowe'
+def EXPECTED_SCOPE    = 'zowe'
 // expected registry
 def EXPECTED_REGISTRY = 'https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-local-release/'
 

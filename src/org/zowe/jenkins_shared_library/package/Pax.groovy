@@ -92,7 +92,7 @@ class Pax {
     /**
      * SSH server port
      */
-    String sshPort
+    String sshPort = '22'
 
     /**
      * SSH server credential ID
@@ -163,9 +163,8 @@ class Pax {
      * @param   filename       package file name will be created
      * @param   environments   environment variables
      * @param   writeOptions   pax write command options
-     * @param
      */
-    void package(Map args = [:]) throws InvalidArgumentException {
+    void package(Map args = [:]) throws InvalidArgumentException, PackageException {
         def func = '[Pax.package]'
 
         // init with arguments
@@ -173,6 +172,12 @@ class Pax {
             this.init(args)
         }
         // validate arguments
+        if (!this.sshHost) {
+            throw new InvalidArgumentException('sshHost')
+        }
+        if (!this.sshCredential) {
+            throw new InvalidArgumentException('sshCredential')
+        }
         if (!args['job']) {
             throw new InvalidArgumentException('job')
         }
@@ -327,31 +332,29 @@ rm -fr ${this.localWorkspace}/${PATH_ASCII}
             ]) {
                 try {
                     // send to pax server
-                    sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
+                    this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
 put ${packageTar} ${remoteWorkspace}
 put ${packageScriptFile} ${remoteWorkspace}
 EOF"""
                     // extract tar file, run pre/post hooks and create pax file
-                    sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
+                    this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
 iconv -f ISO8859-1 -t IBM-1047 ${remoteWorkspace}/${packageScriptFile} > ${remoteWorkspace}/${packageScriptFile}.new
 mv ${remoteWorkspace}/${packageScriptFile}.new ${remoteWorkspace}/${packageScriptFile}
 chmod +x ${remoteWorkspace}/${packageScriptFile}
 . ${remoteWorkspace}/${packageScriptFile}
 EOF"""
                     // copy back pax file
-                    sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
+                    this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
 get ${remoteWorkspaceFullPath}/${args['filename']} ${this.localWorkspace}
 EOF"""
-                    successful = true
                 } catch (ex1) {
-                    // display errors
-                    echo "${func}[ERROR] in packaging: ${ex1}"
-                    throw ex1
+                    // throw error
+                    throw new PackageException("Pax packaging failed: ${ex1}")
                 } finally {
                     try {
                         // always clean up temporary files/folders
-                        echo "${func} cleaning up remote workspace..."
-                        sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspace}/${args['job']}-${branch}-*\""
+                        this.steps.echo "${func} cleaning up remote workspace..."
+                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspace}/${args['job']}-${branch}-*\""
                     } catch (ex2) {
                         // ignore errors for cleaning up
                     }

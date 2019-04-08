@@ -9,7 +9,9 @@ def lib = library("jenkins-library@${params.LIBRARY_BRANCH}").org.zowe.jenkins_s
 def pax
 
 // test constants
-String testJobName = "library-test"
+String TEST_JOB_NAME      = "library-test"
+String TEST_ENV_VAR_NAME  = 'LIBRARY_TEST_SAMPLE_VAR'
+String TEST_ENV_VAR_VALUE = '1234'
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
     /**
@@ -43,7 +45,7 @@ cp \$WHICH_BASH ${localWorkspace}/${pax.PATH_CONTENT}/
 echo "[${pax.HOOK_PREPARE_PACKAGING}] prepare a text file ..."
 echo "this should be human readable" > ${localWorkspace}/${pax.PATH_ASCII}/test-ascii.txt
 
-echo "[${pax.HOOK_PREPARE_PACKAGING}] TEST_SAMPLE_ENV_VAR=\${TEST_SAMPLE_ENV_VAR}"
+echo "[${pax.HOOK_PREPARE_PACKAGING}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 
 echo "[${pax.HOOK_PREPARE_PACKAGING}] ended."
 """
@@ -52,7 +54,7 @@ echo "[${pax.HOOK_PREPARE_PACKAGING}] ended."
         writeFile file: "${localWorkspace}/${pax.HOOK_PRE_PACKAGING}", text: """
 echo "[${pax.HOOK_PRE_PACKAGING}] started ..."
 echo "[${pax.HOOK_PRE_PACKAGING}] pwd=\$(pwd)"
-echo "[${pax.HOOK_PRE_PACKAGING}] TEST_SAMPLE_ENV_VAR=\${TEST_SAMPLE_ENV_VAR}"
+echo "[${pax.HOOK_PRE_PACKAGING}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 echo "[${pax.HOOK_PRE_PACKAGING}] ended."
 """
 
@@ -60,7 +62,7 @@ echo "[${pax.HOOK_PRE_PACKAGING}] ended."
         writeFile file: "${localWorkspace}/${pax.HOOK_POST_PACKAGING}", text: """
 echo "[${pax.HOOK_POST_PACKAGING}] started ..."
 echo "[${pax.HOOK_POST_PACKAGING}] pwd=\$(pwd)"
-echo "[${pax.HOOK_POST_PACKAGING}] TEST_SAMPLE_ENV_VAR=\${TEST_SAMPLE_ENV_VAR}"
+echo "[${pax.HOOK_POST_PACKAGING}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 echo "[${pax.HOOK_POST_PACKAGING}] ended."
 """
 
@@ -71,13 +73,9 @@ echo "[${pax.HOOK_POST_PACKAGING}] ended."
      * Should be able to create a PAX package
      */
     stage('package') {
-        pax.package(
-            job          : testJobName,
-            filename     : "${testJobName}.pax",
-            environments : ['TEST_SAMPLE_ENV_VAR': '123']
-        )
+        pax.package(TEST_JOB_NAME, "${TEST_JOB_NAME}.pax", ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE])
 
-        if (!fileExists("${localWorkspace}/${testJobName}.pax")) {
+        if (!fileExists("${localWorkspace}/${TEST_JOB_NAME}.pax")) {
             error 'Failed to find the expected package'
         }
 
