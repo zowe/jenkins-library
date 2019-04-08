@@ -262,6 +262,12 @@ if [ -f "${HOOK_PRE_PACKAGING}" ]; then
   fi
 fi
 
+# list working folder
+cd ${remoteWorkspace}
+echo "${func} content of ${remoteWorkspace} starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+ls -laR
+echo "${func} content of ${remoteWorkspace} ends   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+
 # create PAX file
 if [ -d "${remoteWorkspaceFullPath}/${PATH_CONTENT}" ]; then
   echo "${func} creating package ..."
@@ -290,11 +296,6 @@ if [ -f "${HOOK_POST_PACKAGING}" ]; then
   fi
 fi
 
-# list working folder
-cd ${remoteWorkspace}
-echo "${func} temporary content of ${remoteWorkspace}/${args['job']}-* ..."
-ls -la ${args['job']}-*
-
 if [ -f "${remoteWorkspaceFullPath}/${args['filename']}" ]; then
   echo "${func} done"
   exit 0
@@ -309,11 +310,10 @@ fi
             if (this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}")) {
                 this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
             }
+            this.steps.sh "echo \"${func} packaging contents:\" && find ${this.localWorkspace}/${PATH_ASCII} -print"
             // tar ascii folder if exists
             if (this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}")) {
-                this.steps.sh """echo "${func} ASCII contents:"
-find ${this.localWorkspace}/${PATH_ASCII} -print
-tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C ${this.localWorkspace}/ ${PATH_ASCII}
+                this.steps.sh """tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C ${this.localWorkspace}/ ${PATH_ASCII}
 rm -fr ${this.localWorkspace}/${PATH_ASCII}
 """
             }
@@ -357,7 +357,7 @@ EOF"""
                     try {
                         // always clean up temporary files/folders
                         this.steps.echo "${func} cleaning up remote workspace..."
-                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspace}/${processUid}\""
+                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}\""
                     } catch (ex2) {
                         // ignore errors for cleaning up
                     }
