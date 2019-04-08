@@ -377,6 +377,6 @@ EOF"""
      * @param   writeOptions   pax write command options
      */
     void pack(String job, String filename, Map environments = [:], String writeOptions = '') {
-        this.package(job: job, filename: filename, environments: environments, writeOptions: writeOptions)
+        this.pack(job: job, filename: filename, environments: environments, writeOptions: writeOptions)
     }
 }
