@@ -10,6 +10,7 @@ def pax
 
 // test constants
 String TEST_JOB_NAME      = "library-test"
+String TEST_BINARY_FILE   = 'bash'
 String TEST_ASCII_FILE    = "test-ascii.txt"
 String TEST_ASCII_CONTENT = "this should be human readable"
 String TEST_ENV_VAR_NAME  = 'LIBRARY_TEST_SAMPLE_VAR'
@@ -46,8 +47,8 @@ echo "[${hookPrepareWorkspace}] started ..."
 echo "[${hookPrepareWorkspace}] pwd=\$(pwd)"
 
 echo "[${hookPrepareWorkspace}] prepare a binary file ..."
-WHICH_BASH=\$(which bash)
-cp \$WHICH_BASH ${localWorkspace}/${pathContent}/
+WHICH_BINARY=\$(which ${TEST_BINARY_FILE})
+cp \$WHICH_BINARY ${localWorkspace}/${pathContent}/
 
 echo "[${hookPrepareWorkspace}] prepare a text file ..."
 echo "${TEST_ASCII_CONTENT}" > ${localWorkspace}/${pathAscii}/${TEST_ASCII_FILE}
@@ -115,13 +116,17 @@ echo "[${hookPostPackaging}] ended."
                 sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"mkdir -p ${remoteWorkspaceFullPath}\""
 
                 def result = pax.unpack("${localWorkspace}/${TEST_JOB_NAME}.pax", remoteWorkspaceFullPath)
-                echo "result=[${result}]"
+                if (!result.contains("${remoteWorkspaceFullPath}/${TEST_BINARY_FILE}") || !result.contains("${remoteWorkspaceFullPath}/${TEST_ASCII_FILE}")) {
+                    error "Unpack result doesn't not contain \"${TEST_BINARY_FILE}\" or \"${TEST_ASCII_FILE}\": ${result}"
+                }
 
                 def textFileContent = sh(
                     script: "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"cat ${remoteWorkspaceFullPath}/${TEST_ASCII_FILE}\"",
                     returnStdout: true
                 ).trim()
-                echo "textFileContent=[${textFileContent}]"
+                if (textFileContent != TEST_ASCII_CONTENT) {
+                    error "Test ASCII file doesn't not contain \"${TEST_ASCII_CONTENT}\": ${textFileContent}"
+                }
             }
         } catch (e) {
             throw e
@@ -138,8 +143,6 @@ echo "[${hookPostPackaging}] ended."
             }
         }
 
-        // echo "[PAX_PACKAGE_TEST] unpack successfully"
-
-        error "stop here"
+        echo "[PAX_PACKAGE_TEST] unpack successfully"
     }
 }
