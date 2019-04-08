@@ -201,7 +201,7 @@ class Pax {
 
         def env = this.steps.env
         this.steps.echo "env=${env}"
-        def processUid = "${args['job']}-${ts}"
+        def processUid = "${args['job']}-${Utils.getTimestamp()}"
         def remoteWorkspaceFullPath = "${remoteWorkspace}/${processUid}"
         def packageTar = "${processUid}.tar"
         def packageScriptFile = "${processUid}.sh"
