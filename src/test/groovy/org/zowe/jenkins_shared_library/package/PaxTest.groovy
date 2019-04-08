@@ -55,7 +55,7 @@ PAX_SERVER_CREDENTIAL=${System.getProperty('pax.server.crdential')}
     }
 
     @Test
-    void testPackage() {
+    void testPack() {
         // check environment variable is successfully set
         String TEST_ENV_VAR_NAME  = 'LIBRARY_TEST_SAMPLE_VAR'
         String TEST_ENV_VAR_VALUE = '1234'
@@ -63,6 +63,11 @@ PAX_SERVER_CREDENTIAL=${System.getProperty('pax.server.crdential')}
         assertThat('Build console log', buildLog, containsString("[pre-packaging.sh] ${TEST_ENV_VAR_NAME}=${TEST_ENV_VAR_VALUE}"))
         assertThat('Build console log', buildLog, containsString("[post-packaging.sh] ${TEST_ENV_VAR_NAME}=${TEST_ENV_VAR_VALUE}"))
 
-        assertThat('Build console log', buildLog, containsString('[PAX_PACKAGE_TEST] package successfully'))
+        assertThat('Build console log', buildLog, containsString('[PAX_PACKAGE_TEST] pack successfully'))
+    }
+
+    @Test
+    void testUnpack() {
+        assertThat('Build console log', buildLog, containsString('[PAX_PACKAGE_TEST] unpack successfully'))
     }
 }

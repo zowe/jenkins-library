@@ -428,6 +428,7 @@ EOF"""
                 this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
 cd ${remoteWorkspace}
 pax -rf ${exactFilename} ${args['paxOptions']}
+exit 0
 EOF"""
                 // get extracted result
                 result = this.steps.sh(

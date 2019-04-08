@@ -90,7 +90,7 @@ echo "[${hookPostPackaging}] ended."
             error 'Failed to find the expected package'
         }
 
-        echo "[PAX_PACKAGE_TEST] package successfully"
+        echo "[PAX_PACKAGE_TEST] pack successfully"
     }
 
     /**
@@ -121,7 +121,7 @@ echo "[${hookPostPackaging}] ended."
                 echo "textFileContent=[${textFileContent}]"
             }
         } catch (e) {
-
+            throw e
         } finally {
             withCredentials([
                 usernamePassword(
@@ -135,6 +135,6 @@ echo "[${hookPostPackaging}] ended."
             }
         }
 
-        echo "[PAX_PACKAGE_TEST] package successfully"
+        echo "[PAX_PACKAGE_TEST] unpack successfully"
     }
 }
