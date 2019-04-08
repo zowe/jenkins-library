@@ -31,43 +31,43 @@ class Pax {
     /**
      * Constant of package.json file name
      */
-    public static final String DEFAULT_LOCAL_WORKSPACE = './pax-workspace'
+    static final String DEFAULT_LOCAL_WORKSPACE = './pax-workspace'
 
     /**
      * Constant of package.json file name
      */
-    public static final String DEFAULT_REMOTE_WORKSPACE = '/tmp'
+    static final String DEFAULT_REMOTE_WORKSPACE = '/tmp'
 
     /**
      * Constant of local content folder
      */
-    public static final String PATH_CONTENT = 'content'
+    static final String PATH_CONTENT = 'content'
 
     /**
      * Constant of local ascii folder
      */
-    public static final String PATH_ASCII = 'ascii'
+    static final String PATH_ASCII = 'ascii'
 
     /**
      * Constant of prepare-packaging hook
      *
      * This hook script runs on local workspace
      */
-    public static final String HOOK_PREPARE_WORKSPACE = 'prepare-workspace.sh'
+    static final String HOOK_PREPARE_WORKSPACE = 'prepare-workspace.sh'
 
     /**
      * Constant of pre-packaging hook
      *
      * This hook script runs on remote workspace
      */
-    public static final String HOOK_PRE_PACKAGING = 'pre-packaging.sh'
+    static final String HOOK_PRE_PACKAGING = 'pre-packaging.sh'
 
     /**
      * Constant of post-packaging hook
      *
      * This hook script runs on remote workspace
      */
-    public static final String HOOK_POST_PACKAGING = 'post-packaging.sh'
+    static final String HOOK_POST_PACKAGING = 'post-packaging.sh'
 
     /**
      * Reference to the groovy pipeline variable.

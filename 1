@@ -1,0 +1,1883 @@
+Compiled from "Pax.groovy"
+public class org.zowe.jenkins_shared_library.package.Pax implements groovy.lang.GroovyObject {
+  public static transient boolean __$stMC;
+
+  public org.zowe.jenkins_shared_library.package.Pax(java.lang.Object);
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore_2
+       4: aload_0
+       5: invokespecial #51                 // Method java/lang/Object."<init>":()V
+       8: ldc           #53                 // String 22
+      10: astore_3
+      11: aload_3
+      12: aload_0
+      13: swap
+      14: putfield      #55                 // Field sshPort:Ljava/lang/String;
+      17: aload_3
+      18: pop
+      19: aload_0
+      20: invokevirtual #59                 // Method $getStaticMetaClass:()Lgroovy/lang/MetaClass;
+      23: astore        4
+      25: aload         4
+      27: aload_0
+      28: swap
+      29: putfield      #61                 // Field metaClass:Lgroovy/lang/MetaClass;
+      32: aload         4
+      34: pop
+      35: aload_1
+      36: astore        5
+      38: aload         5
+      40: aload_0
+      41: swap
+      42: putfield      #63                 // Field steps:Ljava/lang/Object;
+      45: aload         5
+      47: pop
+      48: return
+
+  public void init(java.util.Map);
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore_2
+       4: aload_2
+       5: ldc           #68                 // int 0
+       7: aaload
+       8: aload_1
+       9: ldc           #69                 // String localWorkspace
+      11: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      16: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+      19: ifeq          49
+      22: aload_2
+      23: ldc           #82                 // int 1
+      25: aaload
+      26: aload_1
+      27: ldc           #69                 // String localWorkspace
+      29: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      34: astore_3
+      35: aload_3
+      36: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+      39: checkcast     #90                 // class java/lang/String
+      42: aload_0
+      43: swap
+      44: putfield      #92                 // Field localWorkspace:Ljava/lang/String;
+      47: aload_3
+      48: pop
+      49: aload_0
+      50: getfield      #92                 // Field localWorkspace:Ljava/lang/String;
+      53: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+      56: ifne          63
+      59: iconst_1
+      60: goto          64
+      63: iconst_0
+      64: ifeq          88
+      67: getstatic     #94                 // Field DEFAULT_LOCAL_WORKSPACE:Ljava/lang/String;
+      70: astore        4
+      72: aload         4
+      74: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+      77: checkcast     #90                 // class java/lang/String
+      80: aload_0
+      81: swap
+      82: putfield      #92                 // Field localWorkspace:Ljava/lang/String;
+      85: aload         4
+      87: pop
+      88: aload_2
+      89: ldc           #95                 // int 2
+      91: aaload
+      92: aload_1
+      93: ldc           #96                 // String remoteWorkspace
+      95: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     100: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     103: ifeq          136
+     106: aload_2
+     107: ldc           #97                 // int 3
+     109: aaload
+     110: aload_1
+     111: ldc           #96                 // String remoteWorkspace
+     113: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     118: astore        5
+     120: aload         5
+     122: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+     125: checkcast     #90                 // class java/lang/String
+     128: aload_0
+     129: swap
+     130: putfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     133: aload         5
+     135: pop
+     136: aload_0
+     137: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     140: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     143: ifne          150
+     146: iconst_1
+     147: goto          151
+     150: iconst_0
+     151: ifeq          175
+     154: getstatic     #101                // Field DEFAULT_REMOTE_WORKSPACE:Ljava/lang/String;
+     157: astore        6
+     159: aload         6
+     161: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+     164: checkcast     #90                 // class java/lang/String
+     167: aload_0
+     168: swap
+     169: putfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     172: aload         6
+     174: pop
+     175: aload_2
+     176: ldc           #102                // int 4
+     178: aaload
+     179: aload_1
+     180: ldc           #103                // String sshHost
+     182: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     187: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     190: ifeq          223
+     193: aload_2
+     194: ldc           #104                // int 5
+     196: aaload
+     197: aload_1
+     198: ldc           #103                // String sshHost
+     200: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     205: astore        7
+     207: aload         7
+     209: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+     212: checkcast     #90                 // class java/lang/String
+     215: aload_0
+     216: swap
+     217: putfield      #106                // Field sshHost:Ljava/lang/String;
+     220: aload         7
+     222: pop
+     223: aload_2
+     224: ldc           #107                // int 6
+     226: aaload
+     227: aload_1
+     228: ldc           #108                // String sshPort
+     230: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     235: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     238: ifeq          271
+     241: aload_2
+     242: ldc           #109                // int 7
+     244: aaload
+     245: aload_1
+     246: ldc           #108                // String sshPort
+     248: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     253: astore        8
+     255: aload         8
+     257: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+     260: checkcast     #90                 // class java/lang/String
+     263: aload_0
+     264: swap
+     265: putfield      #55                 // Field sshPort:Ljava/lang/String;
+     268: aload         8
+     270: pop
+     271: aload_2
+     272: ldc           #110                // int 8
+     274: aaload
+     275: aload_1
+     276: ldc           #111                // String sshCredential
+     278: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     283: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     286: ifeq          319
+     289: aload_2
+     290: ldc           #112                // int 9
+     292: aaload
+     293: aload_1
+     294: ldc           #111                // String sshCredential
+     296: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     301: astore        9
+     303: aload         9
+     305: invokestatic  #88                 // Method org/codehaus/groovy/runtime/typehandling/ShortTypeHandling.castToString:(Ljava/lang/Object;)Ljava/lang/String;
+     308: checkcast     #90                 // class java/lang/String
+     311: aload_0
+     312: swap
+     313: putfield      #114                // Field sshCredential:Ljava/lang/String;
+     316: aload         9
+     318: pop
+     319: return
+
+  public void pack(java.util.Map) throws org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException, org.zowe.jenkins_shared_library.package.PackageException;
+    Code:
+       0: aload_1
+       1: new           #125                // class groovy/lang/Reference
+       4: dup_x1
+       5: swap
+       6: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+       9: astore_2
+      10: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+      13: astore_3
+      14: ldc           #129                // String [Pax.pack]
+      16: new           #125                // class groovy/lang/Reference
+      19: dup_x1
+      20: swap
+      21: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+      24: astore        4
+      26: aload         4
+      28: pop
+      29: aload_3
+      30: ldc           #130                // int 10
+      32: aaload
+      33: aload_2
+      34: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+      37: checkcast     #136                // class java/util/Map
+      40: invokeinterface #139,  2          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;)Ljava/lang/Object;
+      45: iconst_0
+      46: invokestatic  #145                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      49: invokestatic  #151                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.compareGreaterThan:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      52: ifeq          73
+      55: aload_3
+      56: ldc           #152                // int 11
+      58: aaload
+      59: aload_0
+      60: aload_2
+      61: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+      64: checkcast     #136                // class java/util/Map
+      67: invokeinterface #156,  3          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callCurrent:(Lgroovy/lang/GroovyObject;Ljava/lang/Object;)Ljava/lang/Object;
+      72: pop
+      73: aload_0
+      74: getfield      #106                // Field sshHost:Ljava/lang/String;
+      77: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+      80: ifne          87
+      83: iconst_1
+      84: goto          88
+      87: iconst_0
+      88: ifeq          108
+      91: aload_3
+      92: ldc           #157                // int 12
+      94: aaload
+      95: ldc           #121                // class org/zowe/jenkins_shared_library/exceptions/InvalidArgumentException
+      97: ldc           #103                // String sshHost
+      99: invokeinterface #160,  3          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callConstructor:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     104: checkcast     #162                // class java/lang/Throwable
+     107: athrow
+     108: aload_0
+     109: getfield      #114                // Field sshCredential:Ljava/lang/String;
+     112: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     115: ifne          122
+     118: iconst_1
+     119: goto          123
+     122: iconst_0
+     123: ifeq          143
+     126: aload_3
+     127: ldc           #163                // int 13
+     129: aaload
+     130: ldc           #121                // class org/zowe/jenkins_shared_library/exceptions/InvalidArgumentException
+     132: ldc           #111                // String sshCredential
+     134: invokeinterface #160,  3          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callConstructor:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     139: checkcast     #162                // class java/lang/Throwable
+     142: athrow
+     143: aload_3
+     144: ldc           #164                // int 14
+     146: aaload
+     147: aload_2
+     148: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     151: checkcast     #136                // class java/util/Map
+     154: ldc           #166                // String job
+     156: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     161: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     164: ifne          171
+     167: iconst_1
+     168: goto          172
+     171: iconst_0
+     172: ifeq          192
+     175: aload_3
+     176: ldc           #167                // int 15
+     178: aaload
+     179: ldc           #121                // class org/zowe/jenkins_shared_library/exceptions/InvalidArgumentException
+     181: ldc           #166                // String job
+     183: invokeinterface #160,  3          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callConstructor:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     188: checkcast     #162                // class java/lang/Throwable
+     191: athrow
+     192: aload_3
+     193: ldc           #168                // int 16
+     195: aaload
+     196: aload_2
+     197: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     200: checkcast     #136                // class java/util/Map
+     203: ldc           #170                // String filename
+     205: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     210: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     213: ifne          220
+     216: iconst_1
+     217: goto          221
+     220: iconst_0
+     221: ifeq          241
+     224: aload_3
+     225: ldc           #171                // int 17
+     227: aaload
+     228: ldc           #121                // class org/zowe/jenkins_shared_library/exceptions/InvalidArgumentException
+     230: ldc           #170                // String filename
+     232: invokeinterface #160,  3          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callConstructor:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     237: checkcast     #162                // class java/lang/Throwable
+     240: athrow
+     241: ldc           #173                // String
+     243: new           #125                // class groovy/lang/Reference
+     246: dup_x1
+     247: swap
+     248: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+     251: astore        5
+     253: aload         5
+     255: pop
+     256: aload_3
+     257: ldc           #174                // int 18
+     259: aaload
+     260: aload_2
+     261: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     264: checkcast     #136                // class java/util/Map
+     267: ldc           #176                // String environments
+     269: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     274: invokestatic  #81                 // Method org/codehaus/groovy/runtime/typehandling/DefaultTypeTransformation.booleanUnbox:(Ljava/lang/Object;)Z
+     277: ifeq          308
+     280: aload_3
+     281: ldc           #177                // int 19
+     283: aaload
+     284: aload_2
+     285: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     288: checkcast     #136                // class java/util/Map
+     291: ldc           #176                // String environments
+     293: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     298: instanceof    #136                // class java/util/Map
+     301: ifeq          308
+     304: iconst_1
+     305: goto          309
+     308: iconst_0
+     309: ifeq          512
+     312: aload_3
+     313: ldc           #178                // int 20
+     315: aaload
+     316: aload_3
+     317: ldc           #179                // int 21
+     319: aaload
+     320: aload_2
+     321: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     324: checkcast     #136                // class java/util/Map
+     327: ldc           #176                // String environments
+     329: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     334: new           #181                // class org/zowe/jenkins_shared_library/package/Pax$_pack_closure1
+     337: dup
+     338: aload_0
+     339: aload_0
+     340: aload         5
+     342: invokespecial #184                // Method org/zowe/jenkins_shared_library/package/Pax$_pack_closure1."<init>":(Ljava/lang/Object;Ljava/lang/Object;Lgroovy/lang/Reference;)V
+     345: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     350: pop
+     351: aload_3
+     352: ldc           #185                // int 22
+     354: aaload
+     355: aload_0
+     356: getfield      #63                 // Field steps:Ljava/lang/Object;
+     359: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     362: dup
+     363: iconst_2
+     364: anewarray     #4                  // class java/lang/Object
+     367: dup
+     368: iconst_0
+     369: aload         4
+     371: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     374: aastore
+     375: dup
+     376: iconst_1
+     377: aload         5
+     379: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     382: aastore
+     383: iconst_3
+     384: anewarray     #90                 // class java/lang/String
+     387: dup
+     388: iconst_0
+     389: ldc           #173                // String
+     391: aastore
+     392: dup
+     393: iconst_1
+     394: ldc           #189                // String  pre-defined environments:
+     396: aastore
+     397: dup
+     398: iconst_2
+     399: ldc           #173                // String
+     401: aastore
+     402: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+     405: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     410: pop
+     411: goto          503
+     414: astore        6
+     416: aload_3
+     417: ldc           #193                // int 23
+     419: aaload
+     420: aload_0
+     421: getfield      #63                 // Field steps:Ljava/lang/Object;
+     424: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     427: dup
+     428: iconst_3
+     429: anewarray     #4                  // class java/lang/Object
+     432: dup
+     433: iconst_0
+     434: aload         4
+     436: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     439: aastore
+     440: dup
+     441: iconst_1
+     442: aload_3
+     443: ldc           #194                // int 24
+     445: aaload
+     446: aload_2
+     447: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     450: checkcast     #136                // class java/util/Map
+     453: ldc           #176                // String environments
+     455: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     460: aastore
+     461: dup
+     462: iconst_2
+     463: aload         6
+     465: aastore
+     466: iconst_4
+     467: anewarray     #90                 // class java/lang/String
+     470: dup
+     471: iconst_0
+     472: ldc           #173                // String
+     474: aastore
+     475: dup
+     476: iconst_1
+     477: ldc           #196                // String [WARN] failed to prepare environments:
+     479: aastore
+     480: dup
+     481: iconst_2
+     482: ldc           #198                // String \n
+     484: aastore
+     485: dup
+     486: iconst_3
+     487: ldc           #173                // String
+     489: aastore
+     490: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+     493: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     498: pop
+     499: nop
+     500: goto          503
+     503: nop
+     504: goto          512
+     507: astore        7
+     509: aload         7
+     511: athrow
+     512: aload_3
+     513: ldc           #201                // int 25
+     515: aaload
+     516: aload_0
+     517: getfield      #63                 // Field steps:Ljava/lang/Object;
+     520: invokeinterface #204,  2          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callGetProperty:(Ljava/lang/Object;)Ljava/lang/Object;
+     525: astore        8
+     527: aload         8
+     529: pop
+     530: aload_3
+     531: ldc           #205                // int 26
+     533: aaload
+     534: ldc           #207                // class org/zowe/jenkins_shared_library/Utils
+     536: invokeinterface #139,  2          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;)Ljava/lang/Object;
+     541: astore        9
+     543: aload         9
+     545: pop
+     546: aload_3
+     547: ldc           #208                // int 27
+     549: aaload
+     550: ldc           #207                // class org/zowe/jenkins_shared_library/Utils
+     552: aload_3
+     553: ldc           #209                // int 28
+     555: aaload
+     556: aload         8
+     558: invokeinterface #204,  2          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callGetProperty:(Ljava/lang/Object;)Ljava/lang/Object;
+     563: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     568: new           #125                // class groovy/lang/Reference
+     571: dup_x1
+     572: swap
+     573: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+     576: astore        10
+     578: aload         10
+     580: pop
+     581: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     584: dup
+     585: iconst_3
+     586: anewarray     #4                  // class java/lang/Object
+     589: dup
+     590: iconst_0
+     591: aload_3
+     592: ldc           #210                // int 29
+     594: aaload
+     595: aload_2
+     596: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     599: checkcast     #136                // class java/util/Map
+     602: ldc           #166                // String job
+     604: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     609: aastore
+     610: dup
+     611: iconst_1
+     612: aload         10
+     614: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     617: aastore
+     618: dup
+     619: iconst_2
+     620: aload         9
+     622: aastore
+     623: iconst_4
+     624: anewarray     #90                 // class java/lang/String
+     627: dup
+     628: iconst_0
+     629: ldc           #173                // String
+     631: aastore
+     632: dup
+     633: iconst_1
+     634: ldc           #212                // String -
+     636: aastore
+     637: dup
+     638: iconst_2
+     639: ldc           #212                // String -
+     641: aastore
+     642: dup
+     643: iconst_3
+     644: ldc           #173                // String
+     646: aastore
+     647: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+     650: astore        11
+     652: aload         11
+     654: pop
+     655: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     658: dup
+     659: iconst_2
+     660: anewarray     #4                  // class java/lang/Object
+     663: dup
+     664: iconst_0
+     665: aload_0
+     666: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     669: aastore
+     670: dup
+     671: iconst_1
+     672: aload         11
+     674: aastore
+     675: iconst_3
+     676: anewarray     #90                 // class java/lang/String
+     679: dup
+     680: iconst_0
+     681: ldc           #173                // String
+     683: aastore
+     684: dup
+     685: iconst_1
+     686: ldc           #214                // String /
+     688: aastore
+     689: dup
+     690: iconst_2
+     691: ldc           #173                // String
+     693: aastore
+     694: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+     697: new           #125                // class groovy/lang/Reference
+     700: dup_x1
+     701: swap
+     702: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+     705: astore        12
+     707: aload         12
+     709: pop
+     710: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     713: dup
+     714: iconst_1
+     715: anewarray     #4                  // class java/lang/Object
+     718: dup
+     719: iconst_0
+     720: aload         11
+     722: aastore
+     723: iconst_2
+     724: anewarray     #90                 // class java/lang/String
+     727: dup
+     728: iconst_0
+     729: ldc           #173                // String
+     731: aastore
+     732: dup
+     733: iconst_1
+     734: ldc           #216                // String .tar
+     736: aastore
+     737: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+     740: new           #125                // class groovy/lang/Reference
+     743: dup_x1
+     744: swap
+     745: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+     748: astore        13
+     750: aload         13
+     752: pop
+     753: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     756: dup
+     757: iconst_1
+     758: anewarray     #4                  // class java/lang/Object
+     761: dup
+     762: iconst_0
+     763: aload         11
+     765: aastore
+     766: iconst_2
+     767: anewarray     #90                 // class java/lang/String
+     770: dup
+     771: iconst_0
+     772: ldc           #173                // String
+     774: aastore
+     775: dup
+     776: iconst_1
+     777: ldc           #218                // String .sh
+     779: aastore
+     780: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+     783: new           #125                // class groovy/lang/Reference
+     786: dup_x1
+     787: swap
+     788: invokespecial #127                // Method groovy/lang/Reference."<init>":(Ljava/lang/Object;)V
+     791: astore        14
+     793: aload         14
+     795: pop
+     796: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+     799: dup
+     800: bipush        83
+     802: anewarray     #4                  // class java/lang/Object
+     805: dup
+     806: iconst_0
+     807: aload_0
+     808: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     811: aastore
+     812: dup
+     813: iconst_1
+     814: aload         4
+     816: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     819: aastore
+     820: dup
+     821: iconst_2
+     822: aload_3
+     823: ldc           #219                // int 30
+     825: aaload
+     826: aload_2
+     827: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     830: checkcast     #136                // class java/util/Map
+     833: ldc           #166                // String job
+     835: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     840: aastore
+     841: dup
+     842: iconst_3
+     843: aload         4
+     845: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     848: aastore
+     849: dup
+     850: iconst_4
+     851: aload         4
+     853: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     856: aastore
+     857: dup
+     858: iconst_5
+     859: aload         12
+     861: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     864: aastore
+     865: dup
+     866: bipush        6
+     868: aload         12
+     870: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     873: aastore
+     874: dup
+     875: bipush        7
+     877: aload         12
+     879: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     882: aastore
+     883: dup
+     884: bipush        8
+     886: aload_0
+     887: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     890: aastore
+     891: dup
+     892: bipush        9
+     894: aload         13
+     896: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     899: aastore
+     900: dup
+     901: bipush        10
+     903: aload         4
+     905: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     908: aastore
+     909: dup
+     910: bipush        11
+     912: aload_0
+     913: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     916: aastore
+     917: dup
+     918: bipush        12
+     920: aload         13
+     922: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     925: aastore
+     926: dup
+     927: bipush        13
+     929: aload         12
+     931: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     934: aastore
+     935: dup
+     936: bipush        14
+     938: aload_0
+     939: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     942: aastore
+     943: dup
+     944: bipush        15
+     946: aload         13
+     948: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     951: aastore
+     952: dup
+     953: bipush        16
+     955: aload_0
+     956: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+     959: aastore
+     960: dup
+     961: bipush        17
+     963: aload         13
+     965: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     968: aastore
+     969: dup
+     970: bipush        18
+     972: aload         4
+     974: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     977: aastore
+     978: dup
+     979: bipush        19
+     981: aload         13
+     983: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     986: aastore
+     987: dup
+     988: bipush        20
+     990: aload         4
+     992: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+     995: aastore
+     996: dup
+     997: bipush        21
+     999: aload_0
+    1000: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+    1003: aastore
+    1004: dup
+    1005: bipush        22
+    1007: aload         13
+    1009: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1012: aastore
+    1013: dup
+    1014: bipush        23
+    1016: aload         12
+    1018: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1021: aastore
+    1022: dup
+    1023: bipush        24
+    1025: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    1028: aastore
+    1029: dup
+    1030: bipush        25
+    1032: aload         4
+    1034: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1037: aastore
+    1038: dup
+    1039: bipush        26
+    1041: aload         12
+    1043: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1046: aastore
+    1047: dup
+    1048: bipush        27
+    1050: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    1053: aastore
+    1054: dup
+    1055: bipush        28
+    1057: aload         12
+    1059: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1062: aastore
+    1063: dup
+    1064: bipush        29
+    1066: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    1069: aastore
+    1070: dup
+    1071: bipush        30
+    1073: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    1076: aastore
+    1077: dup
+    1078: bipush        31
+    1080: getstatic     #223                // Field PATH_CONTENT:Ljava/lang/String;
+    1083: aastore
+    1084: dup
+    1085: bipush        32
+    1087: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    1090: aastore
+    1091: dup
+    1092: bipush        33
+    1094: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    1097: aastore
+    1098: dup
+    1099: bipush        34
+    1101: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1104: aastore
+    1105: dup
+    1106: bipush        35
+    1108: aload         4
+    1110: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1113: aastore
+    1114: dup
+    1115: bipush        36
+    1117: aload         12
+    1119: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1122: aastore
+    1123: dup
+    1124: bipush        37
+    1126: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1129: aastore
+    1130: dup
+    1131: bipush        38
+    1133: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1136: aastore
+    1137: dup
+    1138: bipush        39
+    1140: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1143: aastore
+    1144: dup
+    1145: bipush        40
+    1147: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1150: aastore
+    1151: dup
+    1152: bipush        41
+    1154: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1157: aastore
+    1158: dup
+    1159: bipush        42
+    1161: aload         4
+    1163: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1166: aastore
+    1167: dup
+    1168: bipush        43
+    1170: aload         5
+    1172: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1175: aastore
+    1176: dup
+    1177: bipush        44
+    1179: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1182: aastore
+    1183: dup
+    1184: bipush        45
+    1186: aload         5
+    1188: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1191: aastore
+    1192: dup
+    1193: bipush        46
+    1195: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+    1198: aastore
+    1199: dup
+    1200: bipush        47
+    1202: aload         12
+    1204: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1207: aastore
+    1208: dup
+    1209: bipush        48
+    1211: getstatic     #223                // Field PATH_CONTENT:Ljava/lang/String;
+    1214: aastore
+    1215: dup
+    1216: bipush        49
+    1218: aload         4
+    1220: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1223: aastore
+    1224: dup
+    1225: bipush        50
+    1227: aload         12
+    1229: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1232: aastore
+    1233: dup
+    1234: bipush        51
+    1236: getstatic     #223                // Field PATH_CONTENT:Ljava/lang/String;
+    1239: aastore
+    1240: dup
+    1241: bipush        52
+    1243: aload         12
+    1245: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1248: aastore
+    1249: dup
+    1250: bipush        53
+    1252: aload_3
+    1253: ldc           #226                // int 31
+    1255: aaload
+    1256: aload_2
+    1257: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1260: checkcast     #136                // class java/util/Map
+    1263: ldc           #170                // String filename
+    1265: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1270: aastore
+    1271: dup
+    1272: bipush        54
+    1274: aload_3
+    1275: ldc           #227                // int 32
+    1277: aaload
+    1278: aload_2
+    1279: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1282: checkcast     #136                // class java/util/Map
+    1285: ldc           #229                // String writeOptions
+    1287: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1292: aastore
+    1293: dup
+    1294: bipush        55
+    1296: aload         12
+    1298: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1301: aastore
+    1302: dup
+    1303: bipush        56
+    1305: aload         4
+    1307: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1310: aastore
+    1311: dup
+    1312: bipush        57
+    1314: aload         12
+    1316: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1319: aastore
+    1320: dup
+    1321: bipush        58
+    1323: getstatic     #223                // Field PATH_CONTENT:Ljava/lang/String;
+    1326: aastore
+    1327: dup
+    1328: bipush        59
+    1330: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1333: aastore
+    1334: dup
+    1335: bipush        60
+    1337: aload         4
+    1339: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1342: aastore
+    1343: dup
+    1344: bipush        61
+    1346: aload         12
+    1348: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1351: aastore
+    1352: dup
+    1353: bipush        62
+    1355: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1358: aastore
+    1359: dup
+    1360: bipush        63
+    1362: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1365: aastore
+    1366: dup
+    1367: bipush        64
+    1369: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1372: aastore
+    1373: dup
+    1374: bipush        65
+    1376: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1379: aastore
+    1380: dup
+    1381: bipush        66
+    1383: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1386: aastore
+    1387: dup
+    1388: bipush        67
+    1390: aload         4
+    1392: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1395: aastore
+    1396: dup
+    1397: bipush        68
+    1399: aload         5
+    1401: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1404: aastore
+    1405: dup
+    1406: bipush        69
+    1408: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1411: aastore
+    1412: dup
+    1413: bipush        70
+    1415: aload         5
+    1417: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1420: aastore
+    1421: dup
+    1422: bipush        71
+    1424: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+    1427: aastore
+    1428: dup
+    1429: bipush        72
+    1431: aload_0
+    1432: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+    1435: aastore
+    1436: dup
+    1437: bipush        73
+    1439: aload         4
+    1441: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1444: aastore
+    1445: dup
+    1446: bipush        74
+    1448: aload_0
+    1449: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+    1452: aastore
+    1453: dup
+    1454: bipush        75
+    1456: aload_3
+    1457: ldc           #232                // int 33
+    1459: aaload
+    1460: aload_2
+    1461: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1464: checkcast     #136                // class java/util/Map
+    1467: ldc           #166                // String job
+    1469: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1474: aastore
+    1475: dup
+    1476: bipush        76
+    1478: aload_3
+    1479: ldc           #233                // int 34
+    1481: aaload
+    1482: aload_2
+    1483: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1486: checkcast     #136                // class java/util/Map
+    1489: ldc           #166                // String job
+    1491: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1496: aastore
+    1497: dup
+    1498: bipush        77
+    1500: aload         12
+    1502: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1505: aastore
+    1506: dup
+    1507: bipush        78
+    1509: aload_3
+    1510: ldc           #234                // int 35
+    1512: aaload
+    1513: aload_2
+    1514: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1517: checkcast     #136                // class java/util/Map
+    1520: ldc           #170                // String filename
+    1522: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1527: aastore
+    1528: dup
+    1529: bipush        79
+    1531: aload         4
+    1533: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1536: aastore
+    1537: dup
+    1538: bipush        80
+    1540: aload         4
+    1542: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1545: aastore
+    1546: dup
+    1547: bipush        81
+    1549: aload         12
+    1551: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1554: aastore
+    1555: dup
+    1556: bipush        82
+    1558: aload_3
+    1559: ldc           #235                // int 36
+    1561: aaload
+    1562: aload_2
+    1563: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    1566: checkcast     #136                // class java/util/Map
+    1569: ldc           #170                // String filename
+    1571: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1576: aastore
+    1577: bipush        84
+    1579: anewarray     #90                 // class java/lang/String
+    1582: dup
+    1583: iconst_0
+    1584: ldc           #237                // String #!/bin/sh -e\nset -x\n\nif [ -z \"
+    1586: aastore
+    1587: dup
+    1588: iconst_1
+    1589: ldc           #239                // String \" ]; then\n  echo \"
+    1591: aastore
+    1592: dup
+    1593: iconst_2
+    1594: ldc           #241                // String [ERROR] remoteWorkspace is not set\"\n  exit 1\nfi\nif [ -z \"
+    1596: aastore
+    1597: dup
+    1598: iconst_3
+    1599: ldc           #239                // String \" ]; then\n  echo \"
+    1601: aastore
+    1602: dup
+    1603: iconst_4
+    1604: ldc           #243                // String [ERROR] job id is not set\"\n  exit 1\nfi\n\necho \"
+    1606: aastore
+    1607: dup
+    1608: iconst_5
+    1609: ldc           #245                // String  working in
+    1611: aastore
+    1612: dup
+    1613: bipush        6
+    1615: ldc           #247                // String  ...\"\nmkdir -p \"
+    1617: aastore
+    1618: dup
+    1619: bipush        7
+    1621: ldc           #249                // String \"\ncd \"
+    1623: aastore
+    1624: dup
+    1625: bipush        8
+    1627: ldc           #251                // String \"\n\n# extract tar file\nif [ -f \"
+    1629: aastore
+    1630: dup
+    1631: bipush        9
+    1633: ldc           #214                // String /
+    1635: aastore
+    1636: dup
+    1637: bipush        10
+    1639: ldc           #239                // String \" ]; then\n  echo \"
+    1641: aastore
+    1642: dup
+    1643: bipush        11
+    1645: ldc           #253                // String  extracting
+    1647: aastore
+    1648: dup
+    1649: bipush        12
+    1651: ldc           #214                // String /
+    1653: aastore
+    1654: dup
+    1655: bipush        13
+    1657: ldc           #255                // String  to
+    1659: aastore
+    1660: dup
+    1661: bipush        14
+    1663: ldc_w         #257                // String  ...\"\n  pax -r -x tar -f \"
+    1666: aastore
+    1667: dup
+    1668: bipush        15
+    1670: ldc           #214                // String /
+    1672: aastore
+    1673: dup
+    1674: bipush        16
+    1676: ldc_w         #259                // String \"\n  if [ $? -ne 0 ]; then\n    exit 1\n  fi\n  rm \"
+    1679: aastore
+    1680: dup
+    1681: bipush        17
+    1683: ldc           #214                // String /
+    1685: aastore
+    1686: dup
+    1687: bipush        18
+    1689: ldc_w         #261                // String \"\n  echo \"
+    1692: aastore
+    1693: dup
+    1694: bipush        19
+    1696: ldc_w         #263                // String  tar
+    1699: aastore
+    1700: dup
+    1701: bipush        20
+    1703: ldc_w         #265                // String  extracted ...\"\n  ls -la\nelse\n  echo \"
+    1706: aastore
+    1707: dup
+    1708: bipush        21
+    1710: ldc_w         #267                // String [ERROR] tar
+    1713: aastore
+    1714: dup
+    1715: bipush        22
+    1717: ldc           #214                // String /
+    1719: aastore
+    1720: dup
+    1721: bipush        23
+    1723: ldc_w         #269                // String  file doesn't exist\"\n  exit 1\nfi\n\n# do we have ascii.tar?\nif [ -f \"
+    1726: aastore
+    1727: dup
+    1728: bipush        24
+    1730: ldc           #214                // String /
+    1732: aastore
+    1733: dup
+    1734: bipush        25
+    1736: ldc_w         #271                // String .tar\" ]; then\n  echo \"
+    1739: aastore
+    1740: dup
+    1741: bipush        26
+    1743: ldc           #253                // String  extracting
+    1745: aastore
+    1746: dup
+    1747: bipush        27
+    1749: ldc           #214                // String /
+    1751: aastore
+    1752: dup
+    1753: bipush        28
+    1755: ldc_w         #273                // String .tar ...\"\n  cd \"
+    1758: aastore
+    1759: dup
+    1760: bipush        29
+    1762: ldc_w         #275                // String \"\n  pax -r -x tar -o to=IBM-1047 -f \"
+    1765: aastore
+    1766: dup
+    1767: bipush        30
+    1769: ldc_w         #277                // String .tar\"\n  # copy to target folder\n  cp -R
+    1772: aastore
+    1773: dup
+    1774: bipush        31
+    1776: ldc_w         #279                // String /.
+    1779: aastore
+    1780: dup
+    1781: bipush        32
+    1783: ldc_w         #281                // String \n  # remove ascii files\n  rm \"
+    1786: aastore
+    1787: dup
+    1788: bipush        33
+    1790: ldc_w         #283                // String .tar\"\n  rm -fr \"
+    1793: aastore
+    1794: dup
+    1795: bipush        34
+    1797: ldc_w         #285                // String \"\nfi\n\n# run pre hook\nif [ -f \"
+    1800: aastore
+    1801: dup
+    1802: bipush        35
+    1804: ldc           #239                // String \" ]; then\n  echo \"
+    1806: aastore
+    1807: dup
+    1808: bipush        36
+    1810: ldc_w         #287                // String  running pre hook ...\"\n  cd \"
+    1813: aastore
+    1814: dup
+    1815: bipush        37
+    1817: ldc_w         #289                // String \"\n  iconv -f ISO8859-1 -t IBM-1047
+    1820: aastore
+    1821: dup
+    1822: bipush        38
+    1824: ldc_w         #291                // String  >
+    1827: aastore
+    1828: dup
+    1829: bipush        39
+    1831: ldc_w         #293                // String .new\n  mv
+    1834: aastore
+    1835: dup
+    1836: bipush        40
+    1838: ldc_w         #295                // String .new
+    1841: aastore
+    1842: dup
+    1843: bipush        41
+    1845: ldc_w         #297                // String \n  chmod +x
+    1848: aastore
+    1849: dup
+    1850: bipush        42
+    1852: ldc_w         #299                // String \n  echo \"
+    1855: aastore
+    1856: dup
+    1857: bipush        43
+    1859: ldc_w         #301                // String  launch:
+    1862: aastore
+    1863: dup
+    1864: bipush        44
+    1866: ldc_w         #303                // String  ./
+    1869: aastore
+    1870: dup
+    1871: bipush        45
+    1873: ldc_w         #305                // String \"\n
+    1876: aastore
+    1877: dup
+    1878: bipush        46
+    1880: ldc_w         #303                // String  ./
+    1883: aastore
+    1884: dup
+    1885: bipush        47
+    1887: ldc_w         #307                // String \n  if [ $? -ne 0 ]; then\n    exit 1\n  fi\nfi\n\n# create PAX file\nif [ -d \"
+    1890: aastore
+    1891: dup
+    1892: bipush        48
+    1894: ldc           #214                // String /
+    1896: aastore
+    1897: dup
+    1898: bipush        49
+    1900: ldc           #239                // String \" ]; then\n  echo \"
+    1902: aastore
+    1903: dup
+    1904: bipush        50
+    1906: ldc_w         #309                // String  creating package ...\"\n  cd \"
+    1909: aastore
+    1910: dup
+    1911: bipush        51
+    1913: ldc           #214                // String /
+    1915: aastore
+    1916: dup
+    1917: bipush        52
+    1919: ldc_w         #311                // String \"\n  pax -w -f \"
+    1922: aastore
+    1923: dup
+    1924: bipush        53
+    1926: ldc           #214                // String /
+    1928: aastore
+    1929: dup
+    1930: bipush        54
+    1932: ldc_w         #313                // String \"
+    1935: aastore
+    1936: dup
+    1937: bipush        55
+    1939: ldc_w         #315                // String  *\n  if [ $? -ne 0 ]; then\n    exit 1\n  fi\n  cd \"
+    1942: aastore
+    1943: dup
+    1944: bipush        56
+    1946: ldc_w         #317                // String \"\nelse\n  echo \"
+    1949: aastore
+    1950: dup
+    1951: bipush        57
+    1953: ldc_w         #319                // String [ERROR] folder
+    1956: aastore
+    1957: dup
+    1958: bipush        58
+    1960: ldc           #214                // String /
+    1962: aastore
+    1963: dup
+    1964: bipush        59
+    1966: ldc_w         #321                // String  doesn't exist\"\n  exit 1\nfi\n\n# run post hook\nif [ -f \"
+    1969: aastore
+    1970: dup
+    1971: bipush        60
+    1973: ldc           #239                // String \" ]; then\n  echo \"
+    1975: aastore
+    1976: dup
+    1977: bipush        61
+    1979: ldc_w         #323                // String  running post hook ...\"\n  cd \"
+    1982: aastore
+    1983: dup
+    1984: bipush        62
+    1986: ldc_w         #289                // String \"\n  iconv -f ISO8859-1 -t IBM-1047
+    1989: aastore
+    1990: dup
+    1991: bipush        63
+    1993: ldc_w         #291                // String  >
+    1996: aastore
+    1997: dup
+    1998: bipush        64
+    2000: ldc_w         #293                // String .new\n  mv
+    2003: aastore
+    2004: dup
+    2005: bipush        65
+    2007: ldc_w         #295                // String .new
+    2010: aastore
+    2011: dup
+    2012: bipush        66
+    2014: ldc_w         #297                // String \n  chmod +x
+    2017: aastore
+    2018: dup
+    2019: bipush        67
+    2021: ldc_w         #299                // String \n  echo \"
+    2024: aastore
+    2025: dup
+    2026: bipush        68
+    2028: ldc_w         #301                // String  launch:
+    2031: aastore
+    2032: dup
+    2033: bipush        69
+    2035: ldc_w         #303                // String  ./
+    2038: aastore
+    2039: dup
+    2040: bipush        70
+    2042: ldc_w         #305                // String \"\n
+    2045: aastore
+    2046: dup
+    2047: bipush        71
+    2049: ldc_w         #303                // String  ./
+    2052: aastore
+    2053: dup
+    2054: bipush        72
+    2056: ldc_w         #325                // String \n  if [ $? -ne 0 ]; then\n    exit 1\n  fi\nfi\n\n# list working folder\ncd
+    2059: aastore
+    2060: dup
+    2061: bipush        73
+    2063: ldc_w         #327                // String \necho \"
+    2066: aastore
+    2067: dup
+    2068: bipush        74
+    2070: ldc_w         #329                // String  temporary content of
+    2073: aastore
+    2074: dup
+    2075: bipush        75
+    2077: ldc           #214                // String /
+    2079: aastore
+    2080: dup
+    2081: bipush        76
+    2083: ldc_w         #331                // String -* ...\"\nls -la
+    2086: aastore
+    2087: dup
+    2088: bipush        77
+    2090: ldc_w         #333                // String -*\n\nif [ -f \"
+    2093: aastore
+    2094: dup
+    2095: bipush        78
+    2097: ldc           #214                // String /
+    2099: aastore
+    2100: dup
+    2101: bipush        79
+    2103: ldc           #239                // String \" ]; then\n  echo \"
+    2105: aastore
+    2106: dup
+    2107: bipush        80
+    2109: ldc_w         #335                // String  done\"\n  exit 0\nelse\n  echo \"
+    2112: aastore
+    2113: dup
+    2114: bipush        81
+    2116: ldc_w         #337                // String [ERROR] failed to create PAX file
+    2119: aastore
+    2120: dup
+    2121: bipush        82
+    2123: ldc           #214                // String /
+    2125: aastore
+    2126: dup
+    2127: bipush        83
+    2129: ldc_w         #339                // String , exit.\"\n  exit 1\nfi\n
+    2132: aastore
+    2133: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+    2136: astore        15
+    2138: aload         15
+    2140: pop
+    2141: aload_3
+    2142: ldc_w         #340                // int 37
+    2145: aaload
+    2146: aload_0
+    2147: getfield      #63                 // Field steps:Ljava/lang/Object;
+    2150: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+    2153: dup
+    2154: iconst_2
+    2155: anewarray     #4                  // class java/lang/Object
+    2158: dup
+    2159: iconst_0
+    2160: aload_0
+    2161: getfield      #92                 // Field localWorkspace:Ljava/lang/String;
+    2164: aastore
+    2165: dup
+    2166: iconst_1
+    2167: getstatic     #342                // Field HOOK_PREPARE_WORKSPACE:Ljava/lang/String;
+    2170: aastore
+    2171: iconst_3
+    2172: anewarray     #90                 // class java/lang/String
+    2175: dup
+    2176: iconst_0
+    2177: ldc           #173                // String
+    2179: aastore
+    2180: dup
+    2181: iconst_1
+    2182: ldc           #214                // String /
+    2184: aastore
+    2185: dup
+    2186: iconst_2
+    2187: ldc           #173                // String
+    2189: aastore
+    2190: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+    2193: new           #344                // class org/zowe/jenkins_shared_library/package/Pax$_pack_closure2
+    2196: dup
+    2197: aload_0
+    2198: aload_0
+    2199: invokespecial #347                // Method org/zowe/jenkins_shared_library/package/Pax$_pack_closure2."<init>":(Ljava/lang/Object;Ljava/lang/Object;)V
+    2202: invokeinterface #350,  4          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    2207: pop
+    2208: aload_3
+    2209: ldc_w         #351                // int 38
+    2212: aaload
+    2213: aload_0
+    2214: getfield      #63                 // Field steps:Ljava/lang/Object;
+    2217: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+    2220: dup
+    2221: iconst_2
+    2222: anewarray     #4                  // class java/lang/Object
+    2225: dup
+    2226: iconst_0
+    2227: aload_0
+    2228: getfield      #92                 // Field localWorkspace:Ljava/lang/String;
+    2231: aastore
+    2232: dup
+    2233: iconst_1
+    2234: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+    2237: aastore
+    2238: iconst_3
+    2239: anewarray     #90                 // class java/lang/String
+    2242: dup
+    2243: iconst_0
+    2244: ldc           #173                // String
+    2246: aastore
+    2247: dup
+    2248: iconst_1
+    2249: ldc           #214                // String /
+    2251: aastore
+    2252: dup
+    2253: iconst_2
+    2254: ldc           #173                // String
+    2256: aastore
+    2257: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+    2260: new           #353                // class org/zowe/jenkins_shared_library/package/Pax$_pack_closure3
+    2263: dup
+    2264: aload_0
+    2265: aload_0
+    2266: aload         4
+    2268: invokespecial #354                // Method org/zowe/jenkins_shared_library/package/Pax$_pack_closure3."<init>":(Ljava/lang/Object;Ljava/lang/Object;Lgroovy/lang/Reference;)V
+    2271: invokeinterface #350,  4          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    2276: pop
+    2277: aload_3
+    2278: ldc_w         #355                // int 39
+    2281: aaload
+    2282: aload_0
+    2283: getfield      #63                 // Field steps:Ljava/lang/Object;
+    2286: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+    2289: dup
+    2290: iconst_2
+    2291: anewarray     #4                  // class java/lang/Object
+    2294: dup
+    2295: iconst_0
+    2296: aload         13
+    2298: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    2301: aastore
+    2302: dup
+    2303: iconst_1
+    2304: aload_0
+    2305: getfield      #92                 // Field localWorkspace:Ljava/lang/String;
+    2308: aastore
+    2309: iconst_3
+    2310: anewarray     #90                 // class java/lang/String
+    2313: dup
+    2314: iconst_0
+    2315: ldc_w         #357                // String tar -c -f
+    2318: aastore
+    2319: dup
+    2320: iconst_1
+    2321: ldc_w         #359                // String  -C
+    2324: aastore
+    2325: dup
+    2326: iconst_2
+    2327: ldc_w         #361                // String  .
+    2330: aastore
+    2331: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+    2334: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    2339: pop
+    2340: aload_3
+    2341: ldc_w         #362                // int 40
+    2344: aaload
+    2345: aload_0
+    2346: getfield      #63                 // Field steps:Ljava/lang/Object;
+    2349: iconst_4
+    2350: anewarray     #4                  // class java/lang/Object
+    2353: dup
+    2354: iconst_0
+    2355: ldc_w         #364                // String file
+    2358: aastore
+    2359: dup
+    2360: iconst_1
+    2361: aload         14
+    2363: invokevirtual #134                // Method groovy/lang/Reference.get:()Ljava/lang/Object;
+    2366: aastore
+    2367: dup
+    2368: iconst_2
+    2369: ldc_w         #366                // String text
+    2372: aastore
+    2373: dup
+    2374: iconst_3
+    2375: aload         15
+    2377: aastore
+    2378: invokestatic  #370                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.createMap:([Ljava/lang/Object;)Ljava/util/Map;
+    2381: invokeinterface #75,  3           // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    2386: pop
+    2387: aload_3
+    2388: ldc_w         #371                // int 41
+    2391: aaload
+    2392: aload_0
+    2393: getfield      #63                 // Field steps:Ljava/lang/Object;
+    2396: new           #187                // class org/codehaus/groovy/runtime/GStringImpl
+    2399: dup
+    2400: iconst_1
+    2401: anewarray     #4                  // class java/lang/Object
+    2404: dup
+    2405: iconst_0
+    2406: aload_0
+    2407: getfield      #106                // Field sshHost:Ljava/lang/String;
+    2410: aastore
+    2411: iconst_2
+    2412: anewarray     #90                 // class java/lang/String
+    2415: dup
+    2416: iconst_0
+    2417: ldc_w         #373                // String packaging-server-
+    2420: aastore
+    2421: dup
+    2422: iconst_1
+    2423: ldc           #173                // String
+    2425: aastore
+    2426: invokespecial #192                // Method org/codehaus/groovy/runtime/GStringImpl."<init>":([Ljava/lang/Object;[Ljava/lang/String;)V
+    2429: new           #375                // class org/zowe/jenkins_shared_library/package/Pax$_pack_closure4
+    2432: dup
+    2433: aload_0
+    2434: aload_0
+    2435: aload         13
+    2437: aload         14
+    2439: aload         12
+    2441: aload_2
+    2442: aload         4
+    2444: aload         10
+    2446: invokespecial #378                // Method org/zowe/jenkins_shared_library/package/Pax$_pack_closure4."<init>":(Ljava/lang/Object;Ljava/lang/Object;Lgroovy/lang/Reference;Lgroovy/lang/Reference;Lgroovy/lang/Reference;Lgroovy/lang/Reference;Lgroovy/lang/Reference;Lgroovy/lang/Reference;)V
+    2449: invokeinterface #350,  4          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.call:(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    2454: pop
+    2455: return
+    Exception table:
+       from    to  target type
+         312   414   414   Class java/lang/Exception
+         312   414   507   any
+         414   500   507   any
+
+  public void pack(java.lang.String, java.lang.String, java.util.Map, java.lang.String);
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore        5
+       5: aload         5
+       7: ldc_w         #392                // int 42
+      10: aaload
+      11: aload_0
+      12: bipush        8
+      14: anewarray     #4                  // class java/lang/Object
+      17: dup
+      18: iconst_0
+      19: ldc           #166                // String job
+      21: aastore
+      22: dup
+      23: iconst_1
+      24: aload_1
+      25: aastore
+      26: dup
+      27: iconst_2
+      28: ldc           #170                // String filename
+      30: aastore
+      31: dup
+      32: iconst_3
+      33: aload_2
+      34: aastore
+      35: dup
+      36: iconst_4
+      37: ldc           #176                // String environments
+      39: aastore
+      40: dup
+      41: iconst_5
+      42: aload_3
+      43: aastore
+      44: dup
+      45: bipush        6
+      47: ldc           #229                // String writeOptions
+      49: aastore
+      50: dup
+      51: bipush        7
+      53: aload         4
+      55: aastore
+      56: invokestatic  #370                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.createMap:([Ljava/lang/Object;)Ljava/util/Map;
+      59: invokeinterface #156,  3          // InterfaceMethod org/codehaus/groovy/runtime/callsite/CallSite.callCurrent:(Lgroovy/lang/GroovyObject;Ljava/lang/Object;)Ljava/lang/Object;
+      64: pop
+      65: return
+
+  public void init();
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore_1
+       4: aload_0
+       5: iconst_0
+       6: anewarray     #4                  // class java/lang/Object
+       9: invokestatic  #370                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.createMap:([Ljava/lang/Object;)Ljava/util/Map;
+      12: checkcast     #136                // class java/util/Map
+      15: invokevirtual #395                // Method init:(Ljava/util/Map;)V
+      18: aconst_null
+      19: pop
+      20: return
+
+  public void pack() throws org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException, org.zowe.jenkins_shared_library.package.PackageException;
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore_1
+       4: aload_0
+       5: iconst_0
+       6: anewarray     #4                  // class java/lang/Object
+       9: invokestatic  #370                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.createMap:([Ljava/lang/Object;)Ljava/util/Map;
+      12: checkcast     #136                // class java/util/Map
+      15: invokevirtual #397                // Method pack:(Ljava/util/Map;)V
+      18: aconst_null
+      19: pop
+      20: return
+
+  public void pack(java.lang.String, java.lang.String, java.util.Map);
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore        4
+       5: aload_0
+       6: aload_1
+       7: aload_2
+       8: aload_3
+       9: ldc           #173                // String
+      11: checkcast     #90                 // class java/lang/String
+      14: invokevirtual #400                // Method pack:(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;)V
+      17: aconst_null
+      18: pop
+      19: return
+
+  public void pack(java.lang.String, java.lang.String);
+    Code:
+       0: invokestatic  #48                 // Method $getCallSiteArray:()[Lorg/codehaus/groovy/runtime/callsite/CallSite;
+       3: astore_3
+       4: aload_0
+       5: aload_1
+       6: aload_2
+       7: iconst_0
+       8: anewarray     #4                  // class java/lang/Object
+      11: invokestatic  #370                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.createMap:([Ljava/lang/Object;)Ljava/util/Map;
+      14: checkcast     #136                // class java/util/Map
+      17: ldc           #173                // String
+      19: checkcast     #90                 // class java/lang/String
+      22: invokevirtual #400                // Method pack:(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;)V
+      25: aconst_null
+      26: pop
+      27: return
+
+  protected groovy.lang.MetaClass $getStaticMetaClass();
+    Code:
+       0: aload_0
+       1: invokevirtual #405                // Method java/lang/Object.getClass:()Ljava/lang/Class;
+       4: ldc           #2                  // class org/zowe/jenkins_shared_library/package/Pax
+       6: if_acmpeq     14
+       9: aload_0
+      10: invokestatic  #409                // Method org/codehaus/groovy/runtime/ScriptBytecodeAdapter.initMetaClass:(Ljava/lang/Object;)Lgroovy/lang/MetaClass;
+      13: areturn
+      14: getstatic     #411                // Field $staticClassInfo:Lorg/codehaus/groovy/reflection/ClassInfo;
+      17: astore_1
+      18: aload_1
+      19: ifnonnull     34
+      22: aload_0
+      23: invokevirtual #405                // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      26: invokestatic  #417                // Method org/codehaus/groovy/reflection/ClassInfo.getClassInfo:(Ljava/lang/Class;)Lorg/codehaus/groovy/reflection/ClassInfo;
+      29: dup
+      30: astore_1
+      31: putstatic     #411                // Field $staticClassInfo:Lorg/codehaus/groovy/reflection/ClassInfo;
+      34: aload_1
+      35: invokevirtual #420                // Method org/codehaus/groovy/reflection/ClassInfo.getMetaClass:()Lgroovy/lang/MetaClass;
+      38: areturn
+
+  public groovy.lang.MetaClass getMetaClass();
+    Code:
+       0: aload_0
+       1: getfield      #61                 // Field metaClass:Lgroovy/lang/MetaClass;
+       4: dup
+       5: ifnull        9
+       8: areturn
+       9: pop
+      10: aload_0
+      11: dup
+      12: invokevirtual #59                 // Method $getStaticMetaClass:()Lgroovy/lang/MetaClass;
+      15: putfield      #61                 // Field metaClass:Lgroovy/lang/MetaClass;
+      18: aload_0
+      19: getfield      #61                 // Field metaClass:Lgroovy/lang/MetaClass;
+      22: areturn
+
+  public void setMetaClass(groovy.lang.MetaClass);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #61                 // Field metaClass:Lgroovy/lang/MetaClass;
+       5: return
+
+  public java.lang.Object invokeMethod(java.lang.String, java.lang.Object);
+    Code:
+       0: aload_0
+       1: invokevirtual #428                // Method getMetaClass:()Lgroovy/lang/MetaClass;
+       4: aload_0
+       5: aload_1
+       6: aload_2
+       7: invokeinterface #431,  4          // InterfaceMethod groovy/lang/MetaClass.invokeMethod:(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
+      12: areturn
+
+  public java.lang.Object getProperty(java.lang.String);
+    Code:
+       0: aload_0
+       1: invokevirtual #428                // Method getMetaClass:()Lgroovy/lang/MetaClass;
+       4: aload_0
+       5: aload_1
+       6: invokeinterface #436,  3          // InterfaceMethod groovy/lang/MetaClass.getProperty:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      11: areturn
+
+  public void setProperty(java.lang.String, java.lang.Object);
+    Code:
+       0: aload_0
+       1: invokevirtual #428                // Method getMetaClass:()Lgroovy/lang/MetaClass;
+       4: aload_0
+       5: aload_1
+       6: aload_2
+       7: invokeinterface #441,  4          // InterfaceMethod groovy/lang/MetaClass.setProperty:(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V
+      12: return
+
+  public static java.lang.String getDEFAULT_LOCAL_WORKSPACE();
+    Code:
+       0: getstatic     #94                 // Field DEFAULT_LOCAL_WORKSPACE:Ljava/lang/String;
+       3: areturn
+
+  public static java.lang.String getDEFAULT_REMOTE_WORKSPACE();
+    Code:
+       0: getstatic     #101                // Field DEFAULT_REMOTE_WORKSPACE:Ljava/lang/String;
+       3: areturn
+
+  public static java.lang.String getPATH_CONTENT();
+    Code:
+       0: getstatic     #223                // Field PATH_CONTENT:Ljava/lang/String;
+       3: areturn
+
+  public static java.lang.String getPATH_ASCII();
+    Code:
+       0: getstatic     #221                // Field PATH_ASCII:Ljava/lang/String;
+       3: areturn
+
+  public static java.lang.String getHOOK_PREPARE_WORKSPACE();
+    Code:
+       0: getstatic     #342                // Field HOOK_PREPARE_WORKSPACE:Ljava/lang/String;
+       3: areturn
+
+  public static java.lang.String getHOOK_PRE_PACKAGING();
+    Code:
+       0: getstatic     #225                // Field HOOK_PRE_PACKAGING:Ljava/lang/String;
+       3: areturn
+
+  public static java.lang.String getHOOK_POST_PACKAGING();
+    Code:
+       0: getstatic     #231                // Field HOOK_POST_PACKAGING:Ljava/lang/String;
+       3: areturn
+
+  public java.lang.Object getSteps();
+    Code:
+       0: aload_0
+       1: getfield      #63                 // Field steps:Ljava/lang/Object;
+       4: areturn
+
+  public void setSteps(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #63                 // Field steps:Ljava/lang/Object;
+       5: return
+
+  public java.lang.String getLocalWorkspace();
+    Code:
+       0: aload_0
+       1: getfield      #92                 // Field localWorkspace:Ljava/lang/String;
+       4: areturn
+
+  public void setLocalWorkspace(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #92                 // Field localWorkspace:Ljava/lang/String;
+       5: return
+
+  public java.lang.String getRemoteWorkspace();
+    Code:
+       0: aload_0
+       1: getfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+       4: areturn
+
+  public void setRemoteWorkspace(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #99                 // Field remoteWorkspace:Ljava/lang/String;
+       5: return
+
+  public java.lang.String getSshHost();
+    Code:
+       0: aload_0
+       1: getfield      #106                // Field sshHost:Ljava/lang/String;
+       4: areturn
+
+  public void setSshHost(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #106                // Field sshHost:Ljava/lang/String;
+       5: return
+
+  public java.lang.String getSshPort();
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field sshPort:Ljava/lang/String;
+       4: areturn
+
+  public void setSshPort(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #55                 // Field sshPort:Ljava/lang/String;
+       5: return
+
+  public java.lang.String getSshCredential();
+    Code:
+       0: aload_0
+       1: getfield      #114                // Field sshCredential:Ljava/lang/String;
+       4: areturn
+
+  public void setSshCredential(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #114                // Field sshCredential:Ljava/lang/String;
+       5: return
+}

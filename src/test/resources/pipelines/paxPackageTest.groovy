@@ -31,39 +31,44 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
         // prepare local workspace
         def localWorkspace = pax.getLocalWorkspace()
-        sh "mkdir -p ${localWorkspace}/${pax.PATH_CONTENT}"
-        sh "mkdir -p ${localWorkspace}/${pax.PATH_ASCII}"
+        def pathContent = pax.getPATH_CONTENT()
+        def pathAscii = pax.getPATH_ASCII()
+        def hookPrepareWorkspace = pax.getHOOK_PREPARE_WORKSPACE()
+        def hookPrePackaging = pax.getHOOK_PRE_PACKAGING()
+        def hookPostPackaging = pax.getHOOK_POST_PACKAGING()
+        sh "mkdir -p ${localWorkspace}/${pathContent}"
+        sh "mkdir -p ${localWorkspace}/${pathAscii}"
         // write prepare hook
-        writeFile file: "${localWorkspace}/${pax.HOOK_PREPARE_PACKAGING}", text: """
-echo "[${pax.HOOK_PREPARE_PACKAGING}] started ..."
-echo "[${pax.HOOK_PREPARE_PACKAGING}] pwd=\$(pwd)"
+        writeFile file: "${localWorkspace}/${hookPrepareWorkspace}", text: """
+echo "[${hookPrepareWorkspace}] started ..."
+echo "[${hookPrepareWorkspace}] pwd=\$(pwd)"
 
-echo "[${pax.HOOK_PREPARE_PACKAGING}] prepare a binary file ..."
+echo "[${hookPrepareWorkspace}] prepare a binary file ..."
 WHICH_BASH=\$(which bash)
-cp \$WHICH_BASH ${localWorkspace}/${pax.PATH_CONTENT}/
+cp \$WHICH_BASH ${localWorkspace}/${pathContent}/
 
-echo "[${pax.HOOK_PREPARE_PACKAGING}] prepare a text file ..."
-echo "this should be human readable" > ${localWorkspace}/${pax.PATH_ASCII}/test-ascii.txt
+echo "[${hookPrepareWorkspace}] prepare a text file ..."
+echo "this should be human readable" > ${localWorkspace}/${pathAscii}/test-ascii.txt
 
-echo "[${pax.HOOK_PREPARE_PACKAGING}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
+echo "[${hookPrepareWorkspace}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 
-echo "[${pax.HOOK_PREPARE_PACKAGING}] ended."
+echo "[${hookPrepareWorkspace}] ended."
 """
 
         // write pre hook
-        writeFile file: "${localWorkspace}/${pax.HOOK_PRE_PACKAGING}", text: """
-echo "[${pax.HOOK_PRE_PACKAGING}] started ..."
-echo "[${pax.HOOK_PRE_PACKAGING}] pwd=\$(pwd)"
-echo "[${pax.HOOK_PRE_PACKAGING}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
-echo "[${pax.HOOK_PRE_PACKAGING}] ended."
+        writeFile file: "${localWorkspace}/${hookPrePackaging}", text: """
+echo "[${hookPrePackaging}] started ..."
+echo "[${hookPrePackaging}] pwd=\$(pwd)"
+echo "[${hookPrePackaging}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
+echo "[${hookPrePackaging}] ended."
 """
 
         // write post hook
-        writeFile file: "${localWorkspace}/${pax.HOOK_POST_PACKAGING}", text: """
-echo "[${pax.HOOK_POST_PACKAGING}] started ..."
-echo "[${pax.HOOK_POST_PACKAGING}] pwd=\$(pwd)"
-echo "[${pax.HOOK_POST_PACKAGING}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
-echo "[${pax.HOOK_POST_PACKAGING}] ended."
+        writeFile file: "${localWorkspace}/${hookPostPackaging}", text: """
+echo "[${hookPostPackaging}] started ..."
+echo "[${hookPostPackaging}] pwd=\$(pwd)"
+echo "[${hookPostPackaging}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
+echo "[${hookPostPackaging}] ended."
 """
 
         echo "[PAX_PACKAGE_TEST] init successfully"
