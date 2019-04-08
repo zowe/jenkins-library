@@ -312,7 +312,7 @@ fi
         if (this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}")) {
             this.steps.sh """echo "${func} ASCII contents:"
 find ${this.localWorkspace}/${PATH_ASCII} -print
-tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C {this.localWorkspace}/ ${PATH_ASCII}
+tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C ${this.localWorkspace}/ ${PATH_ASCII}
 rm -fr ${this.localWorkspace}/${PATH_ASCII}
 """
         }
