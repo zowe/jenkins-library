@@ -121,10 +121,11 @@ class Pax {
 
     /**
      * Initialize pax packaging properties
-     * @param   registry         the registry URL
-     * @param   tokenCredential  Jenkins credential ID for NPM token
-     * @param   email            NPM user email
-     * @param   packageJsonFile  package.json file name
+     * @param   localWorkspace       workspace folder on local
+     * @param   remoteWorkspace      workspace folder on remote (ssh server)
+     * @param   sshHost              hostname/ip of packaging server
+     * @param   sshPort              ssh port of packaging server
+     * @param   sshCredential        SSH credential of packaging server
      */
     void init(Map args = [:]) {
         if (args['localWorkspace']) {
@@ -153,16 +154,12 @@ class Pax {
     /**
      * Create PAX Package
      *
-     * Requires these environment variables:
-     * - JOB_NAME
-     * - BUILD_NUMBER
-     *
      * Use similar parameters like init() method and with these extra:
      *
      * @param   job            job identifier
      * @param   filename       package file name will be created
      * @param   environments   environment variables
-     * @param   writeOptions   pax write command options
+     * @param   paxOptions     pax write command options
      * @return                 pax package created
      */
     String pack(Map args = [:]) throws InvalidArgumentException, PackageException {
@@ -273,7 +270,7 @@ echo "${func} content of ${remoteWorkspaceFullPath} ends   <<<<<<<<<<<<<<<<<<<<<
 if [ -d "${remoteWorkspaceFullPath}/${PATH_CONTENT}" ]; then
   echo "${func} creating package ..."
   cd "${remoteWorkspaceFullPath}/${PATH_CONTENT}"
-  pax -w -f "${remoteWorkspaceFullPath}/${args['filename']}" ${args['writeOptions']} *
+  pax -w -f "${remoteWorkspaceFullPath}/${args['filename']}" ${args['paxOptions']} *
   if [ \$? -ne 0 ]; then
     exit 1
   fi
@@ -346,6 +343,7 @@ iconv -f ISO8859-1 -t IBM-1047 ${remoteWorkspace}/${packageScriptFile} > ${remot
 mv ${remoteWorkspace}/${packageScriptFile}.new ${remoteWorkspace}/${packageScriptFile}
 chmod +x ${remoteWorkspace}/${packageScriptFile}
 . ${remoteWorkspace}/${packageScriptFile}
+rm ${remoteWorkspace}/${packageScriptFile}
 EOF"""
                     // copy back pax file
                     this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
@@ -353,12 +351,12 @@ get ${remoteWorkspaceFullPath}/${args['filename']} ${this.localWorkspace}
 EOF"""
                 } catch (ex1) {
                     // throw error
-                    throw new PackageException("Pax packaging failed: ${ex1}")
+                    throw new PackageException("Pack Pax package failed: ${ex1}")
                 } finally {
                     try {
                         // always clean up temporary files/folders
                         this.steps.echo "${func} cleaning up remote workspace..."
-                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}\""
+                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}*\""
                     } catch (ex2) {
                         // ignore errors for cleaning up
                     }
@@ -372,19 +370,92 @@ EOF"""
     /**
      * Create PAX Package
      *
-     * Requires these environment variables:
-     * - JOB_NAME
-     * - BUILD_NUMBER
-     *
      * Use similar parameters like init() method and with these extra:
      *
      * @param   job            job identifier
      * @param   filename       package file name will be created
      * @param   environments   environment variables
-     * @param   writeOptions   pax write command options
+     * @param   paxOptions     pax write command options
      * @return                 pax package created
      */
-    String pack(String job, String filename, Map environments = [:], String writeOptions = '') {
-        this.pack(job: job, filename: filename, environments: environments, writeOptions: writeOptions)
+    String pack(String job, String filename, Map environments = [:], String paxOptions = '') {
+        this.pack(job: job, filename: filename, environments: environments, paxOptions: paxOptions)
+    }
+
+    /**
+     * Extract PAX Package to remoteWorkspace
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param   filename       package file name will be extracted
+     * @param   paxOptions     pax extract command options
+     * @return                 pax package content list with "find . -print"
+     */
+    String unpack(Map args = [:]) throws InvalidArgumentException, PackageException {
+        def func = '[Pax.unpack]'
+
+        // init with arguments
+           if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!this.sshHost) {
+            throw new InvalidArgumentException('sshHost')
+        }
+        if (!this.sshCredential) {
+            throw new InvalidArgumentException('sshCredential')
+        }
+        if (!args['filename']) {
+            throw new InvalidArgumentException('filename')
+        }
+
+        def result = ''
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId    : this.sshCredential,
+                passwordVariable : 'PASSWORD',
+                usernameVariable : 'USERNAME'
+            )
+        ]) {
+            try {
+                // send to pax server
+                this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
+put ${args['filename']} ${remoteWorkspace}
+EOF"""
+                // extract tar file, run pre/post hooks and create pax file
+                this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
+cd ${remoteWorkspace}
+pax -rf ${args['filename']} ${args['paxOptions']}
+EOF"""
+                // get extracted result
+                result = this.steps.sh(
+                    script: """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
+cd ${remoteWorkspace}
+find . -print
+EOF""",
+                    returnStdout: true
+                ).trim()
+            } catch (ex1) {
+                // throw error
+                throw new PackageException("Unpack Pax package failed: ${ex1}")
+            }
+        } // end withCredentials
+
+        return result
+    }
+
+    /**
+     * Extract PAX Package to remoteWorkspace
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param   filename           package file name will be extracted
+     * @param   remoteWorkspace    workspace folder on remote (ssh server)
+     * @param   paxOptions         pax extract command options
+     * @return                     pax package content list with "find . -print"
+     */
+    String unpack(String filename, String remoteWorkspace, String paxOptions = '') {
+        this.unpack(filename: filename, remoteWorkspace: remoteWorkspace, paxOptions: paxOptions)
     }
 }

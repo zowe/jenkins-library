@@ -10,6 +10,8 @@ def pax
 
 // test constants
 String TEST_JOB_NAME      = "library-test"
+String TEST_ASCII_FILE    = "test-ascii.txt"
+String TEST_ASCII_CONTENT = "this should be human readable"
 String TEST_ENV_VAR_NAME  = 'LIBRARY_TEST_SAMPLE_VAR'
 String TEST_ENV_VAR_VALUE = '1234'
 
@@ -48,7 +50,7 @@ WHICH_BASH=\$(which bash)
 cp \$WHICH_BASH ${localWorkspace}/${pathContent}/
 
 echo "[${hookPrepareWorkspace}] prepare a text file ..."
-echo "this should be human readable" > ${localWorkspace}/${pathAscii}/test-ascii.txt
+echo "${TEST_ASCII_CONTENT}" > ${localWorkspace}/${pathAscii}/${TEST_ASCII_FILE}
 
 echo "[${hookPrepareWorkspace}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 
@@ -86,6 +88,51 @@ echo "[${hookPostPackaging}] ended."
         }
         if (!fileExists("${localWorkspace}/${TEST_JOB_NAME}.pax")) {
             error 'Failed to find the expected package'
+        }
+
+        echo "[PAX_PACKAGE_TEST] package successfully"
+    }
+
+    /**
+     * Should be able to unpack a PAX package
+     *
+     * Use the PAX created in last stage
+     */
+    stage('unpack') {
+        try {
+            def localWorkspace = pax.getLocalWorkspace()
+            def remoteWorkspace = pax.getRemoteWorkspace()
+            def remoteWorkspaceFullPath = "${remoteWorkspace}/test-unpack-${lib.Utils.getTimestamp()}"
+
+            withCredentials([
+                usernamePassword(
+                    credentialsId    : env.PAX_SERVER_CREDENTIAL,
+                    passwordVariable : 'PASSWORD',
+                    usernameVariable : 'USERNAME'
+                )
+            ]) {
+                // create remote workspace
+                sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"mkdir -p ${remoteWorkspaceFullPath}\""
+
+                def result = pax.unpack("${localWorkspace}/${TEST_JOB_NAME}.pax", remoteWorkspaceFullPath)
+                echo "result=[${result}]"
+
+                def textFileContent = sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"cat ${remoteWorkspaceFullPath}/${TEST_ASCII_FILE}\""
+                echo "textFileContent=[${textFileContent}]"
+            }
+        } catch (e) {
+
+        } finally {
+            withCredentials([
+                usernamePassword(
+                    credentialsId    : env.PAX_SERVER_CREDENTIAL,
+                    passwordVariable : 'PASSWORD',
+                    usernameVariable : 'USERNAME'
+                )
+            ]) {
+                // delete remote workspace
+                sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"rm -fr ${remoteWorkspaceFullPath}*\""
+            }
         }
 
         echo "[PAX_PACKAGE_TEST] package successfully"
