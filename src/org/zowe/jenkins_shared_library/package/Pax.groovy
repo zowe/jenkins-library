@@ -200,9 +200,8 @@ class Pax {
         }
 
         def env = this.steps.env
-        def ts = Utils.getTimestamp()
-        def branch = Utils.sanitizeBranchName(env.BRANCH_NAME)
-        def processUid = "${args['job']}-${branch}-${ts}"
+        this.steps.echo "env=${env}"
+        def processUid = "${args['job']}-${ts}"
         def remoteWorkspaceFullPath = "${remoteWorkspace}/${processUid}"
         def packageTar = "${processUid}.tar"
         def packageScriptFile = "${processUid}.sh"
@@ -353,7 +352,7 @@ EOF"""
                     try {
                         // always clean up temporary files/folders
                         this.steps.echo "${func} cleaning up remote workspace..."
-                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspace}/${args['job']}-${branch}-*\""
+                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspace}/${processUid}\""
                     } catch (ex2) {
                         // ignore errors for cleaning up
                     }
