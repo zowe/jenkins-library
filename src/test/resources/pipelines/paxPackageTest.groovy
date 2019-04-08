@@ -99,11 +99,11 @@ echo "[${hookPostPackaging}] ended."
      * Use the PAX created in last stage
      */
     stage('unpack') {
-        try {
-            def localWorkspace = pax.getLocalWorkspace()
-            def remoteWorkspace = pax.getRemoteWorkspace()
-            def remoteWorkspaceFullPath = "${remoteWorkspace}/test-unpack-${lib.Utils.getTimestamp()}"
+        def localWorkspace = pax.getLocalWorkspace()
+        def remoteWorkspace = pax.getRemoteWorkspace()
+        def remoteWorkspaceFullPath = "${remoteWorkspace}/test-unpack-${lib.Utils.getTimestamp()}"
 
+        try {
             withCredentials([
                 usernamePassword(
                     credentialsId    : env.PAX_SERVER_CREDENTIAL,

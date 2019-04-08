@@ -408,6 +408,7 @@ EOF"""
         if (!args['filename']) {
             throw new InvalidArgumentException('filename')
         }
+        def exactFilename = args['filename'].split('/').last()
 
         def result = ''
 
@@ -426,7 +427,7 @@ EOF"""
                 // extract tar file, run pre/post hooks and create pax file
                 this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
 cd ${remoteWorkspace}
-pax -rf ${args['filename']} ${args['paxOptions']}
+pax -rf ${exactFilename} ${args['paxOptions']}
 EOF"""
                 // get extracted result
                 result = this.steps.sh(
