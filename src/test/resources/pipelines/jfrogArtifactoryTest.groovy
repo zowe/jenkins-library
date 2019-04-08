@@ -23,7 +23,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // init artifactory
         jfrog = lib.artifact.JFrogArtifactory.new(this)
         if (!jfrog) {
-            error 'Failed to initialize GitHub instance.'
+            error 'Failed to initialize JFrogArtifactory instance.'
         }
         jfrog.init([
             'url'                        : env.ARTIFACTORY_URL,

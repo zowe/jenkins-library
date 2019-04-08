@@ -96,6 +96,9 @@ test {
         'npm.credential',
         'artifactory.url',
         'artifactory.credential',
+        'pax.server.host',
+        'pax.server.port',
+        'pax.server.crdential',
     ]) {
         systemProperty prop, project.getProperty(prop)
     }

@@ -22,6 +22,9 @@ def NPM_EMAIL = 'giza-jenkins@gmail.com'
 def NPM_CREDENTIAL= 'giza-jenkins-basicAuth'
 def ARTIFACTORY_URL = 'https://gizaartifactory.jfrog.io/gizaartifactory'
 def ARTIFACTORY_CREDENTIAL = 'GizaArtifactory'
+def PAX_SERVER_HOST = 'river.zowe.org'
+def PAX_SERVER_PORT = 2022
+def PAX_SERVER_CREDENTIAL = 'ssh-zdt-test-image-guest'
 
 // other constants
 def CI_SKIP = '[ci skip]'
@@ -93,7 +96,10 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
   -Pnpm.email='${NPM_EMAIL}' \
   -Pnpm.credential='${NPM_CREDENTIAL}' \
   -Partifactory.url='${ARTIFACTORY_URL}' \
-  -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}'
+  -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}' \
+  -Ppax.server.host='${PAX_SERVER_HOST}' \
+  -Ppax.server.port='${PAX_SERVER_PORT}' \
+  -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'
 """
             }
         } catch (e) {
