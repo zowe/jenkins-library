@@ -73,7 +73,7 @@ echo "[${pax.HOOK_POST_PACKAGING}] ended."
      * Should be able to create a PAX package
      */
     stage('package') {
-        pax.package(TEST_JOB_NAME, "${TEST_JOB_NAME}.pax", ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE])
+        pax.pack(TEST_JOB_NAME, "${TEST_JOB_NAME}.pax", ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE])
 
         if (!fileExists("${localWorkspace}/${TEST_JOB_NAME}.pax")) {
             error 'Failed to find the expected package'

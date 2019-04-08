@@ -53,7 +53,7 @@ class Pax {
      *
      * This hook script runs on local workspace
      */
-    public static final String HOOK_PREPARE_PACKAGING = 'prepare-packaging.sh'
+    public static final String HOOK_PREPARE_WORKSPACE = 'prepare-workspace.sh'
 
     /**
      * Constant of pre-packaging hook
@@ -164,8 +164,8 @@ class Pax {
      * @param   environments   environment variables
      * @param   writeOptions   pax write command options
      */
-    void package(Map args = [:]) throws InvalidArgumentException, PackageException {
-        def func = '[Pax.package]'
+    void pack(Map args = [:]) throws InvalidArgumentException, PackageException {
+        def func = '[Pax.pack]'
 
         // init with arguments
            if (args.size() > 0) {
@@ -187,7 +187,7 @@ class Pax {
 
         // parse environment argument
         def environmentText = ""
-        if (args.containsKey('environments') && args['environments'] instanceof Map)
+        if (args.containsKey('environments') && args['environments'] instanceof Map) {
             try {
                 args['environments'].each { envVar, envVal ->
                     environmentText += "${envVar}=${envVal} "
@@ -206,8 +206,7 @@ class Pax {
         def remoteWorkspaceFullPath = "${remoteWorkspace}/${processUid}"
         def packageTar = "${processUid}.tar"
         def packageScriptFile = "${processUid}.sh"
-        def packageScriptContent = """
-#!/bin/sh -e
+        def packageScriptContent = """#!/bin/sh -e
 set -x
 
 if [ -z "${remoteWorkspace}" ]; then
@@ -242,12 +241,12 @@ fi
 if [ -f "${remoteWorkspaceFullPath}/${PATH_ASCII}.tar" ]; then
   echo "${func} extracting ${remoteWorkspaceFullPath}/${PATH_ASCII}.tar ..."
   cd "${remoteWorkspaceFullPath}"
-  pax -r -x tar -o to=IBM-1047 -f ${PATH_ASCII}.tar
+  pax -r -x tar -o to=IBM-1047 -f "${PATH_ASCII}.tar"
   # copy to target folder
   cp -R ${PATH_ASCII}/. ${PATH_CONTENT}
   # remove ascii files
-  rm ${PATH_ASCII}.tar
-  rm -fr ${PATH_ASCII}
+  rm "${PATH_ASCII}.tar"
+  rm -fr "${PATH_ASCII}"
 fi
 
 # run pre hook
@@ -307,8 +306,8 @@ fi
 """
 
         // run prepare-packaging hook if exists
-        this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_PACKAGING}") {
-            this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_PACKAGING}\""
+        this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}") {
+            this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
         }
         // tar ascii folder if exists
         this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}") {
@@ -363,7 +362,21 @@ EOF"""
         } // end lock
     } // end package()
 
-    void package(String job, String filename, Map environments = [:], String writeOptions = '') {
+    /**
+     * Create PAX Package
+     *
+     * Requires these environment variables:
+     * - JOB_NAME
+     * - BUILD_NUMBER
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param   job            job identifier
+     * @param   filename       package file name will be created
+     * @param   environments   environment variables
+     * @param   writeOptions   pax write command options
+     */
+    void pack(String job, String filename, Map environments = [:], String writeOptions = '') {
         this.package(job: job, filename: filename, environments: environments, writeOptions: writeOptions)
     }
 }
