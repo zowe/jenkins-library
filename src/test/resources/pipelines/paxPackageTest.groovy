@@ -117,7 +117,10 @@ echo "[${hookPostPackaging}] ended."
                 def result = pax.unpack("${localWorkspace}/${TEST_JOB_NAME}.pax", remoteWorkspaceFullPath)
                 echo "result=[${result}]"
 
-                def textFileContent = sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"cat ${remoteWorkspaceFullPath}/${TEST_ASCII_FILE}\""
+                def textFileContent = sh(
+                    script: "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${env.PAX_SERVER_PORT} \${USERNAME}@${env.PAX_SERVER_HOST} \"cat ${remoteWorkspaceFullPath}/${TEST_ASCII_FILE}\"",
+                    returnStdout: true
+                ).trim()
                 echo "textFileContent=[${textFileContent}]"
             }
         } catch (e) {
@@ -135,6 +138,6 @@ echo "[${hookPostPackaging}] ended."
             }
         }
 
-        echo "[PAX_PACKAGE_TEST] unpack successfully"
+        // echo "[PAX_PACKAGE_TEST] unpack successfully"
     }
 }

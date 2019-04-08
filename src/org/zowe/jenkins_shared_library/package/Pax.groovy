@@ -431,11 +431,7 @@ exit 0
 EOF"""
                 // get extracted result
                 result = this.steps.sh(
-                    script: """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
-cd ${remoteWorkspace}
-find . -print
-exit 0
-EOF""",
+                    script: "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"find ${remoteWorkspace} -print\"",
                     returnStdout: true
                 ).trim()
             } catch (ex1) {
