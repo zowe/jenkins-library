@@ -309,7 +309,7 @@ fi
             this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
         }
         // tar ascii folder if exists
-        this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}") {
+        if (this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}")) {
             this.steps.sh """echo "${func} ASCII contents:"
 find ${this.localWorkspace}/${PATH_ASCII} -print
 tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C {this.localWorkspace}/ ${PATH_ASCII}
