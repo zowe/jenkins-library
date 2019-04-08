@@ -13,18 +13,18 @@
 def isPullRequest = env.BRANCH_NAME.startsWith('PR-')
 
 // constants will be used for testing
-def JENKINS_CREDENTIAL = 'jenkins-credential'
-def GITHUB_USERNAME = 'Zowe Robot'
-def GITHUB_EMAIL = 'zowe.robot@gmail.com'
-def GITHUB_CREDENTIAL = 'zowe-robot-github'
-def NPM_USERNAME = 'giza-jenkins'
-def NPM_EMAIL = 'giza-jenkins@gmail.com'
-def NPM_CREDENTIAL= 'giza-jenkins-basicAuth'
-def ARTIFACTORY_URL = 'https://gizaartifactory.jfrog.io/gizaartifactory'
+def JENKINS_CREDENTIAL     = 'jenkins-credential'
+def GITHUB_USERNAME        = 'Zowe Robot'
+def GITHUB_EMAIL           = 'zowe.robot@gmail.com'
+def GITHUB_CREDENTIAL      = 'zowe-robot-github'
+def NPM_USERNAME           = 'giza-jenkins'
+def NPM_EMAIL              = 'giza-jenkins@gmail.com'
+def NPM_CREDENTIAL         = 'giza-jenkins-basicAuth'
+def ARTIFACTORY_URL        = 'https://gizaartifactory.jfrog.io/gizaartifactory'
 def ARTIFACTORY_CREDENTIAL = 'GizaArtifactory'
-def PAX_SERVER_HOST = 'river.zowe.org'
-def PAX_SERVER_PORT = 2022
-def PAX_SERVER_CREDENTIAL = 'ssh-zdt-test-image-guest'
+def PAX_SERVER_HOST        = 'river.zowe.org'
+def PAX_SERVER_PORT        = 2022
+def PAX_SERVER_CREDENTIAL  = 'ssh-zdt-test-image-guest'
 
 // other constants
 def CI_SKIP = '[ci skip]'
