@@ -304,21 +304,26 @@ else
 fi
 """
 
-        // run prepare-packaging hook if exists
-        if (this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}")) {
-            this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
-        }
-        // tar ascii folder if exists
-        if (this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}")) {
-            this.steps.sh """echo "${func} ASCII contents:"
+        try {
+            // run prepare-packaging hook if exists
+            if (this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}")) {
+                this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
+            }
+            // tar ascii folder if exists
+            if (this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}")) {
+                this.steps.sh """echo "${func} ASCII contents:"
 find ${this.localWorkspace}/${PATH_ASCII} -print
 tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C ${this.localWorkspace}/ ${PATH_ASCII}
 rm -fr ${this.localWorkspace}/${PATH_ASCII}
 """
+            }
+            // tar the whole workspace folder
+            this.steps.sh "tar -c -f ${packageTar} -C ${this.localWorkspace} ."
+            this.steps.writeFile file: packageScriptFile, text: packageScriptContent
+        } catch (ex0) {
+            // throw error
+            throw new PackageException("Failed to prepare packaging workspace: ${ex0}")
         }
-        // tar the whole workspace folder
-        this.steps.sh "tar -c -f ${packageTar} -C ${this.localWorkspace} ."
-        this.steps.writeFile file: packageScriptFile, text: packageScriptContent
 
         this.steps.lock("packaging-server-${this.sshHost}") {
             this.steps.withCredentials([
