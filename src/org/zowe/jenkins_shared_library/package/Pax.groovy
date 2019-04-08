@@ -263,10 +263,10 @@ if [ -f "${HOOK_PRE_PACKAGING}" ]; then
 fi
 
 # list working folder
-cd ${remoteWorkspace}
-echo "${func} content of ${remoteWorkspace} starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+cd ${remoteWorkspaceFullPath}
+echo "${func} content of ${remoteWorkspaceFullPath} starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 ls -laR
-echo "${func} content of ${remoteWorkspace} ends   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+echo "${func} content of ${remoteWorkspaceFullPath} ends   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 # create PAX file
 if [ -d "${remoteWorkspaceFullPath}/${PATH_CONTENT}" ]; then
