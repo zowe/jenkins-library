@@ -357,7 +357,7 @@ EOF"""
                     try {
                         // always clean up temporary files/folders
                         this.steps.echo "${func} cleaning up remote workspace..."
-                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}\""
+                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}\""
                     } catch (ex2) {
                         // ignore errors for cleaning up
                     }
