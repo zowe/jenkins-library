@@ -97,9 +97,13 @@ class Utils {
         List excludeBranches = []
         if (args.containsKey('excludeBranches')) {
             if (args['excludeBranches'] instanceof String) {
-                excludeBranches = args['excludeBranches'].split(',')*.trim()*.toLowerCase()
+                args['excludeBranches'].split(',').each { it ->
+                    excludeBranches << it.trim().toLowerCase()
+                }
             } else if (args['excludeBranches'] instanceof List) {
-                excludeBranches = args['excludeBranches']*.toLowerCase()
+                args['excludeBranches'].each { it ->
+                    excludeBranches << it.toLowerCase()
+                }
             }
         }
         def includeBuildNumber = args.containsKey('includeBuildNumber') ? args['includeBuildNumber'] : true;
