@@ -163,8 +163,9 @@ class Pax {
      * @param   filename       package file name will be created
      * @param   environments   environment variables
      * @param   writeOptions   pax write command options
+     * @return                 pax package created
      */
-    void pack(Map args = [:]) throws InvalidArgumentException, PackageException {
+    String pack(Map args = [:]) throws InvalidArgumentException, PackageException {
         def func = '[Pax.pack]'
 
         // init with arguments
@@ -364,6 +365,8 @@ EOF"""
                 }
             } // end withCredentials
         } // end lock
+
+        return "${this.localWorkspace}/${args['filename']}"
     } // end package()
 
     /**
@@ -379,8 +382,9 @@ EOF"""
      * @param   filename       package file name will be created
      * @param   environments   environment variables
      * @param   writeOptions   pax write command options
+     * @return                 pax package created
      */
-    void pack(String job, String filename, Map environments = [:], String writeOptions = '') {
+    String pack(String job, String filename, Map environments = [:], String writeOptions = '') {
         this.pack(job: job, filename: filename, environments: environments, writeOptions: writeOptions)
     }
 }

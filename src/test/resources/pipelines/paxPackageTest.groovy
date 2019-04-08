@@ -78,9 +78,12 @@ echo "[${hookPostPackaging}] ended."
      * Should be able to create a PAX package
      */
     stage('package') {
-        pax.pack(TEST_JOB_NAME, "${TEST_JOB_NAME}.pax", ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE])
+        def result = pax.pack(TEST_JOB_NAME, "${TEST_JOB_NAME}.pax", ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE])
 
         def localWorkspace = pax.getLocalWorkspace()
+        if (result != "${localWorkspace}/${TEST_JOB_NAME}.pax") {
+            error "Pax pack result \"$result\" is not expected \"${localWorkspace}/${TEST_JOB_NAME}.pax\"."
+        }
         if (!fileExists("${localWorkspace}/${TEST_JOB_NAME}.pax")) {
             error 'Failed to find the expected package'
         }
