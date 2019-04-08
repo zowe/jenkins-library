@@ -227,8 +227,6 @@ if [ -f "${remoteWorkspace}/${packageTar}" ]; then
     exit 1
   fi
   rm "${remoteWorkspace}/${packageTar}"
-  echo "${func} tar ${packageTar} extracted ..."
-  ls -la
 else
   echo "${func}[ERROR] tar ${remoteWorkspace}/${packageTar} file doesn't exist"
   exit 1
@@ -263,7 +261,7 @@ fi
 # list working folder
 cd ${remoteWorkspaceFullPath}
 echo "${func} content of ${remoteWorkspaceFullPath} starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-ls -laR
+ls -REal
 echo "${func} content of ${remoteWorkspaceFullPath} ends   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 # create PAX file
@@ -344,6 +342,7 @@ mv ${remoteWorkspace}/${packageScriptFile}.new ${remoteWorkspace}/${packageScrip
 chmod +x ${remoteWorkspace}/${packageScriptFile}
 . ${remoteWorkspace}/${packageScriptFile}
 rm ${remoteWorkspace}/${packageScriptFile}
+exit 0
 EOF"""
                     // copy back pax file
                     this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
@@ -435,6 +434,7 @@ EOF"""
                     script: """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
 cd ${remoteWorkspace}
 find . -print
+exit 0
 EOF""",
                     returnStdout: true
                 ).trim()
