@@ -61,5 +61,6 @@ class BasePipelineIntegerationTest extends IntegrationTest {
         assertThat('Build result', buildInformation, IsMapContaining.hasKey('result'));
         assertThat('Build result', buildInformation['result'], equalTo('SUCCESS'));
         assertThat('Build console log', buildLog, not(equalTo('')))
+        assertThat('Build console log', buildLog, containsString('Pipeline Execution Complete'))
     }
 }

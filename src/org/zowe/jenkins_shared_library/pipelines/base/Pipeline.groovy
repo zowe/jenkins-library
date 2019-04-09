@@ -252,6 +252,14 @@ class Pipeline {
     }
 
     /**
+     * Add new build parameter to the pipeline
+     * @param param           build parameter
+     */
+    void addBuildParameter(def param) {
+        buildParameters.push(param)
+    }
+
+    /**
      * Creates a new stage to be run in the Jenkins pipeline.
      *
      * <p>Stages are executed in the order that they are created. For more details on what arguments
