@@ -338,7 +338,7 @@ class NodeJSPipeline extends GenericPipeline {
                                 "${timeout.toString()}, the default version (${availableVersions.get(0)}) will be the " +
                                 "deployed version. Please provide the required input <a href=\"${steps.RUN_DISPLAY_URL}\">HERE</a></p>"
 
-                        sendHtmlEmail(
+                        _email.send(
                                 subjectTag: "APPROVAL REQUIRED",
                                 body: "<h3>${steps.env.JOB_NAME}</h3>" +
                                         "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" + bodyText + _getChangeSummary(),
@@ -394,7 +394,7 @@ class NodeJSPipeline extends GenericPipeline {
 
             steps.echo "${steps.env.DEPLOY_VERSION} approved by $approveName"
 
-            sendHtmlEmail(
+            _email.send(
                     subjectTag: "APPROVED",
                     body: "<h3>${steps.env.JOB_NAME}</h3>" +
                             "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" +
@@ -588,7 +588,7 @@ class NodeJSPipeline extends GenericPipeline {
 
                 steps.sh "npm publish --tag ${branch.tag}"
 
-                sendHtmlEmail(
+                _email.send(
                     subjectTag: "DEPLOYED",
                     body: "<h3>${steps.env.JOB_NAME}</h3>" +
                         "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" +
@@ -705,7 +705,7 @@ class NodeJSPipeline extends GenericPipeline {
                                     "${timeout.toString()}, the default version (${availableVersions.get(0)}) will be the " +
                                     "deployed version. Please provide the required input <a href=\"${steps.RUN_DISPLAY_URL}\">HERE</a></p>"
 
-                            sendHtmlEmail(
+                            _email.send(
                                     subjectTag: "APPROVAL REQUIRED",
                                     body: "<h3>${steps.env.JOB_NAME}</h3>" +
                                             "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" + bodyText + _getChangeSummary(),
@@ -760,7 +760,7 @@ class NodeJSPipeline extends GenericPipeline {
 
                 steps.echo "${steps.env.DEPLOY_VERSION} approved by $approveName"
 
-                sendHtmlEmail(
+                _email.send(
                         subjectTag: "APPROVED",
                         body: "<h3>${steps.env.JOB_NAME}</h3>" +
                                 "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" +

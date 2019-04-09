@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.base
 
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
+import org.zowe.jenkins_shared_library.email.Email
 import org.zowe.jenkins_shared_library.pipelines.base.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
@@ -199,6 +200,11 @@ class Pipeline {
     protected final Stages _stages = new Stages()
 
     /**
+     * An Email instance to handle email related functions
+     */
+    protected final Email _email
+
+    /**
      * Reference to the groovy pipeline variable.
      *
      * @see #Pipeline(def)
@@ -240,6 +246,8 @@ class Pipeline {
      */
     Pipeline(steps) {
         this.steps = steps
+
+        this._email = new Email(steps)
     }
 
     /**
@@ -467,45 +475,6 @@ class Pipeline {
      */
     final Stage getStage(String stageName) {
         return _stages.getStage(stageName)
-    }
-
-    /**
-     * Send an HTML email.
-     *
-     * <p>The email will contain {@code [args.tag]} as the first string content followed by the
-     * job name and build number</p>
-     *
-     * @param args Arguments available to the email command.
-     */
-    final void sendHtmlEmail(EmailArguments args) {
-        def subject = "[$args.subjectTag] Job '${steps.env.JOB_NAME} [${steps.env.BUILD_NUMBER}]'"
-
-        steps.echo "Sending Email"
-        steps.echo "Subject: $subject"
-        steps.echo "Body:\n${args.body}"
-
-        // send the email
-        steps.emailext(
-            subject: subject,
-            to: args.to,
-            body: args.body,
-            mimeType: "text/html",
-            recipientProviders: args.addProviders ? [[$class: 'DevelopersRecipientProvider'],
-                                                     [$class: 'UpstreamComitterRecipientProvider'],
-                                                     [$class: 'CulpritsRecipientProvider'],
-                                                     [$class: 'RequesterRecipientProvider']] : []
-        )
-
-    }
-
-    /**
-     * Send an HTML email.
-     *
-     * @param args A map that can be instantiated as {@link EmailArguments}.
-     * @see #sendHtmlEmail(EmailArguments)
-     */
-    final void sendHtmlEmail(Map args) {
-        sendHtmlEmail(args as EmailArguments)
     }
 
     /**
@@ -845,7 +814,7 @@ class Pipeline {
 
             try {
                 // send the email
-                sendHtmlEmail(
+                this._email.send(
                     subjectTag: subject,
                     body: bodyText,
                     to: _isProtectedBranch ? admins.getCCList() : ""

@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.jenkins_shared_library.pipelines.base.arguments
+package org.zowe.jenkins_shared_library.email
 
 /**
- * Arguments available to the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#sendHtmlEmail(EmailArguments)}
+ * Arguments available to the {@link org.zowe.jenkins_shared_library.email.Email#send(EmailArguments)}
  * method.
  */
 class EmailArguments {
@@ -19,6 +19,16 @@ class EmailArguments {
      * Should the recipient providers be added?
      */
     boolean addProviders = true
+
+    /**
+     * Is the body in HTML format
+     */
+    boolean html = true
+
+    /**
+     * If attach build log
+     */
+    boolean attachLog = false
 
     /**
      * HTML message content.
