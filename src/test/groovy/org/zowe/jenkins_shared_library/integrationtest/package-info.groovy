@@ -9,6 +9,6 @@
  */
 
 /**
- * Packages provide shared library for Jenkins pipeline.
+ * Packages provide shared library for Jenkins library integration test.
  */
 package org.zowe.jenkins_shared_library.integrationtest

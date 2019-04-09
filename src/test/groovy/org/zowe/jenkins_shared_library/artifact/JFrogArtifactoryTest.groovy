@@ -16,7 +16,7 @@ import org.zowe.jenkins_shared_library.integrationtest.*
 import static groovy.test.GroovyAssert.*
 
 /**
- * Test {@link org.zowe.jenkins_shared_library.npm.Registry}
+ * Test {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory}
  *
  * The test case will create a test Jenkins job and attach the current library to it.
  *
