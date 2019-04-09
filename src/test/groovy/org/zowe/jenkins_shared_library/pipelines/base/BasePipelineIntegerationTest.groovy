@@ -30,15 +30,18 @@ class BasePipelineIntegerationTest extends IntegrationTest {
     static final String TEST_REPORSITORY = 'jenkins-library-fvt-nodejs'
     // branch to run test
     static final String TEST_BRANCH = 'master'
+    // branch to run test
+    static final String TEST_JENKINSFILE = 'Jenkinsfile.base'
 
     @BeforeClass
     public static void setup() {
         initMultiBranchPipelineJob([
-            'name'           : 'base-multibranch',
-            'git-credential' : System.getProperty('github.credential'),
-            'git-owner'      : TEST_OWNER,
-            'git-repository' : TEST_REPORSITORY,
-            'branch'         : TEST_BRANCH,
+            'name'             : 'base-multibranch',
+            'git-credential'   : System.getProperty('github.credential'),
+            'git-owner'        : TEST_OWNER,
+            'git-repository'   : TEST_REPORSITORY,
+            'branch'           : TEST_BRANCH,
+            'jenkinsfile-path' : TEST_JENKINSFILE
         ])
     }
 
