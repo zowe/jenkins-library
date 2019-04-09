@@ -12,7 +12,6 @@ package org.zowe.jenkins_shared_library.pipelines
 
 import com.cloudbees.groovy.cps.NonCPS
 import hudson.tasks.test.AbstractTestResultAction
-import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
 import org.zowe.jenkins_shared_library.Constants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
 
@@ -30,9 +29,9 @@ class Build {
      * def o = new Build(currentBuild)
      * </pre>
      *
-     * @param build    Normally should be "currentBuild"
+     * @param build    Normally should be "currentBuild" (org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper)
      */
-    Build(RunWrapper build) {
+    Build(def build) {
         this.build = build
     }
 
