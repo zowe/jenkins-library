@@ -783,23 +783,8 @@ class NodeJSPipeline extends GenericPipeline {
 
     /**
      * Signal that no more stages will be added and begin pipeline execution.
-     *
-     * <p>The following locations are always archived:</p>
-     *
-     * <dl>
-     *     <dt><b>{@literal /home/jenkins/.npm/_logs}</b></dt>
-     *     <dd>This is the log output directory for any npm debug logs.</dd>
-     * </dl>
      */
     void end(Map options = [:]) {
-        List<String> archive = ["/home/jenkins/.npm/_logs"]
-
-        if (options.archiveFolders) {
-            options.archiveFolders = archive + options.archiveFolders
-        } else {
-            options.archiveFolders = archive
-        }
-
         super.endGeneric(options)
     }
 

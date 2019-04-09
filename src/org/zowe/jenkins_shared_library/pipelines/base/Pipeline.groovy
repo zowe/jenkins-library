@@ -442,7 +442,6 @@ class Pipeline {
             }
 
             // Gather the log folders here
-            _gatherLogs(args.archiveFolders)
             _sendEmailNotification()
         }
     }
@@ -580,52 +579,6 @@ class Pipeline {
                 stage.exception = new StageException("Stage exited with a result of UNSTABLE or worse", stage.name)
                 _stages.firstFailingStage = stage
             }
-        }
-    }
-
-    /**
-     * Gathers logs specified by the input array.
-     *
-     * <p>Logs that exist outside of the workspace will be copied into a "temp" folder. The copied
-     * path copied will contain the full original path in the temp directory.</p>
-     *
-     * @param archiveFolders The folders containing logs
-     * @see EndArguments#archiveFolders
-     */
-    protected final void _gatherLogs(String[] archiveFolders) {
-        if (archiveFolders && archiveFolders.length > 0) {
-            def archiveLocation = "temp"
-
-            steps.echo "NOTE: If a directory was not able to be archived, the build will result in a success."
-            steps.echo "NOTE: It works like this because it is easier to catch an archive error than logically determine when each specific archive directory is to be captured."
-            steps.echo "NOTE: For example: if a log directory is only generated when there is an error but the build succeeds, the archive will fail."
-            steps.echo "NOTE: It doesn't make sense for the build to fail in this scenario since the error archive failed because the build was a success."
-            steps.sh "mkdir -p $archiveLocation"
-
-            for (int i = 0; i < archiveFolders.length; i++) {
-                def directory = archiveFolders[i]
-
-                try {
-                    if (directory.startsWith("/")) {
-                        steps.sh "mkdir -p ./${archiveLocation}${directory}"
-
-                        // It is an absolute path so try to copy everything into our work directory
-                        // always exit with 0 return code so the ui doesn't look broken
-                        steps.sh "cp -r $directory ./${archiveLocation}${directory} || exit 0"
-                    } else if (directory.contains("..")) {
-                        throw new PipelineException("Relative archives are not supported")
-                    } else {
-                        // We must be in an internal directory right now so archive it immediately
-                        steps.echo "Archiving folder: ${directory}"
-                        steps.archiveArtifacts allowEmptyArchive: true, artifacts: "$directory/*" + "*/*.*"// The weird concat because groovydoc blew up here
-                    }
-                } catch (e) {
-                    steps.echo "Unable to archive $directory, reason: ${e.message}\n\n...Ignoring"
-                }
-            }
-
-            steps.echo "Archiving absolute paths"
-            steps.archiveArtifacts allowEmptyArchive: true, artifacts: "$archiveLocation/*" + "*/*.*"// The weird concat because groovydoc blew up here
         }
     }
 
