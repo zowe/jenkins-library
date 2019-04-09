@@ -458,6 +458,22 @@ class Pipeline {
     }
 
     /**
+     * Pseudo end method, should be overridden by inherited classes
+     * @param args Arguments for the end method.
+     */
+    protected void end(EndArguments args) {
+        endBase(args)
+    }
+
+    /**
+     * Pseudo end method, should be overridden by inherited classes
+     * @param args A map that can be instantiated as {@link EndArguments}.
+     */
+    protected void end(Map args = [:]) {
+        endBase(args)
+    }
+
+    /**
      * Gets the first failing stage within {@link #_stages}
      *
      * @return The first failing stage if one exists, null otherwise
@@ -549,6 +565,22 @@ class Pipeline {
      */
     void setupBase(Map timeouts = [:]) {
         setupBase(timeouts as SetupArguments)
+    }
+
+    /**
+     * Pseudo setup method, should be overridden by inherited classes
+     * @param timeouts The timeouts for the added stages.
+     */
+    protected void setup(SetupArguments timeouts) {
+        setupBase(timeouts)
+    }
+
+    /**
+     * Pseudo setup method, should be overridden by inherited classes
+     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     */
+    protected void setup(Map timeouts = [:]) {
+        setupBase(timeouts)
     }
 
     /**
