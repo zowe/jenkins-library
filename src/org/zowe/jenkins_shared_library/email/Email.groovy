@@ -41,7 +41,7 @@ class Email {
      *
      * @param args Arguments available to the email command.
      */
-    final void send(EmailArguments args) {
+    void send(EmailArguments args) {
         def subject = "[$args.subjectTag] Job '${steps.env.JOB_NAME} [${steps.env.BUILD_NUMBER}]'"
 
         steps.echo "Sending Email\n" +
@@ -63,12 +63,12 @@ class Email {
     }
 
     /**
-     * Send an HTML email.
+     * Send an email.
      *
      * @param args A map that can be instantiated as {@link EmailArguments}.
      * @see #send(EmailArguments)
      */
-    final void send(Map args) {
+    void send(Map args) {
         send(args as EmailArguments)
     }
 }

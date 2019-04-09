@@ -8,18 +8,11 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library
-
-import java.util.logging.Level
+package org.zowe.jenkins_shared_library.scm
 
 class Constants {
     /**
-     * Default logging level
+     * Length of short commit hash
      */
-    static Level DEFAULT_LOGGING_LEVEL = Level.INFO
-
-    /**
-     * Repository name of this jenkins library
-     */
-    static String REPOSITORY_JENKINS_LIBRARY = 'zowe/jenkins-library'
+    static Integer COMMIT_ID_LENGTH = 7
 }

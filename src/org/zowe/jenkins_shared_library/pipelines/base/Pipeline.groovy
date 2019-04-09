@@ -12,6 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.base
 
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.email.Email
+import org.zowe.jenkins_shared_library.pipelines.Build
 import org.zowe.jenkins_shared_library.pipelines.base.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
@@ -583,131 +584,10 @@ class Pipeline {
     }
 
     /**
-     * Get the list of changes in this build.
-     *
-     * <p>This method will omit any changes reported from the shared pipeline library. These changes
-     * aren't relevant to dependent project builds so they provide no value to include.</p>
-     *
-     * @return An HTML string that can be added into the email contents.
-     */
-    protected final String _getChangeSummary() {
-        String changeString = ""
-        final int ID_LENGTH = 7 // The max length of the commit id
-
-        // Loop through each change present in the change set
-        for (def changeLog : steps.currentBuild.changeSets) {
-            def browser = changeLog.browser
-
-            // Exclude any changes from the version controller project
-            if (changeLog.items[0] && browser.getChangeSetLink(changeLog.items[0]).toString().contains(_VERSION_CONTROLLER_REPO)) {
-                continue
-            }
-
-            // Add each item in the change set to the list
-            for (def entry : changeLog.items) {
-                def link = browser.getChangeSetLink(entry).toString()
-
-                changeString += "<li><b>${entry.author}</b>: ${entry.msgEscaped} "
-
-                if (link) {
-                    changeString += "(<a href=\"$link\">${entry.commitId.take(ID_LENGTH)}</a>)"
-                }
-                changeString += "</li>"
-            }
-        }
-
-        if (changeString.length() == 0) {
-            changeString = "No new changes"
-        } else {
-            changeString = "<ul>$changeString</ul>"
-        }
-
-        return "<h3>Change Summary</h3><p>$changeString</p>"
-    }
-
-    // NonCPS informs jenkins to not save variable state that would resolve in a
-    // java.io.NotSerializableException on the TestResults class
-    /**
-     * Gets a test summary string.
-     *
-     * <p>This method was created using {@literal @NonCPS} because some of the operations performed cannot be
-     * serialized. The {@literal @NonCPS} annotation tells jenkins to not save the variable state of this
-     * function on shutdown. Failure to run in this mode causes a java.io.NotSerializableException
-     * in this method.</p>
-     *
-     * @return An HTML string of test results to add to the email.
-     */
-    @NonCPS
-    protected final String _getTestSummary() {
-        def testResultAction = steps.currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
-        def text = "<h3>Test Results</h3>"
-
-        if (testResultAction != null) {
-            def total = testResultAction.getTotalCount()
-            def failed = testResultAction.getFailCount()
-            def skipped = testResultAction.getSkipCount()
-
-            // Create an overall summary
-            text += "<p style=\"font-size: 16px;\">Passed: <span style=\"font-weight: bold; color: green\">${total - failed - skipped}</span>, "
-            text += "Failed: <span style=\"font-weight: bold; color: ${failed == 0 ? "green" : "red"}\">${failed}</span>"
-
-            if (skipped > 0) {
-                text += ", Skipped: <span style=\"font-weight: bold; color: #027b77\">${skipped}</span>"
-            }
-            text += "</p>"
-
-            // Now output failing results
-            if (failed > 0) {
-                // If there are more failures than this value, then we will only output
-                // this number of failures to save on email size.
-                def maxTestOutput = 5
-
-                text += "<h4>Failing Tests</h4>"
-
-                def codeStart = "<code style=\"white-space: pre-wrap; display: inline-block; vertical-align: top; margin-left: 10px; color: red\">"
-                def failedTests = testResultAction.getFailedTests()
-                def failedTestsListCount = failedTests.size() // Don't trust that failed == failedTests.size()
-
-                // Loop through all tests or the first maxTestOutput, whichever is smallest
-                for (int i = 0; i < maxTestOutput && i < failedTestsListCount; i++) {
-                    def test = failedTests.get(i)
-
-                    text += "<p style=\"margin-top: 5px; margin-bottom: 0px; border-bottom: solid 1px black; padding-bottom: 5px;"
-
-                    if (i == 0) {
-                        text += "border-top: solid 1px black; padding-top: 5px;"
-                    }
-
-                    text += "\"><b>Failed:</b> ${test.fullDisplayName}"
-
-                    // Add error details
-                    if (test.errorDetails) {
-                        text += "<br/><b>Details:</b>${codeStart}${escapeHtml4(test.errorDetails)}</code>"
-                    }
-
-                    // Add stack trace
-                    if (test.errorStackTrace) {
-                        text += "<br/><b>Stacktrace:</b>${codeStart}${escapeHtml4(test.errorStackTrace)}</code>"
-                    }
-
-                    text += "</p>"
-                }
-
-                if (maxTestOutput < failedTestsListCount) {
-                    text += "<p>...For the remaining failures, view the build output</p>"
-                }
-            }
-        } else {
-            text += "<p>No test results were found for this run.</p>"
-        }
-
-        return text
-    }
-
-    /**
      * Send an email notification about the result of the build to the appropriate users
      */
     protected void _sendEmailNotification() {
+        Build currentBuild = new Build(steps.currentBuild)
         String buildStatus = "${steps.currentBuild.currentResult}"
         String emailText = buildStatus
 
@@ -743,8 +623,8 @@ class Pipeline {
                 bodyText += "<p><img src=\"" + imageList[imageIndex] + "\" width=\"500\"/></p>"
             }
 
-            bodyText += _getChangeSummary()
-            bodyText += _getTestSummary()
+            bodyText += currentBuild.getChangeSummary()
+            bodyText += currentBuild.getTestSummary()
 
             // Add any details of an exception, if encountered
             if (_stages.firstFailingStage?.exception) { // Safe navigation is where the question mark comes from

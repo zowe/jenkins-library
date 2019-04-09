@@ -14,6 +14,7 @@ import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.pipelines.base.ProtectedBranches
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
+import org.zowe.jenkins_shared_library.pipelines.Build
 import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.VersionStageArguments
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
@@ -316,6 +317,8 @@ class NodeJSPipeline extends GenericPipeline {
                     steps.sleep time: 100, unit: TimeUnit.MILLISECONDS
 
                     steps.timeout(time: timeout.time, unit: timeout.unit) {
+                        Build currentBuild = new Build(steps.currentBuild)
+
                         String bodyText = "<p>Below is the list of versions to choose from:<ul><li><b>${availableVersions.get(0)} [DEFAULT]</b>: " +
                                 "This version was derived from the package.json version by only adding/removing a prerelease string as needed.</li>"
 
@@ -341,7 +344,7 @@ class NodeJSPipeline extends GenericPipeline {
                         _email.send(
                                 subjectTag: "APPROVAL REQUIRED",
                                 body: "<h3>${steps.env.JOB_NAME}</h3>" +
-                                        "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" + bodyText + _getChangeSummary(),
+                                        "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" + bodyText + currentBuild.getChangeSummary(),
                                 to: admins.emailList,
                                 addProviders: false
                         )
@@ -683,6 +686,8 @@ class NodeJSPipeline extends GenericPipeline {
                         steps.sleep time: 100, unit: TimeUnit.MILLISECONDS
 
                         steps.timeout(time: timeout.time, unit: timeout.unit) {
+                            Build currentBuild = new Build(steps.currentBuild)
+
                             String bodyText = "<p>Below is the list of versions to choose from:<ul><li><b>${availableVersions.get(0)} [DEFAULT]</b>: " +
                                     "This version was derived from the package.json version by only adding/removing a prerelease string as needed.</li>"
 
@@ -708,7 +713,7 @@ class NodeJSPipeline extends GenericPipeline {
                             _email.send(
                                     subjectTag: "APPROVAL REQUIRED",
                                     body: "<h3>${steps.env.JOB_NAME}</h3>" +
-                                            "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" + bodyText + _getChangeSummary(),
+                                            "<p>Branch: <b>${steps.BRANCH_NAME}</b></p>" + bodyText + currentBuild.getChangeSummary(),
                                     to: admins.emailList,
                                     addProviders: false
                             )
