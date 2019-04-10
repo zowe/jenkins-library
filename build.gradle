@@ -130,5 +130,4 @@ test {
 groovydoc {
     source             sourceSets.main.groovy
     includes           ["org.zowe.*"]
-    destinationDir     file("docs")
 }

@@ -12,6 +12,9 @@
 
 def isPullRequest = env.BRANCH_NAME.startsWith('PR-')
 
+// only when building on these branches, docs will be updated
+def DOCS_UPDATE_BRANCHES = ['master', 'classes']
+
 // constants will be used for testing
 def JENKINS_CREDENTIAL     = 'jenkins-credential'
 def GITHUB_USERNAME        = 'Zowe Robot'
@@ -121,29 +124,45 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     stage('render-doc') {
+        if (!DOCS_UPDATE_BRANCHES.contains(env.BRANCH_NAME)) {
+            echo "Skip building documentation for branch ${env.BRANCH_NAME}"
+            return
+        }
+
         // generate doc
         sh './gradlew groovydoc'
-        // check if there are changes on docs
-        def docsUpdated = sh(script: "git status --porcelain | grep docs", returnStdout: true).trim()
-        if (docsUpdated) {
-          echo "These documentation are changed:\n${docsUpdated}"
-          // commit changes
-          sh """git config --global user.email "${GITHUB_EMAIL}"
-git config --global user.name "${GITHUB_USERNAME}"
-git add docs
+
+        // env.BRANCH_NAME
+        dir('build/docs/groovydoc') {
+            // init git folder
+            sh """
+git init
+git remote add origin https://github.com/zowe/jenkins-library
+git fetch origin
+git reset origin/gh-pages
+"""
+            // check if there are changes on docs
+            def docsUpdated = sh(script: "git status --porcelain", returnStdout: true).trim()
+            if (docsUpdated) {
+                echo "These documentation are changed:\n${docsUpdated}"
+                // commit changes
+                sh """git config user.email "${GITHUB_EMAIL}"
+git config user.name "${GITHUB_USERNAME}"
+git add .
 git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER} ${CI_SKIP}\"
 """
-          // push changes
-          withCredentials([
-            usernamePassword(
-              credentialsId    : GITHUB_CREDENTIAL,
-              passwordVariable : 'PASSWORD',
-              usernameVariable : 'USERNAME'
-            )
-          ]) {
-            sh "git push https://${USERNAME}:${PASSWORD}@github.com/zowe/jenkins-library HEAD:${env.BRANCH_NAME}"
-            echo "Documentation updated."
-          }
+                // push changes
+                withCredentials([
+                    usernamePassword(
+                        credentialsId    : GITHUB_CREDENTIAL,
+                        passwordVariable : 'PASSWORD',
+                        usernameVariable : 'USERNAME'
+                    )
+                ]) {
+                    sh "git push https://${USERNAME}:${PASSWORD}@github.com/zowe/jenkins-library HEAD:gh-pages"
+                    echo "Documentation updated."
+                }
+            }
         }
     }
 }
