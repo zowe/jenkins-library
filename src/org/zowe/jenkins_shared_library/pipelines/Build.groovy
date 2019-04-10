@@ -56,7 +56,7 @@ class Build {
 
                 // Exclude any changes from the jenkins library project
                 if (link.contains(Constants.REPOSITORY_JENKINS_LIBRARY)) {
-                    continue
+                    // continue
                 }
 
                 changeString += "<li><b>${entry.author}</b>: ${entry.msgEscaped} "
