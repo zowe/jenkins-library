@@ -223,6 +223,11 @@ class Pipeline {
     def buildParameters = []
 
     /**
+     * Upstream builds
+     */
+    def buildUpstreams = []
+
+    /**
      * Gets the stage skip parameter name.
      *
      * @param stage The stage to skip.
@@ -257,6 +262,16 @@ class Pipeline {
      */
     void addBuildParameter(def param) {
         buildParameters.push(param)
+    }
+
+    /**
+     * Define upstreams
+     * @param upstreams    all upstreams
+     */
+    void addUpstreams(String... upstreams) {
+        for (String upstream : upstreams) {
+            buildUpstreams.push(upstream)
+        }
     }
 
     /**
@@ -424,19 +439,36 @@ class Pipeline {
             // First setup the build properties
             def history = defaultBuildHistory
 
-            // Add protected branch to build options
-            if (protectedBranches.isProtected(steps.BRANCH_NAME)) {
-                _isProtectedBranch = true
-                history = protectedBranchBuildHistory
-                buildOptions.push(steps.disableConcurrentBuilds())
+            if (steps.env.BRANCH_NAME) {
+                // Add protected branch to build options
+                if (protectedBranches.isProtected(steps.env.BRANCH_NAME)) {
+                    _isProtectedBranch = true
+                    history = protectedBranchBuildHistory
+                }
             }
+
+            // should we always disable concurrent builds?
+            buildOptions.push(steps.disableConcurrentBuilds())
 
             // Add log rotator to build options
             buildOptions.push(steps.buildDiscarder(steps.logRotator(numToKeepStr: history)))
 
-            // Add any parameters to the build here
-            buildOptions.push(steps.parameters(buildParameters))
+            // setup upstream
+            if (upstreams.size() > 0) {
+                buildOptions.push(steps.pipelineTriggers([
+                    steps.upstream(
+                        threshold.       : 'SUCCESS',
+                        upstreamProjects : buildUpstreams.join(',')
+                    )
+                ]))
+            }
 
+            // Add any parameters to the build here
+            if (buildParameters.size() > 0) {
+                buildOptions.push(steps.parameters(buildParameters))
+            }
+
+            // update build properties
             steps.properties(buildOptions)
 
             // Execute the pipeline
@@ -645,15 +677,13 @@ class Pipeline {
             steps.echo "Sending email notification..."
             def subject = buildStatus
             def bodyText = """
-                        <h3>${steps.env.JOB_NAME}</h3>
-                        <p>Branch: <b>${steps.BRANCH_NAME}</b></p>
-                        <p><b>$emailText</b></p>
-                        <hr>
-                        <p>Check console output at <a href="${steps.RUN_DISPLAY_URL}">${steps.env.JOB_NAME} [${
-                steps.env.BUILD_NUMBER
-            }]</a></p>
-                        """
-
+<h3>${steps.env.JOB_NAME}</h3>
+<p>Build: <b>#${steps.env.BUILD_NUMBER}</b></p>
+${steps.env.BRANCH_NAME ? "<p>Branch: <b>${steps.env.BRANCH_NAME}</b></p>" : ''}
+<p>Result: <b>$emailText</b></p>
+<hr>
+<p>Check console output at <a href="${steps.RUN_DISPLAY_URL}">${steps.env.JOB_NAME} [${steps.env.BUILD_NUMBER}]</a></p>
+"""
 
             // add an image reflecting the result
             if (notificationImages.containsKey(buildStatus) &&
