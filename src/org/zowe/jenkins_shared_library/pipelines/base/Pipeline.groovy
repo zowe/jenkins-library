@@ -457,7 +457,7 @@ class Pipeline {
             if (upstreams.size() > 0) {
                 buildOptions.push(steps.pipelineTriggers([
                     steps.upstream(
-                        threshold.       : 'SUCCESS',
+                        threshold        : 'SUCCESS',
                         upstreamProjects : buildUpstreams.join(',')
                     )
                 ]))
