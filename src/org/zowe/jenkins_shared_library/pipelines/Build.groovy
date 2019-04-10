@@ -53,7 +53,7 @@ class Build {
             // Add each item in the change set to the list
             for (def entry : changeLog.items) {
                 def link = browser.getChangeSetLink(entry).toString()
-                steps.echo "${entry.commitId.take(SCMConstants.COMMIT_ID_LENGTH)} (${entry.author}): ${entry.msgEscaped} - {$link}"
+                println "${entry.commitId.take(SCMConstants.COMMIT_ID_LENGTH)} (${entry.author}): ${entry.msgEscaped} - {$link}"
 
                 // Exclude any changes from the jenkins library project
                 if (link.contains(Constants.REPOSITORY_JENKINS_LIBRARY)) {
