@@ -57,10 +57,20 @@ class BasePipelineIntegerationTest extends IntegrationTest {
 
     @Test
     void testBuildInformation() {
+        // buildInformation
         assertThat('Build result', buildInformation, IsMapContaining.hasKey('number'));
         assertThat('Build result', buildInformation, IsMapContaining.hasKey('result'));
         assertThat('Build result', buildInformation['result'], equalTo('SUCCESS'));
+    }
+
+    @Test
+    void testConsoleLog() {
+        // console log
         assertThat('Build console log', buildLog, not(equalTo('')))
+        // custom stage is configured and started
+        assertThat('Build console log', buildLog, containsString('This step can be skipped by setting the `Skip Stage: CustomStage` option to true'))
+        assertThat('Build console log', buildLog, containsString('This is a custom stage, skippable'))
+        // complete stage should be started
         assertThat('Build console log', buildLog, containsString('Pipeline Execution Complete'))
     }
 }
