@@ -454,7 +454,7 @@ class Pipeline {
             buildOptions.push(steps.buildDiscarder(steps.logRotator(numToKeepStr: history)))
 
             // setup upstream
-            if (upstreams.size() > 0) {
+            if (buildUpstreams.size() > 0) {
                 buildOptions.push(steps.pipelineTriggers([
                     steps.upstream(
                         threshold        : 'SUCCESS',
