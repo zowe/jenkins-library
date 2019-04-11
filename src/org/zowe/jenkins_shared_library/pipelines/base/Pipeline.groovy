@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.pipelines.base
 
+import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.email.Email
 import org.zowe.jenkins_shared_library.pipelines.Build
@@ -262,6 +263,26 @@ class Pipeline {
      */
     void addBuildParameter(def param) {
         buildParameters.push(param)
+    }
+
+    /**
+     * Add new build parameters to the pipeline
+     * @param params           list of build parameters
+     */
+    void addBuildParameters(List params) {
+        params.each{ param ->
+            buildParameters.push(param)
+        }
+    }
+
+    /**
+     * Add new build parameters to the pipeline
+     * @param params           list of build parameters
+     */
+    void addBuildParameters(UninstantiatedDescribable... params) {
+        params.each{ param ->
+            buildParameters.push(param)
+        }
     }
 
     /**
