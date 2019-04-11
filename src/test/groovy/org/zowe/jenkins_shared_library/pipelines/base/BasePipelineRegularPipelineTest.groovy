@@ -47,14 +47,14 @@ class BasePipelineRegularPipelineTest extends IntegrationTest {
         ])
 
         // start the job, wait for it's done and get build result
-        buildInformation = jenkins.startJobAndGetBuildInformation(job, [
+        buildInformation = jenkins.startJobAndGetBuildInformation(fullTestJobName, [
             'FETCH_PARAMETER_ONLY' : 'false',
             'LIBRARY_BRANCH'       : System.getProperty('library.branch')
         ])
 
         // load job console log
         if (buildInformation && buildInformation['number']) {
-            buildLog = jenkins.getBuildLog(job, buildInformation['number'])
+            buildLog = jenkins.getBuildLog(fullTestJobName, buildInformation['number'])
         }
     }
 
