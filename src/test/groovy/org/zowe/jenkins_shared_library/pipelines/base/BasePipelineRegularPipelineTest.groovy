@@ -25,11 +25,11 @@ import static groovy.test.GroovyAssert.*
  * - start with default parameter and the job should success
  * - test a PATCH release
  */
-class BasePipelineIntegerationTest extends IntegrationTest {
+class BasePipelineMultibranchPipelineTest extends IntegrationTest {
     // this github owner will be used for testing
     static final String TEST_OWNER = 'zowe'
     // this github repository will be used for testing
-    static final String TEST_REPORSITORY = 'jenkins-library-fvt-nodejs'
+    static final String TEST_URL = 'https://github.com/zowe/jenkins-library-fvt-nodejs.git'
     // branch to run test
     static final String TEST_BRANCH = 'master'
     // branch to run test
@@ -37,12 +37,11 @@ class BasePipelineIntegerationTest extends IntegrationTest {
 
     @BeforeClass
     public static void setup() {
-        initMultiBranchPipelineJob([
-            'name'             : 'base-multibranch',
+        initPipelineJob([
+            'name'             : 'base-regular',
             'git-credential'   : System.getProperty('github.credential'),
-            'git-owner'        : TEST_OWNER,
-            'git-repository'   : TEST_REPORSITORY,
-            'branch'           : TEST_BRANCH,
+            'git-url'          : TEST_URL,
+            'git-branch'       : TEST_BRANCH,
             'jenkinsfile-path' : TEST_JENKINSFILE
         ])
     }

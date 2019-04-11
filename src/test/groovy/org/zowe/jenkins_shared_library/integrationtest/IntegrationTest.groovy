@@ -87,16 +87,33 @@ class IntegrationTest {
      * - get build result
      * - get build console log
      *
-     * @param  name          prefix of the job name
-     * @param  pipeline      pipeline template name to create the job
-     * @param  env-var       environment variables for the pipeline. optional.
+     * @param  name             prefix of the job name
+     * @param  pipeline         pipeline template name to create the job. Optional if git-url/git-credential are provided.
+     * @param  git-url          github repository full url. Optional if pipeline is provided.
+     * @param  git-credential   github credential
+     * @param  git-branch       repository branch. Optional, default is master
+     * @param  jenkinsfile-path path to Jenkinsfile. Optional, default is Jenkinsfile
+     * @param  env-var          environment variables for the pipeline. optional.
      */
     public static void initPipelineJob(Map args = [:]) throws InvalidArgumentException {
         // validate arguments
         if (!args.containsKey('name') || !args['name']) {
             throw new InvalidArgumentException('name')
         }
-        if (!args.containsKey('pipeline') || !args['pipeline']) {
+        def pipelineScript = false
+        def pipelineScm = false
+        def scmBranch
+        def jenkinsfilePath
+        if (args.containsKey('pipeline') && args['pipeline']) {
+            pipelineScript = true
+        }
+        if (args.containsKey('git-url') && args['git-url'] &&
+            args.containsKey('git-credential') && args['git-credential']) {
+            pipelineScm = true
+            scmBranch = (args.containsKey('git-branch') && args['git-branch']) ? args['git-branch'] : 'master'
+            jenkinsfilePath = (args.containsKey('jenkinsfile-path') && args['jenkinsfile-path']) ? args['jenkinsfile-path'] : 'Jenkinsfile'
+        }
+        if (!pipelineScript && !pipelineScm) {
             throw new InvalidArgumentException('pipeline')
         }
 
@@ -108,16 +125,31 @@ class IntegrationTest {
 
         // create test job
         def envVars = args.containsKey('env-vars') ? args['env-vars'] : ''
-        def script = Utils.loadResource("src/test/resources/pipelines/${args['pipeline']}.groovy")
-        jenkins.createJob(
-            this.testJobName,
-            'pipeline.xml',
-            [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
-            [
-                'fvt-env-vars'     : Utils.escapeXml(envVars),
-                'fvt-script'       : Utils.escapeXml(script),
-            ]
-        )
+        if (pipelineScript) {
+            def script = Utils.loadResource("src/test/resources/pipelines/${args['pipeline']}.groovy")
+            jenkins.createJob(
+                this.testJobName,
+                'pipeline.xml',
+                [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
+                [
+                    'fvt-env-vars'           : Utils.escapeXml(envVars),
+                    'fvt-script'             : Utils.escapeXml(script),
+                ]
+            )
+        } else if (pipelineScm) {
+            jenkins.createJob(
+                this.testJobName,
+                'pipeline-git.xml',
+                [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
+                [
+                    'fvt-env-vars'           : Utils.escapeXml(envVars),
+                    'fvt-git-url'            : args['git-url'],
+                    'fvt-git-credential'     : args['git-credential'],
+                    'fvt-git-branch'         : scmBranch,
+                    '{fvt-jenkinsfile-path}' : jenkinsfilePath
+                ]
+            )
+        }
 
         // start the job, wait for it's done and get build result
         buildInformation = jenkins.startJobAndGetBuildInformation(fullTestJobName, [

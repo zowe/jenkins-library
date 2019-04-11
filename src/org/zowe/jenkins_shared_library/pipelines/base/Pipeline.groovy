@@ -259,6 +259,9 @@ class Pipeline {
 
     /**
      * Add new build parameter to the pipeline
+     *
+     * if you define custome build parameters directly, need to use these methods to notify library.
+     *
      * @param param           build parameter
      */
     void addBuildParameter(def param) {
