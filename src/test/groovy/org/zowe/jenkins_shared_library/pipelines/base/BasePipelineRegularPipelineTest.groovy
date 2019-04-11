@@ -37,6 +37,7 @@ class BasePipelineMultibranchPipelineTest extends IntegrationTest {
 
     @BeforeClass
     public static void setup() {
+        // init the job and fetch parameters
         initPipelineJob([
             'name'             : 'base-regular',
             'git-credential'   : System.getProperty('github.credential'),
@@ -44,6 +45,17 @@ class BasePipelineMultibranchPipelineTest extends IntegrationTest {
             'git-branch'       : TEST_BRANCH,
             'jenkinsfile-path' : TEST_JENKINSFILE
         ])
+
+        // start the job, wait for it's done and get build result
+        buildInformation = jenkins.startJobAndGetBuildInformation(job, [
+            'FETCH_PARAMETER_ONLY' : 'false',
+            'LIBRARY_BRANCH'       : System.getProperty('library.branch')
+        ])
+
+        // load job console log
+        if (buildInformation && buildInformation['number']) {
+            buildLog = jenkins.getBuildLog(job, buildInformation['number'])
+        }
     }
 
     @AfterClass
