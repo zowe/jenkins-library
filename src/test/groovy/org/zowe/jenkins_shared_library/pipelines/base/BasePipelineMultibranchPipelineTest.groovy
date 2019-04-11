@@ -34,7 +34,7 @@ class BasePipelineMultibranchPipelineTest extends IntegrationTest {
     // branch to run test
     static final String TEST_BRANCH = 'master'
     // branch to run test
-    static final String TEST_JENKINSFILE = 'Jenkinsfile.base'
+    static final String TEST_JENKINSFILE = 'Jenkinsfile.base-multibranch'
 
     @BeforeClass
     public static void setup() {

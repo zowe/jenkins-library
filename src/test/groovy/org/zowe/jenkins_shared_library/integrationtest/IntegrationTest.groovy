@@ -87,6 +87,8 @@ class IntegrationTest {
      * - get build result
      * - get build console log
      *
+     * NOTE: The job should have a build parameter LIBRARY_BRANCH defined.
+     *
      * @param  name             prefix of the job name
      * @param  pipeline         pipeline template name to create the job. Optional if git-url/git-credential are provided.
      * @param  git-url          github repository full url. Optional if pipeline is provided.
@@ -171,6 +173,8 @@ class IntegrationTest {
      * - wait for it's done
      * - get build result
      * - get build console log
+     *
+     * NOTE: The pipeline should have build parameter FETCH_PARAMETER_ONLY and LIBRARY_BRANCH defined.
      *
      * @param  name             prefix of the job name
      * @param  git-credential   github credential
