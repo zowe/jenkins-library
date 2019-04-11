@@ -327,6 +327,7 @@ class Pipeline {
     final Stage createStage(StageArguments args) {
         // @FUTURE allow easy way for create stage to specify build parameters
         Stage stage = new Stage(args: args, name: args.name, order: _stages.size() + 1)
+        String stageSkipOption = _getStageSkipOption(stage)
 
         _stages.add(stage)
 
@@ -336,7 +337,7 @@ class Pipeline {
                     steps.booleanParam(
                             defaultValue: false,
                             description: "Setting this to true will skip the stage \"${args.name}\"",
-                            name: _getStageSkipOption(stage)
+                            name: stageSkipOption
                     )
             )
         }
@@ -356,7 +357,9 @@ class Pipeline {
                     // If the stage is skippable
                     if (stage.args.isSkippable) {
                         // Check if the stage was skipped by the build parameter
-                        stage.isSkippedByParam = steps.params[_getStageSkipOption(stage)]
+                        if (steps.params.containsKey(stageSkipOption)) {
+                            stage.isSkippedByParam = steps.params[stageSkipOption]
+                        }
                     }
 
                     _closureWrapper(stage) {
@@ -381,7 +384,7 @@ class Pipeline {
                             steps.echo "Executing stage ${args.name}"
 
                             if (args.isSkippable) {
-                                steps.echo "This step can be skipped by setting the `${_getStageSkipOption(stage)}` option to true"
+                                steps.echo "This step can be skipped by setting the `${stageSkipOption}` option to true"
                             }
 
                             def environment = []
