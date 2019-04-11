@@ -132,8 +132,8 @@ class IntegrationTest {
                 'pipeline.xml',
                 [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
                 [
-                    'fvt-env-vars'           : Utils.escapeXml(envVars),
-                    'fvt-script'             : Utils.escapeXml(script),
+                    'fvt-env-vars'         : Utils.escapeXml(envVars),
+                    'fvt-script'           : Utils.escapeXml(script),
                 ]
             )
         } else if (pipelineScm) {
@@ -142,11 +142,11 @@ class IntegrationTest {
                 'pipeline-git.xml',
                 [Constants.INTEGRATION_TEST_JENKINS_FOLDER],
                 [
-                    'fvt-env-vars'           : Utils.escapeXml(envVars),
-                    'fvt-git-url'            : args['git-url'],
-                    'fvt-git-credential'     : args['git-credential'],
-                    'fvt-git-branch'         : scmBranch,
-                    '{fvt-jenkinsfile-path}' : jenkinsfilePath
+                    'fvt-env-vars'         : Utils.escapeXml(envVars),
+                    'fvt-git-url'          : args['git-url'],
+                    'fvt-git-credential'   : args['git-credential'],
+                    'fvt-git-branch'       : scmBranch,
+                    'fvt-jenkinsfile-path' : jenkinsfilePath
                 ]
             )
         }
