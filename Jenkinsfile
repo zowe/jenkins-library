@@ -29,9 +29,6 @@ def PAX_SERVER_HOST        = 'river.zowe.org'
 def PAX_SERVER_PORT        = 2022
 def PAX_SERVER_CREDENTIAL  = 'ssh-zdt-test-image-guest'
 
-// other constants
-def CI_SKIP = '[ci skip]'
-
 def opts = []
 // keep last 20 builds for regular branches, no keep for pull requests
 opts.push(buildDiscarder(logRotator(numToKeepStr: (isPullRequest ? '' : '20'))))
@@ -54,22 +51,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('checkout') {
         // checkout source code
         checkout scm
-
-        // check if we should skip the build
-        // def lastCommit = sh(script: "git show --format=\"%s :: %b\" -s HEAD", returnStdout: true).trim()
-        Boolean hasCommitShouldNotBeSkipped = false
-        currentBuild.changeSets.each{ changeSet ->
-          changeSet.each{ entry ->
-            if (!entry.getMsg().contains(CI_SKIP)) {
-              hasCommitShouldNotBeSkipped = true
-            }
-          }
-        }
-        if (!hasCommitShouldNotBeSkipped) {
-          // CI_SKIP spotted in all change logs
-          currentBuild.result = 'NOT_BUILT'
-          error("Skip build due to all change logs are marked as ${CI_SKIP}")
-        }
 
         // check if it's pull request
         echo "Current branch is ${env.BRANCH_NAME}"
@@ -149,7 +130,7 @@ git reset origin/gh-pages
                 sh """git config user.email "${GITHUB_EMAIL}"
 git config user.name "${GITHUB_USERNAME}"
 git add .
-git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER} ${CI_SKIP}\"
+git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
 """
                 // push changes
                 withCredentials([
