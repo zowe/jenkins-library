@@ -45,17 +45,6 @@ class BasePipelineRegularPipelineTest extends IntegrationTest {
             'git-branch'       : TEST_BRANCH,
             'jenkinsfile-path' : TEST_JENKINSFILE
         ])
-
-        // start the job, wait for it's done and get build result
-        buildInformation = jenkins.startJobAndGetBuildInformation(fullTestJobName, [
-            'FETCH_PARAMETER_ONLY' : 'false',
-            'LIBRARY_BRANCH'       : System.getProperty('library.branch')
-        ])
-
-        // load job console log
-        if (buildInformation && buildInformation['number']) {
-            buildLog = jenkins.getBuildLog(fullTestJobName, buildInformation['number'])
-        }
     }
 
     @AfterClass
@@ -64,7 +53,7 @@ class BasePipelineRegularPipelineTest extends IntegrationTest {
         if (jenkins && testJobName &&
             buildInformation && buildInformation.containsKey('result') &&
             buildInformation['result'] == 'SUCCESS') {
-            // jenkins.deleteJob(fullTestJobName)
+            jenkins.deleteJob(fullTestJobName)
         }
     }
 

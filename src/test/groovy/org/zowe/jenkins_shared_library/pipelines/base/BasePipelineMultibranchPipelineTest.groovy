@@ -54,7 +54,7 @@ class BasePipelineMultibranchPipelineTest extends IntegrationTest {
         if (jenkins && testJobName &&
             buildInformation && buildInformation.containsKey('result') &&
             buildInformation['result'] == 'SUCCESS') {
-            // jenkins.deleteJob(fullTestJobName)
+            jenkins.deleteJob(fullTestJobName)
         }
     }
 
