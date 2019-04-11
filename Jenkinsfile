@@ -57,6 +57,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         if (isPullRequest) {
           echo "This is a pull request"
         }
+
+        // show env
+        sh 'env'
     }
 
     stage('test') {

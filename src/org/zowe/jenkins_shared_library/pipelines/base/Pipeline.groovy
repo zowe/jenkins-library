@@ -65,7 +65,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
  *   ])
  *
  *   // MUST BE CALLED FIRST
- *   pipeline.setupBase()
+ *   pipeline.setup()
  *
  *   // Create a stage in your pipeline
  *   pipeline.createStage(name: 'Some Pipeline Stage', stage: {
@@ -73,14 +73,14 @@ import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
  *   })
  *
  *   // MUST BE CALLED LAST
- *   pipeline.endBase()
+ *   pipeline.end()
  * }
  * </pre>
  *
  * <p>In the above example, the stages will run on a node labeled {@code 'pipeline-node'}. You
  * must define the node where your pipeline will execute.</p>
  *
- * <p>Stages are not executed until the {@link #endBase} method is called. This means that you can't
+ * <p>Stages are not executed until the {@link #end} method is called. This means that you can't
  * rely on stages being executed as soon as they are defined. If you need logic to help determine if
  * a stage should be executed, you must use the proper options allowed by {@link StageArguments}.</p>
  *

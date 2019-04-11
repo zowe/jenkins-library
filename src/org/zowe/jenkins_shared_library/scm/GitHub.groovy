@@ -90,7 +90,7 @@ class GitHub {
      * @param   branch                      branch name to clone/push
      * @param   folder                      target folder
      * @param   usernamePasswordCredential  github username/password credential
-     * @param   username                    github user.name config
+     * @param   username                    github user.name config. Optional, can be extracted from credential
      * @param   email                       github user.email config
      */
     void init(Map args = [:]) {
@@ -107,9 +107,6 @@ class GitHub {
             this.folder = args['folder']
         }
 
-        if (args['username']) {
-            this.username = args['username']
-        }
         if (args['email']) {
             this.email = args['email']
         }
@@ -123,9 +120,15 @@ class GitHub {
                 passwordVariable: 'PASSWORD',
                 usernameVariable: 'USERNAME'
             )]) {
+                this.username = args['username']
                 // FIXME: encode username/passsword?
                 this.steps.sh "echo \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}\" > ~/.git-credentials"
             }
+        }
+
+        // can be extracted from credential, so this is optional
+        if (args['username']) {
+            this.username = args['username']
         }
     }
 
