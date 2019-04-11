@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.jenkins-ci.plugins:junit:1.27@jar'
     implementation 'org.jenkins-ci.plugins:git:3.9.3@jar'
     implementation 'org.jenkins-ci.plugins:mailer:1.23@jar'
+    implementation 'org.jenkins-ci.plugins:structs:1.14@jar'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-step-api:2.19@jar'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-cps:2.64@jar'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.33@jar'
