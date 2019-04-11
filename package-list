@@ -1,8 +1,10 @@
 jenkins_shared_library
 jenkins_shared_library.artifact
+jenkins_shared_library.email
 jenkins_shared_library.exceptions
 jenkins_shared_library.npm
 jenkins_shared_library.package
+jenkins_shared_library.pipelines
 jenkins_shared_library.pipelines.base
 jenkins_shared_library.pipelines.base.arguments
 jenkins_shared_library.pipelines.base.enums
