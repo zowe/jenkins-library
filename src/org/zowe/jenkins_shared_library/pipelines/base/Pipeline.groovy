@@ -10,6 +10,8 @@
 
 package org.zowe.jenkins_shared_library.pipelines.base
 
+import java.util.concurrent.TimeUnit
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.email.Email
@@ -19,15 +21,6 @@ import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.models.*
 import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
-
-import java.util.concurrent.TimeUnit
-
-@Grab('org.apache.commons:commons-text:1.6')
-import static org.apache.commons.text.StringEscapeUtils.escapeHtml4
-
-import hudson.tasks.test.AbstractTestResultAction
-import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
-import com.cloudbees.groovy.cps.NonCPS
 
 /**
  * This class represents a basic Jenkins pipeline. Use the methods of this class to add stages to

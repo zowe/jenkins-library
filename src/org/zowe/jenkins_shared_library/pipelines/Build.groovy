@@ -12,6 +12,8 @@ package org.zowe.jenkins_shared_library.pipelines
 
 import com.cloudbees.groovy.cps.NonCPS
 import hudson.tasks.test.AbstractTestResultAction
+@Grab('org.apache.commons:commons-text:1.6')
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4
 import org.zowe.jenkins_shared_library.Constants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
 
