@@ -197,7 +197,7 @@ class IntegrationTest {
 
         // load job console log
         if (buildInformation && buildInformation['number']) {
-            buildLog = jenkins.getBuildLog(fullTestJobName, buildInformation['number'])
+            buildLog = jenkins.getBuildLog(job, buildInformation['number'])
         }
     }
 }
