@@ -565,7 +565,7 @@ class JenkinsAPI {
     String getBuildLog(List<String> name, Integer buildNumber) throws JenkinsAPIException {
         logger.finer("Checking build ${name}#${buildNumber} console log ...")
 
-        Map result = get(getJobUrl(name, "/${buildNumber}/logText/progressiveText?start=0"))
+        Map result = get(getJobUrl(name, "/${buildNumber}/console"))
 
         if (result['body']) {
             logger.finest("Build ${name}#${buildNumber} console log is:\n${result['body']}")
