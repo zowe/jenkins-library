@@ -25,7 +25,6 @@ import static groovy.test.GroovyAssert.*
  * - start with default parameter and the job should success
  * - test a PATCH release
  */
-@Ignore
 class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
     // this github owner will be used for testing
     static final String TEST_OWNER = 'zowe'
@@ -54,7 +53,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         if (jenkins && testJobName &&
             buildInformation && buildInformation.containsKey('result') &&
             buildInformation['result'] == 'SUCCESS') {
-            jenkins.deleteJob(fullTestJobName)
+            // jenkins.deleteJob(fullTestJobName)
         }
     }
 
