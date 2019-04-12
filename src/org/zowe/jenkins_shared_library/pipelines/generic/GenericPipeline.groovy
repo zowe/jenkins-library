@@ -454,7 +454,7 @@ class GenericPipeline extends Pipeline {
             }
 
             for (TestReport report : args.htmlReports) {
-                _validateReportInfo(report, "Test Results HTML Report", args.name)
+                _validateReportInfo(TestReport report, "Test Results HTML Report", args.name)
             }
 
             if (!args.operation) {
