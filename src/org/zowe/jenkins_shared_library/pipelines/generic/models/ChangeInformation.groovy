@@ -20,12 +20,14 @@ class ChangeInformation {
     final boolean isPullRequest
 
     /**
-     * The branch name reported by the build.
+     * The branch name reported by the build. If it's a pull request, it will be PR-<id>.
      */
     final String branchName
 
     /**
      * The base branch for a pull request.
+     *
+     * If the PR is merging branch "test" into "master", this value will be "master".
      *
      * <p>This property will be null if {@link #isPullRequest} is false.</p>
      */
@@ -33,6 +35,8 @@ class ChangeInformation {
 
     /**
      * The change branch for a pull request.
+     *
+     * If the PR is merging branch "test" into "master", this value will be "test".
      *
      * <p>This property will be null if {@link #isPullRequest} is false.</p>
      */
@@ -43,12 +47,12 @@ class ChangeInformation {
      * @param steps This is the workflow context that is used to determine the change status.
      */
     ChangeInformation(steps) {
-        branchName = steps.BRANCH_NAME
+        branchName = steps.env.BRANCH_NAME
 
         if (steps.env.CHANGE_BRANCH) {
             isPullRequest = true
-            baseBranch = steps.CHANGE_TARGET
-            changeBranch = steps.CHANGE_BRANCH
+            baseBranch = steps.env.CHANGE_TARGET
+            changeBranch = steps.env.CHANGE_BRANCH
         } else {
             isPullRequest = false
             baseBranch = null

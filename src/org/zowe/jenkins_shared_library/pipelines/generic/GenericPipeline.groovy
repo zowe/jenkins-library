@@ -11,17 +11,18 @@
 package org.zowe.jenkins_shared_library.pipelines.generic
 
 // import com.cloudbees.groovy.cps.NonCPS
-import org.zowe.jenkins_shared_library.pipelines.base.Pipeline
+import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
+import org.zowe.jenkins_shared_library.pipelines.base.Pipeline
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.generic.enums.BuildType
 import org.zowe.jenkins_shared_library.pipelines.generic.enums.GitOperation
+import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git.*
 import org.zowe.jenkins_shared_library.pipelines.generic.models.*
-import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
-import java.util.regex.Pattern
+import org.zowe.jenkins_shared_library.scm.GitHub
 
 /**
  * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
@@ -431,55 +432,12 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Commit a code change during pipeline execution.
-     *
-     * <p>If no changes were detected, the commit will not happen. If a commit occurs, the end of
-     * of the commit message will be appended with the ci skip text.</p>
-     * @param message The commit message
-     * @return A boolean indicating if a commit was made. True indicates that a successful commit
-     *         has occurred.
-     * @throw {@link IllegalBuildException} when a commit operation happens on an illegal build type.
+     * Pseudo end method, should be overridden by inherited classes
+     * @param args A map that can be instantiated as {@link EndArguments}.
      */
-    boolean gitCommit(String message) {
-        if (changeInfo.isPullRequest) {
-            throw new IllegalBuildException(GitOperation.COMMIT, BuildType.PULL_REQUEST)
-        }
-
-        def ret = steps.sh returnStatus: true, script: "git status | grep 'Changes to be committed:'"
-        if (ret == 0) {
-            steps.sh "git commit -m \"$message $_CI_SKIP\" --signoff"
-            return true
-        } else {
-            return false
-        }
-    }
-
-    /**
-     * Pushes any changes to the remote server
-     *
-     * <p>If the remote server has any changes then this method will throw an error indicating that
-     * the branch is out of sync</p>
-     *
-     * @return A boolean indicating if the push was made. True indicates a successful push
-     * @throw {@link IllegalBuildException} when a push operation happens on an illegal build type.
-     * @throw {@link BehindRemoteException} when pushing to a branch that has forward commits from this build
-     */
-    boolean gitPush() throws GitException {
-        if (changeInfo.isPullRequest) {
-            throw new IllegalBuildException(GitOperation.PUSH, BuildType.PULL_REQUEST)
-        }
-
-        steps.sh "git fetch --no-tags"
-        String status = steps.sh returnStdout: true, script: "git status"
-
-        if (Pattern.compile("Your branch and '.*' have diverged").matcher(status).find()) {
-            throw new BehindRemoteException("Remote branch is ahead of the local branch!", changeInfo.branchName)
-        } else if (Pattern.compile("Your branch is ahead of").matcher(status).find()) {
-            steps.sh "git push --verbose"
-            return true
-        } else {
-            return false
-        }
+    @Override
+    protected void end(Map args = [:]) {
+        endGeneric(args)
     }
 
     /**
@@ -489,13 +447,6 @@ class GenericPipeline extends Pipeline {
      * This method adds 2 stages to the build:
      *
      * <dl>
-     *     <dt><b>Configure Git</b></dt>
-     *     <dd>
-     *         This step configures the git environment for commits and pushes. The {@link #gitConfig}
-     *         provided will be injected into the git remote url and the head will point to the
-     *         proper remote branch. The username and email settings will also be set.  If the
-     *         current build is for a pull request, this step will be skipped.
-     *     </dd>
      *     <dt><b>Check for CI Skip</b></dt>
      *     <dd>
      *         Checks that the build commit doesn't contain the CI Skip indicator. If the pipeline finds
@@ -510,37 +461,6 @@ class GenericPipeline extends Pipeline {
     void setupGeneric(GenericSetupArguments timeouts) {
         // Call setup from the super class
         super.setupBase(timeouts)
-
-        createStage(name: 'Configure Git', stage: {
-            steps.withCredentials([steps.usernamePassword(
-                credentialsId: gitConfig.credentialsId,
-                passwordVariable: "NOT_USED",
-                usernameVariable: "GIT_USER_NAME"
-            )]) {
-                steps.sh "git config user.name \$GIT_USER_NAME"
-                steps.sh "git config user.email \"${gitConfig.email}\""
-                steps.sh "git config push.default simple"
-            }
-
-            // Setup the branch to track it's remote
-            steps.sh "git checkout ${changeInfo.branchName}"
-            steps.sh "git status"
-
-            // If the branch is protected, setup the proper configuration
-            if (_isProtectedBranch) {
-                String remoteUrl = steps.sh(returnStdout: true, script: "git remote get-url --all origin").trim()
-
-                // Only execute the credential code if the url does not already contain credentials
-                String remoteUrlWithCreds = remoteUrl.replaceFirst("https://", "https://\\\$$_TOKEN@")
-
-                // Set the push url to the correct one
-                steps.sh "git remote set-url --add origin $remoteUrlWithCreds"
-                steps.sh "git remote set-url --delete origin $remoteUrl"
-            }
-        }, isSkippable: false, timeout: timeouts.gitSetup, shouldExecute: {
-            // Disable commits and pushes
-            return !changeInfo.isPullRequest
-        })
 
         createStage(name: 'Check for CI Skip', stage: {
             // This checks for the [ci skip] text. If found, the status code is 0
@@ -561,6 +481,15 @@ class GenericPipeline extends Pipeline {
      */
     void setupGeneric(Map timeouts = [:]) {
         setupGeneric(timeouts as GenericSetupArguments)
+    }
+
+    /**
+     * Pseudo setup method, should be overridden by inherited classes
+     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     */
+    @Override
+    protected void setup(Map timeouts = [:]) {
+        setupGeneric(timeouts)
     }
 
     /**
@@ -620,12 +549,6 @@ class GenericPipeline extends Pipeline {
      *             Results HTML Report. The stage will fail if either of those are missing. If specified, the
      *             Code Coverage HTML Report and the Cobertura Report are then captured. The build will fail if
      *             these reports are to be collected and were missing.
-     *         </p>
-     *
-     *         <p>
-     *             Some tests may also require the use of the gnome-keyring. The stage can be configured to
-     *             unlock the keyring prior to the tests by passing
-     *             {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#shouldUnlockKeyring} as true.
      *         </p>
      *     </dd>
      * </dl>
@@ -693,11 +616,6 @@ class GenericPipeline extends Pipeline {
 
             if (!args.junitOutput) {
                 throw new TestStageException("JUnit Report not provided", args.name)
-            }
-
-            // Unlock the keyring for dbus
-            if (args.shouldUnlockKeyring) {
-                steps.sh "echo 'jenkins' | gnome-keyring-daemon --unlock"
             }
 
             if (!args.operation) {
