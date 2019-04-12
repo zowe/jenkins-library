@@ -239,7 +239,7 @@ class GenericPipeline extends Pipeline {
     void endGeneric(Map options = [:]) {
         // can we do a release? if so, allow a release parameter
         if (isReleaseBranch()) {
-            buildParameters.push(choice(
+            buildParameters.push(steps.choice(
                 name: 'PERFORM_RELEASE',
                 description: 'Publish a release or snapshot version. By default, this task will create snapshot. If you choose release other than snapshot, your branch version will bump up. Release can only be enabled on `master`, LTS version branch like `v1.x/master`, or branches which enabled to release.',
                 choices: ['SNAPSHOT', 'PATCH', 'MINOR', 'MAJOR']
