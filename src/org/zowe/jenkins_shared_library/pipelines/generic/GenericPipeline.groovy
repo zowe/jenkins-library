@@ -453,8 +453,9 @@ class GenericPipeline extends Pipeline {
                 throw new TestStageException("JUnit Report not provided", args.name)
             }
 
-            for (TestReport report : args.htmlReports) {
-                _validateReportInfo(TestReport report, "Test Results HTML Report", args.name)
+            for (def rep : args.htmlReports) {
+                TestReport report = rep
+                _validateReportInfo(report, "Test Results HTML Report", args.name)
             }
 
             if (!args.operation) {
