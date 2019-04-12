@@ -61,6 +61,11 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
     stage('test') {
         try {
+            def branch = env.BRANCH_NAME
+            if (isPullRequest) {
+              branch = env.CHANGE_BRANCH
+            }
+
             withCredentials([usernamePassword(
                 credentialsId: JENKINS_CREDENTIAL,
                 passwordVariable: 'PASSWORD',
@@ -72,7 +77,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
   -Pjenkins.baseuri='${env.JENKINS_URL}' \
   -Pjenkins.user='${USERNAME}' \
   -Pjenkins.password='${PASSWORD}' \
-  -Plibrary.branch='${env.BRANCH_NAME}' \
+  -Plibrary.branch='${branch}' \
   -Pgithub.username='${GITHUB_USERNAME}' \
   -Pgithub.email='${GITHUB_EMAIL}' \
   -Pgithub.credential='${GITHUB_CREDENTIAL}' \
