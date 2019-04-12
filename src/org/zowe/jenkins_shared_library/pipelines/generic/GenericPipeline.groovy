@@ -331,6 +331,15 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
+     * Pseudo build method, should be overridden by inherited classes
+     * @param arguments A map of arguments to be applied to the {@link BuildStageArguments} used to define
+     *                  the stage.
+     */
+    protected void build(Map arguments = [:]) {
+        buildGeneric(arguments)
+    }
+
+    /**
      * Creates a stage that will execute tests on your application.
      *
      * <p>Arguments passed to this function will map to the
@@ -366,7 +375,7 @@ class GenericPipeline extends Pipeline {
      *             <dd>
      *                 This report feeds Jenkins the data about the current test run. It can be used to mark a build
      *                 as failed or unstable. The report location must be present in
-     *                 {@link TestStageArguments#junitOutput}
+     *                 {@link TestStageArguments#junit}
      *             </dd>
      *             <dt><b>Cobertura Report</b></dt>
      *             <dd>
@@ -401,7 +410,7 @@ class GenericPipeline extends Pipeline {
      *         <dd>When {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#testResults} is missing</dd>
      *         <dd>When invalid options are specified for {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#testResults}</dd>
      *         <dd>When {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#coverageResults} is provided but has an invalid format</dd>
-     *         <dd>When {@link TestStageArguments#junitOutput} is missing.</dd>
+     *         <dd>When {@link TestStageArguments#junit} is missing.</dd>
      *         <dd>When {@link TestStageArguments#operation} is missing.</dd>
      *         <dd>
      *     </dl>
@@ -440,20 +449,12 @@ class GenericPipeline extends Pipeline {
 
             steps.echo "Processing Arguments"
 
-            if (!args.testResults) {
-                throw new TestStageException("Test Results HTML Report not provided", args.name)
-            } else {
-                _validateReportInfo(args.testResults, "Test Results HTML Report", args.name)
-            }
-
-            if (!args.coverageResults) {
-                steps.echo "Code Coverage HTML Report not provided...report ignored"
-            } else {
-                _validateReportInfo(args.coverageResults, "Code Coverage HTML Report", args.name)
-            }
-
-            if (!args.junitOutput) {
+            if (!args.junit) {
                 throw new TestStageException("JUnit Report not provided", args.name)
+            }
+
+            for (TestReport report : args.htmlReports) {
+                _validateReportInfo(report, "Test Results HTML Report", args.name)
             }
 
             if (!args.operation) {
@@ -473,35 +474,24 @@ class GenericPipeline extends Pipeline {
             }
 
             // Collect junit report
-            steps.junit args.junitOutput
-
-            // Collect Test Results HTML Report
-            steps.publishHTML(target: [
-                    allowMissing         : false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll              : true,
-                    reportDir            : args.testResults.dir,
-                    reportFiles          : args.testResults.files,
-                    reportName           : args.testResults.name
-            ])
-
-            // Collect coverage if applicable
-            if (args.coverageResults) {
-                steps.publishHTML(target: [
-                        allowMissing         : false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll              : true,
-                        reportDir            : args.coverageResults.dir,
-                        reportFiles          : args.coverageResults.files,
-                        reportName           : args.coverageResults.name
-                ])
-            }
+            steps.junit args.junit
 
             // Collect cobertura coverage if specified
             if (args.cobertura) {
                 steps.cobertura(TestStageArguments.coberturaDefaults + args.cobertura)
-            } else if (args.coverageResults) {
-                steps.echo "WARNING: Cobertura file not detected, skipping"
+            }
+
+            // publish html reports if specified
+            for (TestReport report : args.htmlReports) {
+                // Collect Test Results HTML Report
+                steps.publishHTML(target: [
+                        allowMissing          : false,
+                        alwaysLinkToLastBuild : true,
+                        keepAll               : true,
+                        reportDir             : report.dir,
+                        reportFiles           : report.files,
+                        reportName            : report.name
+                ])
             }
         }
 
@@ -509,6 +499,110 @@ class GenericPipeline extends Pipeline {
         Stage test = createStage(args)
         if (!(_control.version || _control.deploy)) {
             _control.preDeployTests += test
+        }
+    }
+
+    /**
+     * Pseudo test method, should be overridden by inherited classes
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
+     *                  the stage.
+     */
+    protected void test(Map arguments = [:]) {
+        testGeneric(arguments)
+    }
+
+    /**
+     * Creates a stage that will execute a version bump
+     *
+     * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
+     * to this function will map to the {@link VersionStageArguments} class. The
+     * {@link VersionStageArguments#operation} will be executed after all checks are complete. This must
+     * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
+     *
+     * @Stages
+     * This method adds the following stage to your build:
+     * <dl>
+     *     <dt><b>Versioning: {@link VersionStageArguments#name}</b></dt>
+     *     <dd>This stage is responsible for bumping the version of your application source.</dd>
+     * </dl>
+     *
+     * @Conditions
+     *
+     * <p>
+     *     This stage will adhere to the following conditions:
+     *
+     *     <ul>
+     *         <li>The stage will only execute if the current build result is {@link ResultEnum#SUCCESS} or higher.</li>
+     *         <li>The stage will only execute if the current branch is protected.</li>
+     *     </ul>
+     * </p>
+     *
+     * @Exceptions
+     *
+     * <p>
+     *     The following exceptions will be thrown if there is an error.
+     *
+     *     <dl>
+     *         <dt><b>{@link VersionStageException}</b></dt>
+     *         <dd>When stage is provided as an argument.</dd>
+     *         <dd>When a test stage has not executed.</dd>
+     *         <dt><b>{@link NullPointerException}</b></dt>
+     *         <dd>When an operation is not provided for the stage.</dd>
+     *     </dl>
+     * </p>
+     *
+     * @Note This method was intended to be called {@code version} but had to be named
+     * {@code versionGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+     *
+     * @param arguments A map of arguments to be applied to the {@link VersionStageArguments} used to define the stage.
+     */
+    void versionGeneric(Map arguments = [:]) {
+        // Force build to only happen on success, this cannot be overridden
+        arguments.resultThreshold = ResultEnum.SUCCESS
+
+        GenericStageArguments args = arguments as GenericStageArguments
+
+        VersionStageException preSetupException
+
+        if (args.stage) {
+            preSetupException = new VersionStageException("arguments.stage is an invalid option for deployGeneric", args.name)
+        }
+
+        args.name = "Versioning${arguments.name ? ": ${arguments.name}" : ""}"
+
+        // Execute the stage if this is a protected branch and the original should execute function are both true
+        args.shouldExecute = {
+            boolean shouldExecute = true
+
+            if (arguments.shouldExecute) {
+                shouldExecute = arguments.shouldExecute()
+            }
+
+            return shouldExecute && _isProtectedBranch
+        }
+
+        args.stage = { String stageName ->
+            // If there were any exceptions during the setup, throw them here so proper email notifications
+            // can be sent.
+            if (preSetupException) {
+                throw preSetupException
+            }
+
+            if (_control.build?.status != StageStatus.SUCCESS) {
+                throw new VersionStageException("Build must be successful to deploy", args.name)
+            } else if (_control.preDeployTests && _control.preDeployTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
+                throw new VersionStageException("All test stages before deploy must be successful or skipped!", args.name)
+            } else if (_control.preDeployTests.size() == 0) {
+                throw new VersionStageException("At least one test stage must be defined", args.name)
+            }
+
+            args.operation(stageName)
+        }
+
+        // Create the stage and ensure that the first one is the stage of reference
+        Stage version = createStage(args)
+        if (!_control.version) {
+            _control.version = version
         }
     }
 
@@ -614,98 +708,14 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Creates a stage that will execute a version bump
-     *
-     * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
-     * to this function will map to the {@link VersionStageArguments} class. The
-     * {@link VersionStageArguments#operation} will be executed after all checks are complete. This must
-     * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
-     *
-     * @Stages
-     * This method adds the following stage to your build:
-     * <dl>
-     *     <dt><b>Versioning: {@link VersionStageArguments#name}</b></dt>
-     *     <dd>This stage is responsible for bumping the version of your application source.</dd>
-     * </dl>
-     *
-     * @Conditions
-     *
-     * <p>
-     *     This stage will adhere to the following conditions:
-     *
-     *     <ul>
-     *         <li>The stage will only execute if the current build result is {@link ResultEnum#SUCCESS} or higher.</li>
-     *         <li>The stage will only execute if the current branch is protected.</li>
-     *     </ul>
-     * </p>
-     *
-     * @Exceptions
-     *
-     * <p>
-     *     The following exceptions will be thrown if there is an error.
-     *
-     *     <dl>
-     *         <dt><b>{@link VersionStageException}</b></dt>
-     *         <dd>When stage is provided as an argument.</dd>
-     *         <dd>When a test stage has not executed.</dd>
-     *         <dt><b>{@link NullPointerException}</b></dt>
-     *         <dd>When an operation is not provided for the stage.</dd>
-     *     </dl>
-     * </p>
-     *
-     * @Note This method was intended to be called {@code version} but had to be named
-     * {@code versionGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
-     *
-     * @param arguments A map of arguments to be applied to the {@link VersionStageArguments} used to define the stage.
+     * Pseudo deploy method, should be overridden by inherited classes
+     * @param deployArguments The arguments for the deploy step. {@code deployArguments.operation} must be
+     *                        provided.
+     * @param versionArguments The arguments for the versioning step. If provided, then
+     *                         {@code versionArguments.operation} must be provided.
      */
-    void versionGeneric(Map arguments = [:]) {
-        // Force build to only happen on success, this cannot be overridden
-        arguments.resultThreshold = ResultEnum.SUCCESS
-
-        GenericStageArguments args = arguments as GenericStageArguments
-
-        VersionStageException preSetupException
-
-        if (args.stage) {
-            preSetupException = new VersionStageException("arguments.stage is an invalid option for deployGeneric", args.name)
-        }
-
-        args.name = "Versioning${arguments.name ? ": ${arguments.name}" : ""}"
-
-        // Execute the stage if this is a protected branch and the original should execute function are both true
-        args.shouldExecute = {
-            boolean shouldExecute = true
-
-            if (arguments.shouldExecute) {
-                shouldExecute = arguments.shouldExecute()
-            }
-
-            return shouldExecute && _isProtectedBranch
-        }
-
-        args.stage = { String stageName ->
-            // If there were any exceptions during the setup, throw them here so proper email notifications
-            // can be sent.
-            if (preSetupException) {
-                throw preSetupException
-            }
-
-            if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new VersionStageException("Build must be successful to deploy", args.name)
-            } else if (_control.preDeployTests && _control.preDeployTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
-                throw new VersionStageException("All test stages before deploy must be successful or skipped!", args.name)
-            } else if (_control.preDeployTests.size() == 0) {
-                throw new VersionStageException("At least one test stage must be defined", args.name)
-            }
-
-            args.operation(stageName)
-        }
-
-        // Create the stage and ensure that the first one is the stage of reference
-        Stage version = createStage(args)
-        if (!_control.version) {
-            _control.version = version
-        }
+    protected void deploy(Map deployArguments, Map versionArguments = [:]) {
+        deployGeneric(deployArguments, versionArguments)
     }
 
     /**
