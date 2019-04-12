@@ -69,10 +69,27 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
     void testConsoleLog() {
         // console log
         assertThat('Build console log', buildLog, not(equalTo('')))
-        // custom stage is configured and started
-        assertThat('Build console log', buildLog, containsString('This step can be skipped by setting the `Skip Stage: CustomStage` option to true'))
-        assertThat('Build console log', buildLog, containsString('This is a custom stage, skippable'))
-        // complete stage should be started
-        assertThat('Build console log', buildLog, containsString('Pipeline Execution Complete'))
+        [
+            // build stage
+            'Executing stage Build: Source',
+            '+ npm install',
+            '+ npm run build',
+            // custom stage is configured and started
+            'This step can be skipped by setting the `Skip Stage: CustomStage` option to true',
+            'This is a custom stage, skippable',
+            // test stage
+            'Executing stage Test: Unit',
+            '+ npm run test:unit',
+            'Recording test results', // junit
+            '[Cobertura] Publishing Cobertura coverage report...', // cobertura
+            '[htmlpublisher] Archiving HTML reports...',
+            // complete stage
+            'Pipeline Execution Complete',
+            // sending email
+            'Sending email notification...',
+            "Subject: [${buildInformation['result']}] Job \'${fullTestJobName.join('/')}/${TEST_BRANCH} [${buildInformation['number']}]\'"
+        ].each {
+            assertThat('Build console log', buildLog, containsString(it))
+        }
     }
 }
