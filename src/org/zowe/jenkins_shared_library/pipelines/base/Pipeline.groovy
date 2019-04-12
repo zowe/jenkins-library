@@ -15,12 +15,12 @@ import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.email.Email
-import org.zowe.jenkins_shared_library.pipelines.Build
 import org.zowe.jenkins_shared_library.pipelines.base.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
-import org.zowe.jenkins_shared_library.pipelines.base.models.*
 import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.base.models.*
+import org.zowe.jenkins_shared_library.pipelines.Build
 
 /**
  * This class represents a basic Jenkins pipeline. Use the methods of this class to add stages to
@@ -251,6 +251,17 @@ class Pipeline {
     }
 
     /**
+     * Add new build options to the pipeline
+     *
+     * if you define custome build options directly, need to use this method to notify library.
+     *
+     * @param option           build option
+     */
+    void addBuildOption(def option) {
+        buildOptions.push(option)
+    }
+
+    /**
      * Add new build parameter to the pipeline
      *
      * if you define custome build parameters directly, need to use these methods to notify library.
@@ -417,6 +428,123 @@ class Pipeline {
     }
 
     /**
+     * Gets the first failing stage within {@link #_stages}
+     *
+     * @return The first failing stage if one exists, null otherwise
+     */
+    final Stage getFirstFailingStage() {
+        return _stages.firstFailingStage
+    }
+
+    /**
+     * Get a stage from the available stages by name.
+     *
+     * @param stageName The name of the stage object to get.
+     *
+     * @return The stage object for the requested stage.
+     */
+    final Stage getStage(String stageName) {
+        return _stages.getStage(stageName)
+    }
+
+    /**
+     * Set the build result
+     * @param result The new result for the build.
+     */
+    final void setResult(ResultEnum result) {
+        steps.currentBuild.result = result.value
+    }
+
+    /**
+     * Initialize the pipeline.
+     *
+     * <p>This method MUST be called before any other stages are created. If not called, your Jenkins
+     * pipeline will fail. It is also recommended that any public properties of this class are set
+     * prior to calling setup.</p>
+     *
+     * <p>When extending the Pipeline class, this method must be called in any overridden setup
+     * methods. Failure to do so will result in the pipeline indicating that setup was never called.
+     * </p>
+     *
+     * @Stages
+     * <p>The setup method creates 2 stages in your Jenkins pipeline using the {@link #createStage(Map)}
+     * function.</p>
+     *
+     * <dl>
+     *     <dt><b>Setup</b></dt>
+     *     <dd>Used internally to indicate that the Pipeline has been properly setup.</dd>
+     *     <dt><b>Checkout</b></dt>
+     *     <dd>Checks the source out for the pipeline.</dd>
+     * </dl>
+     *
+     * @Note This method was intended to be called {@code setup} but had to be named
+     *       {@code setupBase} due to the issues described in {@link Pipeline}.
+     *
+     * @param timeouts The timeouts for the added stages.
+     */
+    void setupBase(SetupArguments timeouts) {
+        // Create the stage and hold the variable for the future
+        Stage setup = createStage(name: _SETUP_STAGE_NAME, stage: {
+            steps.echo "Setup was called first"
+
+            if (_stages.firstFailingStage) {
+                if (_stages.firstFailingStage.exception) {
+                    throw _stages.firstFailingStage.exception
+                } else {
+                    throw new StageException("Setup found a failing stage but there was no associated exception.", _stages.firstFailingStage.name)
+                }
+            } else {
+                steps.echo "No problems with pre-initialization of pipeline :)"
+            }
+        }, isSkippable: false, timeout: timeouts.setup)
+
+        // Check for duplicate setup call
+        if (_control.setup) {
+            _stages.firstFailingStage = _control.setup
+            _control.setup.exception = new StageException("Setup was called twice!", _control.setup.name)
+        } else {
+            _control.setup = setup
+        }
+
+        // steps.scm could be empty if it's regular pipeline and without using any SCM, like pipeline
+        // script is defined inside the job.
+        //
+        // For regular pipeline pointing to a github repository Jenkinsfile, or multibranch pipelines,
+        // scm should exist.
+        if (steps.scm) {
+            createStage(name: 'Checkout', stage: {
+                steps.checkout steps.scm
+            }, isSkippable: false, timeout: timeouts.checkout)
+        }
+    }
+
+    /**
+     * Initialize the pipeline.
+     *
+     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     * @see #setupBase(SetupArguments)
+     */
+    void setupBase(Map timeouts = [:]) {
+        setupBase(timeouts as SetupArguments)
+    }
+
+    /**
+     * Pseudo setup method, should be overridden by inherited classes
+     * @param timeouts The timeouts for the added stages.
+     */
+    protected void setup(SetupArguments timeouts) {
+        setupBase(timeouts)
+    }
+
+    /**
+     * Pseudo setup method, should be overridden by inherited classes
+     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     */
+    protected void setup(Map timeouts = [:]) {
+        setupBase(timeouts)
+    }
+
+    /**
      * Signal that no more stages will be added and begin pipeline execution.
      *
      * <p>The end method MUST be the last method called as part of your pipeline. The end method is
@@ -531,116 +659,6 @@ class Pipeline {
      */
     protected void end(Map args = [:]) {
         endBase(args)
-    }
-
-    /**
-     * Gets the first failing stage within {@link #_stages}
-     *
-     * @return The first failing stage if one exists, null otherwise
-     */
-    final Stage getFirstFailingStage() {
-        return _stages.firstFailingStage
-    }
-
-    /**
-     * Get a stage from the available stages by name.
-     *
-     * @param stageName The name of the stage object to get.
-     *
-     * @return The stage object for the requested stage.
-     */
-    final Stage getStage(String stageName) {
-        return _stages.getStage(stageName)
-    }
-
-    /**
-     * Set the build result
-     * @param result The new result for the build.
-     */
-    final void setResult(ResultEnum result) {
-        steps.currentBuild.result = result.value
-    }
-
-    /**
-     * Initialize the pipeline.
-     *
-     * <p>This method MUST be called before any other stages are created. If not called, your Jenkins
-     * pipeline will fail. It is also recommended that any public properties of this class are set
-     * prior to calling setup.</p>
-     *
-     * <p>When extending the Pipeline class, this method must be called in any overridden setup
-     * methods. Failure to do so will result in the pipeline indicating that setup was never called.
-     * </p>
-     *
-     * @Stages
-     * <p>The setup method creates 2 stages in your Jenkins pipeline using the {@link #createStage(Map)}
-     * function.</p>
-     *
-     * <dl>
-     *     <dt><b>Setup</b></dt>
-     *     <dd>Used internally to indicate that the Pipeline has been properly setup.</dd>
-     *     <dt><b>Checkout</b></dt>
-     *     <dd>Checks the source out for the pipeline.</dd>
-     * </dl>
-     *
-     * @Note This method was intended to be called {@code setup} but had to be named
-     *       {@code setupBase} due to the issues described in {@link Pipeline}.
-     *
-     * @param timeouts The timeouts for the added stages.
-     */
-    void setupBase(SetupArguments timeouts) {
-        // Create the stage and hold the variable for the future
-        Stage setup = createStage(name: _SETUP_STAGE_NAME, stage: {
-            steps.echo "Setup was called first"
-
-            if (_stages.firstFailingStage) {
-                if (_stages.firstFailingStage.exception) {
-                    throw _stages.firstFailingStage.exception
-                } else {
-                    throw new StageException("Setup found a failing stage but there was no associated exception.", _stages.firstFailingStage.name)
-                }
-            } else {
-                steps.echo "No problems with pre-initialization of pipeline :)"
-            }
-        }, isSkippable: false, timeout: timeouts.setup)
-
-        // Check for duplicate setup call
-        if (_control.setup) {
-            _stages.firstFailingStage = _control.setup
-            _control.setup.exception = new StageException("Setup was called twice!", _control.setup.name)
-        } else {
-            _control.setup = setup
-        }
-
-        createStage(name: 'Checkout', stage: {
-            steps.checkout steps.scm
-        }, isSkippable: false, timeout: timeouts.checkout)
-    }
-
-    /**
-     * Initialize the pipeline.
-     *
-     * @param timeouts A map that can be instantiated as {@link SetupArguments}
-     * @see #setupBase(SetupArguments)
-     */
-    void setupBase(Map timeouts = [:]) {
-        setupBase(timeouts as SetupArguments)
-    }
-
-    /**
-     * Pseudo setup method, should be overridden by inherited classes
-     * @param timeouts The timeouts for the added stages.
-     */
-    protected void setup(SetupArguments timeouts) {
-        setupBase(timeouts)
-    }
-
-    /**
-     * Pseudo setup method, should be overridden by inherited classes
-     * @param timeouts A map that can be instantiated as {@link SetupArguments}
-     */
-    protected void setup(Map timeouts = [:]) {
-        setupBase(timeouts)
     }
 
     /**
