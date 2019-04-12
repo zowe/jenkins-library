@@ -82,11 +82,6 @@ class GenericPipeline extends Pipeline {
     protected static final String _CI_SKIP = "[ci skip]"
 
     /**
-     * If we want to check [ci skip] exists in last commit and decide to skip build
-     */
-    Boolean allowCiSkip = true
-
-    /**
      * Stores the change information for reference later.
      */
     final ChangeInformation changeInfo
@@ -199,17 +194,15 @@ class GenericPipeline extends Pipeline {
         // Call setup from the super class
         super.setupBase(timeouts)
 
-        if (allowCiSkip) {
-            createStage(name: 'Check for CI Skip', stage: {
-                // This checks for the [ci skip] text. If found, the status code is 0
-                def result = steps.sh returnStatus: true, script: 'git log -1 | grep \'.*\\[ci skip\\].*\''
-                if (result == 0) {
-                    steps.echo "\"${_CI_SKIP}\" spotted in the git commit. Aborting."
-                    _shouldSkipRemainingStages = true
-                    setResult(ResultEnum.NOT_BUILT)
-                }
-            }, timeout: timeouts.ciSkip)
-        }
+        createStage(name: 'Check for CI Skip', stage: {
+            // This checks for the [ci skip] text. If found, the status code is 0
+            def result = steps.sh returnStatus: true, script: 'git log -1 | grep \'.*\\[ci skip\\].*\''
+            if (result == 0) {
+                steps.echo "\"${_CI_SKIP}\" spotted in the git commit. Aborting."
+                _shouldSkipRemainingStages = true
+                setResult(ResultEnum.NOT_BUILT)
+            }
+        }, timeout: timeouts.ciSkip)
     }
 
     /**
