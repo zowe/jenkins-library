@@ -10,7 +10,7 @@
  * Copyright IBM Corporation 2019
  */
 
-def isPullRequest = env.BRANCH_NAME.startsWith('PR-')
+def isPullRequest = env.CHANGE_ID ? true : false
 
 // only when building on these branches, docs will be updated
 def DOCS_UPDATE_BRANCHES = ['master', 'classes']
@@ -55,7 +55,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // check if it's pull request
         echo "Current branch is ${env.BRANCH_NAME}"
         if (isPullRequest) {
-          echo "This is a pull request"
+          echo "This is a pull request: merge ${env.CHANGE_BRANCH} into ${env.CHANGE_TARGET}"
         }
     }
 
