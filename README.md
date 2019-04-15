@@ -108,11 +108,11 @@ All below scenarios are based on `master` version `v2.3.4` as example, timestamp
 
 - **Release v2.3.4-rc.1**
   - Build `staging` with (`Perform Release` = _true_, `Pre-Release String` = _rc.1_).
-  - Or build `master` with (`Perform Release` = _true_, `Pre-Release String` = _rc.1_)., not suggested.
+  - Or build `master` with (`Perform Release` = _true_, `Pre-Release String` = _rc.1_), **not suggested**.
 - **Release v2.3.4**
   - Build `master` with (`Perform Release` = _true_, `Pre-Release String` = _empty_).
-- **Release v1.3.0**
-  - Make a commit on `staging` to upgrade version to `1.3.0`.
-  - Build `staging` with (`Perform Release` = _true_, `Pre-Release String` = _rc.1_), we should have `v1.3.0-rc.1`.
-  - Create a Pull Request to merge `staging` into `master`. After merged, `master` should have a version definition of `1.3.0` instead of `2.3.4`.
-  - build master with (`Perform Release` = _true_, `Pre-Release String` = _empty_), we should have `v1.3.0`.
+- **Release v2.4.0**
+  - Make a commit on `staging` to upgrade version to `2.4.0`.
+  - Build `staging` with (`Perform Release` = _true_, `Pre-Release String` = _rc.1_), we should have `v2.4.0-rc.1`.
+  - Create a Pull Request to merge `staging` into `master`. After merged, `master` should have a version definition of `2.4.0` instead of `2.3.4`.
+  - build master with (`Perform Release` = _true_, `Pre-Release String` = _empty_), we should have `v2.4.0`.
