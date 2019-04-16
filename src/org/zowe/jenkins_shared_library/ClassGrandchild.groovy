@@ -17,10 +17,11 @@ class ClassGrandchild extends ClassChild {
 
     ClassGrandchild(steps) {
         super(steps)
-        steps.echo "ClassGrandchild construction"
+        steps.echo "ClassGrandchild construction ${super}"
     }
 
     void test() {
+        steps.echo "ClassGrandchild.test() // ${super} // ${super.test}"
         super.test()
         steps.echo "ClassGrandchild.test()"
     }
