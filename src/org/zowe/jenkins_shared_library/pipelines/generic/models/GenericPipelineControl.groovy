@@ -23,23 +23,23 @@ class GenericPipelineControl extends PipelineControl {
     Stage build
 
     /**
-     * Test stages that occur before deploy.
+     * Test stages that occur before publish.
      *
      * <p>Test stages require that the build was successful.</p>
      */
-    List<Stage> preDeployTests = []
+    List<Stage> prePublishTests = []
 
     /**
-     * Versioning stage.
+     * Publish stage.
      *
      * <p>This stage requires the build to be successful and for tests to be stable (if they were executed)</p>
      */
-    Stage version
+    Stage publish
 
     /**
-     * Deploy stage.
+     * Releasing stage.
      *
      * <p>This stage requires the build to be successful and for tests to be stable (if they were executed)</p>
      */
-    Stage deploy
+    Stage release
 }

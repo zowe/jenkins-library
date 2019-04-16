@@ -14,15 +14,15 @@ import org.zowe.jenkins_shared_library.pipelines.base.exceptions.StageException
 
 /**
  * A generic exception that is thrown from within the
- * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#deployGeneric(java.util.Map)} method.
+ * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#releaseGeneric(java.util.Map)} method.
  */
-class DeployStageException extends StageException {
+class ReleaseStageException extends StageException {
     /**
      * Create the exception.
      * @param message The exception message
      * @param stageName The name of the stage throwing the exception
      */
-    DeployStageException(String message, String stageName) {
+    ReleaseStageException(String message, String stageName) {
         super(message, stageName)
     }
 }

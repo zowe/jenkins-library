@@ -12,11 +12,11 @@ package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
 /**
  * Represents the arguments available to the
- * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#versionGeneric(java.util.Map)} method.
+ * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#releaseGeneric(java.util.Map)} method.
  */
-class VersionStageArguments extends GenericStageArguments {
+class ReleaseStageArguments extends GenericStageArguments {
     /**
-     * The name of the Versioning step.
+     * The name of the Releasing step.
      *
      * @default {@code "Package"}
      */

@@ -12,6 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic
 
 // import com.cloudbees.groovy.cps.NonCPS
 import java.util.regex.Pattern
+import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
@@ -27,6 +28,13 @@ import org.zowe.jenkins_shared_library.scm.GitHub
 /**
  * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
  * building and testing your application.
+ *
+ * A typical pipeline should include these stage in sequence:
+ *
+ * - build       : build and generate artifact locally.
+ * - test        : test the artifact.
+ * - publish     : publish the artifact to Artifactory. If the build is a release, we publish the artifact to release folder.
+ * - release     : if the build is a release, we tag the GitHub. If the build is a formal release, we also bump release on code base.
  *
  * <dl><dt><b>Required Plugins:</b></dt><dd>
  * The following plugins are required:
@@ -58,17 +66,18 @@ import org.zowe.jenkins_shared_library.scm.GitHub
  *     ])
  *
  *     // Define the git configuration
- *     pipeline.gitConfig = [
+ *     pipeline.configureGitHub ([
  *         email: 'git-user-email@example.com',
  *         credentialsId: 'git-user-credentials-id'
- *     ]
+ *     ])
  *
  *     // MUST BE CALLED FIRST
  *     pipeline.setup()
  *
- *     pipeline.buildGeneric()  //////////////////////////////////////////////////
- *     pipeline.testGeneric()   // Provide required parameters in your pipeline //
- *     pipeline.deployGeneric() //////////////////////////////////////////////////
+ *     pipeline.build()   // Provide required parameters in your pipeline
+ *     pipeline.test()    // Provide required parameters in your pipeline
+ *     pipeline.publish() // Provide required parameters in your pipeline
+ *     pipeline.release() // Provide required parameters in your pipeline
  *
  *     // MUST BE CALLED LAST
  *     pipeline.end()
@@ -87,19 +96,52 @@ class GenericPipeline extends Pipeline {
     final ChangeInformation changeInfo
 
     /**
-     * Branches where we can do a release
+     * Branches where we can do a formal release like v2.3.4.
+     *
+     * Default formal release branches are:
+     * - master:         regular release branch
+     * - v?.x/master:    LTS v?.x release branch
      */
-    List<String> releaseBranches = ['master', 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master']
+    List<String> formalReleaseBranches = [
+        'master',
+        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
+    ]
 
     /**
-     * Options when we do a release
+     * Branches where we can do a release like v2.3.4 and v2.3.4-beta.1.
+     *
+     * Default release branches are:
+     * - master:         regular release branch
+     * - v?.x/master:    LTS v?.x release branch
+     * - staging:        regular release branch
+     * - v?.x/staging:   LTS v?.x release branch
      */
-    List<String> releaseOptions = ['SNAPSHOT', 'PATCH', 'MINOR', 'MAJOR']
+    List<String> releaseBranches = [
+        'master',
+        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
+        'staging',
+        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
+    ]
+
+    /**
+     * Branch tags
+     *
+     * This tag will be used to define the way we publish & release
+     */
+    Map<String, String> branchTags = [
+        'master': 'snapshot',
+        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master': 'v1.x/snapshot', // FIXME
+    ]
 
     /**
      * GitHub instance
      */
     GitHub github
+
+    /**
+     * JFrogArtifactory instance
+     */
+    JFrogArtifactory artifactory
 
     /**
      * More control variables for the pipeline.
@@ -123,6 +165,7 @@ class GenericPipeline extends Pipeline {
         super(steps)
         changeInfo = new ChangeInformation(steps)
         github = new GitHub(steps)
+        artifactory = new JFrogArtifactory(steps)
     }
 
     /**
@@ -130,12 +173,22 @@ class GenericPipeline extends Pipeline {
      *
      * @param gitConfig            github configuration object
      */
-    void configureGitHub(GitConfig gitConfig) {
-        // current git origin and use as configuration
-
+    void configureGitHub(GitConfig config) {
         github.init([
-            'email'                      : gitConfig.email,
-            'usernamePasswordCredential' : gitConfig.credentialsId,
+            'email'                      : config.email,
+            'usernamePasswordCredential' : config.credentialsId,
+        ])
+    }
+
+    /**
+     * Initialize artifactory configurations
+     *
+     * @param ArtifactoryConfig            artifactory configuration object
+     */
+    void configureArtifactory(ArtifactoryConfig config) {
+        artifactory.init([
+            'url'                        : config.url,
+            'usernamePasswordCredential' : config.credentialsId,
         ])
     }
 
@@ -232,10 +285,16 @@ class GenericPipeline extends Pipeline {
     void endGeneric(Map options = [:]) {
         // can we do a release? if so, allow a release parameter
         if (isReleaseBranch()) {
-            buildParameters.push(steps.choice(
-                name: 'PERFORM_RELEASE',
-                description: 'Publish a release or snapshot version. By default, this task will create snapshot. If you choose release other than snapshot, your branch version will bump up. Release can only be enabled on `master`, LTS version branch like `v1.x/master`, or branches which enabled to release.',
-                choices: ['SNAPSHOT', 'PATCH', 'MINOR', 'MAJOR']
+            buildParameters.push(steps.booleanParam(
+                name         : 'Perform Release',
+                description  : "Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn't have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on ${releaseBranches.join(', ')} branches.",
+                defaultValue : false
+            ))
+            buildParameters.push(steps.string(
+                name         : 'Pre-Release String',
+                description  : 'Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on "Formal Release Branches" like ${formalReleaseBranches.join(', ')}',
+                defaultValue : '',
+                trim         : true
             ))
         }
 
@@ -452,7 +511,7 @@ class GenericPipeline extends Pipeline {
             }
 
             if (!args.operation) {
-                throw new DeployStageException("Missing test operation!", args.name)
+                throw new PublishStageException("Missing test operation!", args.name)
             }
 
             try {
@@ -491,8 +550,8 @@ class GenericPipeline extends Pipeline {
 
         // Create the stage and ensure that the tests are properly added.
         Stage test = createStage(args)
-        if (!(_control.version || _control.deploy)) {
-            _control.preDeployTests += test
+        if (!(_control.release || _control.publish)) {
+            _control.prePublishTests += test
         }
     }
 
@@ -506,18 +565,109 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Creates a stage that will execute a version bump
+     * Creates a stage that will publish artifacts to Artifactory.
+     *
+     * @Conditions
+     *
+     * <p>
+     *     The stage will adhere to the following conditions:
+     *
+     *     <ul>
+     *         <li>The stage will only execute if the current build result is
+     *         {@link ResultEnum#SUCCESS} or higher.</li>
+     *     </ul>
+     * </p>
+     *
+     * @Exceptions
+     *
+     * <p>
+     *     The Publish stage will throw the following exceptions:
+     *
+     *     <dl>
+     *         <dt><b>{@link PublishStageException}</b></dt>
+     *         <dd>When stage is provided as an argument. This is an invalid parameter for both
+     *             stages</dd>
+     *         <dd>When a test stage has not executed. This prevents untested code from being
+     *             published</dd>
+     *         <dt><b>{@link NullPointerException}</b></dt>
+     *         <dd>When an operation is not provided for the stage.</dd>
+     *     </dl>
+     * </p>
+     *
+     * @Note This method was intended to be called {@code publish} but had to be named
+     * {@code publishGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+     *
+     * @param arguments The arguments for the publish step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    void publishGeneric(Map arguments) {
+        arguments.resultThreshold = ResultEnum.SUCCESS
+
+        GenericStageArguments args = arguments as GenericStageArguments
+
+        args.name = "Publish${arguments.name ? ": ${arguments.name}" : ""}"
+
+        PublishStageException preSetupException
+
+        if (args.stage) {
+            preSetupException = new PublishStageException("arguments.stage is an invalid option for publishGeneric", args.name)
+        }
+
+        // Execute the stage if this is a protected branch and the original should execute function
+        // are both true
+        args.shouldExecute = {
+            boolean shouldExecute = true
+
+            if (arguments.shouldExecute) {
+                shouldExecute = arguments.shouldExecute()
+            }
+
+            return shouldExecute && _isProtectedBranch
+        }
+
+        args.stage = { String stageName ->
+            // If there were any exceptions during the setup, throw them here so proper email notifications
+            // can be sent.
+            if (preSetupException) {
+                throw preSetupException
+            }
+
+            if (_control.build?.status != StageStatus.SUCCESS) {
+                throw new PublishStageException("Build must be successful to publish", args.name)
+            } else if (_control.prePublishTests && _control.prePublishTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
+                throw new PublishStageException("All test stages before publish must be successful or skipped!", args.name)
+            } else if (_control.prePublishTests.size() == 0) {
+                throw new PublishStageException("At least one test stage must be defined", args.name)
+            }
+
+            args.operation(stageName)
+        }
+
+        createStage(args)
+    }
+
+    /**
+     * Pseudo publish method, should be overridden by inherited classes
+     * @param arguments The arguments for the publish step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    protected void publish(Map arguments) {
+        publishGeneric(arguments)
+    }
+
+    /**
+     * Creates a stage that will execute a release
      *
      * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
-     * to this function will map to the {@link VersionStageArguments} class. The
-     * {@link VersionStageArguments#operation} will be executed after all checks are complete. This must
+     * to this function will map to the {@link ReleaseStageArguments} class. The
+     * {@link ReleaseStageArguments#operation} will be executed after all checks are complete. This must
      * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
      *
      * @Stages
      * This method adds the following stage to your build:
      * <dl>
-     *     <dt><b>Versioning: {@link VersionStageArguments#name}</b></dt>
-     *     <dd>This stage is responsible for bumping the version of your application source.</dd>
+     *     <dt><b>Releasing: {@link ReleaseStageArguments#name}</b></dt>
+     *     <dd>This stage is responsible for bumping the release of your application source.</dd>
      * </dl>
      *
      * @Conditions
@@ -527,7 +677,7 @@ class GenericPipeline extends Pipeline {
      *
      *     <ul>
      *         <li>The stage will only execute if the current build result is {@link ResultEnum#SUCCESS} or higher.</li>
-     *         <li>The stage will only execute if the current branch is protected.</li>
+     *         <li>The stage will only execute if the current branch is a releasing branch.</li>
      *     </ul>
      * </p>
      *
@@ -537,7 +687,7 @@ class GenericPipeline extends Pipeline {
      *     The following exceptions will be thrown if there is an error.
      *
      *     <dl>
-     *         <dt><b>{@link VersionStageException}</b></dt>
+     *         <dt><b>{@link ReleaseStageException}</b></dt>
      *         <dd>When stage is provided as an argument.</dd>
      *         <dd>When a test stage has not executed.</dd>
      *         <dt><b>{@link NullPointerException}</b></dt>
@@ -545,24 +695,24 @@ class GenericPipeline extends Pipeline {
      *     </dl>
      * </p>
      *
-     * @Note This method was intended to be called {@code version} but had to be named
-     * {@code versionGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+     * @Note This method was intended to be called {@code release} but had to be named
+     * {@code releaseGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
      *
-     * @param arguments A map of arguments to be applied to the {@link VersionStageArguments} used to define the stage.
+     * @param arguments A map of arguments to be applied to the {@link ReleaseStageArguments} used to define the stage.
      */
-    void versionGeneric(Map arguments = [:]) {
+    void releaseGeneric(Map arguments = [:]) {
         // Force build to only happen on success, this cannot be overridden
         arguments.resultThreshold = ResultEnum.SUCCESS
 
         GenericStageArguments args = arguments as GenericStageArguments
 
-        VersionStageException preSetupException
+        ReleaseStageException preSetupException
 
         if (args.stage) {
-            preSetupException = new VersionStageException("arguments.stage is an invalid option for deployGeneric", args.name)
+            preSetupException = new ReleaseStageException("arguments.stage is an invalid option for releaseGeneric", args.name)
         }
 
-        args.name = "Versioning${arguments.name ? ": ${arguments.name}" : ""}"
+        args.name = "Releasing${arguments.name ? ": ${arguments.name}" : ""}"
 
         // Execute the stage if this is a protected branch and the original should execute function are both true
         args.shouldExecute = {
@@ -583,133 +733,30 @@ class GenericPipeline extends Pipeline {
             }
 
             if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new VersionStageException("Build must be successful to deploy", args.name)
-            } else if (_control.preDeployTests && _control.preDeployTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
-                throw new VersionStageException("All test stages before deploy must be successful or skipped!", args.name)
-            } else if (_control.preDeployTests.size() == 0) {
-                throw new VersionStageException("At least one test stage must be defined", args.name)
+                throw new ReleaseStageException("Build must be successful to publish", args.name)
+            } else if (_control.prePublishTests && _control.prePublishTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
+                throw new ReleaseStageException("All test stages before publish must be successful or skipped!", args.name)
+            } else if (_control.prePublishTests.size() == 0) {
+                throw new ReleaseStageException("At least one test stage must be defined", args.name)
             }
 
             args.operation(stageName)
         }
 
         // Create the stage and ensure that the first one is the stage of reference
-        Stage version = createStage(args)
-        if (!_control.version) {
-            _control.version = version
+        Stage release = createStage(args)
+        if (!_control.release) {
+            _control.release = release
         }
     }
 
     /**
-     * Creates a stage that will execute a version bump and then deploy. test
-     *
-     * @Stages
-     * This method can add 2 stages to the build:
-     *
-     * <dl>
-     *     <dt><b>Versioning</b></dt>
-     *     <dd>This stage is responsible for bumping the version of your application source. It will only
-     *         be added if <b>versionArguments</b> is a non-empty map.</dd>
-     *     <dt><b>Deploy</b></dt>
-     *     <dd>This stage is responsible for deploying your application source. It will always execute
-     *         after Versioning (if present).</dd>
-     * </dl>
-     *
-     * @Conditions
-     *
-     * <p>
-     *     Both stages will adhere to the following conditions:
-     *
-     *     <ul>
-     *         <li>The stage will only execute if the current build result is
-     *         {@link ResultEnum#SUCCESS} or higher.</li>
-     *         <li>The stage will only execute if the current branch is protected.</li>
-     *     </ul>
-     * </p>
-     *
-     * @Exceptions
-     *
-     * <p>
-     *     Both the Version stage and the Deploy stage will throw the following exceptions:
-     *
-     *     <dl>
-     *         <dt><b>{@link DeployStageException}</b></dt>
-     *         <dd>When stage is provided as an argument. This is an invalid parameter for both
-     *             stages</dd>
-     *         <dd>When a test stage has not executed. This prevents untested code from being
-     *             deployed</dd>
-     *         <dt><b>{@link NullPointerException}</b></dt>
-     *         <dd>When an operation is not provided for the stage.</dd>
-     *     </dl>
-     * </p>
-     *
-     * @Note This method was intended to be called {@code deploy} but had to be named
-     * {@code deployGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
-     *
-     * @param deployArguments The arguments for the deploy step. {@code deployArguments.operation} must be
+     * Pseudo release method, should be overridden by inherited classes
+     * @param arguments The arguments for the release step. {@code arguments.operation} must be
      *                        provided.
-     * @param versionArguments The arguments for the versioning step. If provided, then
-     *                         {@code versionArguments.operation} must be provided.
      */
-    void deployGeneric(Map deployArguments, Map versionArguments = [:]) {
-        if (versionArguments.size() > 0) {
-            versionGeneric(versionArguments)
-        }
-
-        deployArguments.resultThreshold = ResultEnum.SUCCESS
-
-        GenericStageArguments args = deployArguments as GenericStageArguments
-
-        args.name = "Deploy${deployArguments.name ? ": ${deployArguments.name}" : ""}"
-
-        DeployStageException preSetupException
-
-        if (args.stage) {
-            preSetupException = new DeployStageException("arguments.stage is an invalid option for deployGeneric", args.name)
-        }
-
-        // Execute the stage if this is a protected branch and the original should execute function
-        // are both true
-        args.shouldExecute = {
-            boolean shouldExecute = true
-
-            if (deployArguments.shouldExecute) {
-                shouldExecute = deployArguments.shouldExecute()
-            }
-
-            return shouldExecute && _isProtectedBranch
-        }
-
-        args.stage = { String stageName ->
-            // If there were any exceptions during the setup, throw them here so proper email notifications
-            // can be sent.
-            if (preSetupException) {
-                throw preSetupException
-            }
-
-            if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new DeployStageException("Build must be successful to deploy", args.name)
-            } else if (_control.preDeployTests && _control.preDeployTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
-                throw new DeployStageException("All test stages before deploy must be successful or skipped!", args.name)
-            } else if (_control.preDeployTests.size() == 0) {
-                throw new DeployStageException("At least one test stage must be defined", args.name)
-            }
-
-            args.operation(stageName)
-        }
-
-        createStage(args)
-    }
-
-    /**
-     * Pseudo deploy method, should be overridden by inherited classes
-     * @param deployArguments The arguments for the deploy step. {@code deployArguments.operation} must be
-     *                        provided.
-     * @param versionArguments The arguments for the versioning step. If provided, then
-     *                         {@code versionArguments.operation} must be provided.
-     */
-    protected void deploy(Map deployArguments, Map versionArguments = [:]) {
-        deployGeneric(deployArguments, versionArguments)
+    protected void release(Map arguments) {
+        releaseGeneric(arguments)
     }
 
     /**
