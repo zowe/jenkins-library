@@ -24,6 +24,5 @@ class ClassGrandchild extends ClassChild {
     void test() {
         super.test()
         steps.echo "ClassGrandchild.test()"
-        super.test()
     }
 }

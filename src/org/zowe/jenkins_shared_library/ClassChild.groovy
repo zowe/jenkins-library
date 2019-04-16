@@ -24,6 +24,5 @@ class ClassChild extends ClassBase {
     void test() {
         super.test()
         steps.echo "ClassChild.test()"
-        super.test()
     }
 }
