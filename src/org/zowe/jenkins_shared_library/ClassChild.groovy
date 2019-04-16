@@ -13,8 +13,6 @@ package org.zowe.jenkins_shared_library
 import java.util.logging.Level
 
 class ClassChild extends ClassBase {
-    def steps
-
     ClassChild(steps) {
         super(steps)
         steps.echo "ClassChild construction"

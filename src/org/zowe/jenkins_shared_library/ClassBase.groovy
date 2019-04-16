@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library
 import java.util.logging.Level
 
 class ClassBase {
-    def steps
+    protected def steps
 
     ClassBase(steps) {
         steps.echo "ClassBase construction"
