@@ -57,9 +57,9 @@ All below scenarios are based on `master` version `v2.3.4` as example, timestamp
 
 - For each pipeline, we have 2 build parameters are only available to branches which can do a `release`:
   - `Perform Release`: boolean, default is _false_.
-  - `Pre-Release String`: string, default is _empty_. This is required if the release is not happened on `master` or `v?.x/master` branch.
+  - `Pre-Release String`: string, default is _empty_. This parameter will only be used if `Perform Release` is _true_. This parameter is required if the release is not happened on `master` or `v?.x/master` branch.
 - By default, only `master`, `v?.x/master`, `staging` and `v?.x/staging` branches can do a release. This can be changed by `pipeline.addReleaseBranches(...branches)` or `pipeline.setReleaseBranches(...branches)`.
-- For NPM packages, each branch can have a npm publish tag name when performaing release build. By default, `master`'s tag is `latest`, `staging`'s tag is `dev`. For branches do not have publish tag defined, or branches is not in release build, npm publish will use default `snapshot` tag name, and the version will have normalized branch name included. For example, `staging` branch **non-release** build will generate a version `v2.3.4-snapshot-staging.20190101000000` release on `snapshot` npm tag. `staging` branch **release** build will generate a version `v2.3.4-dev.20190101000000` release on `dev` tag. And a branch `feature/lts` build will generate a version `v2.3.4-snapshot-feature-lts.20190101000000` release on `snapshot` tag.
+- For NPM packages, each branch can have a npm publish tag name when performaing release build. By default, `master`'s tag is `latest`, `staging`'s tag is `dev`. For branches do not have publish tag defined, or branches is not in release build, npm publish will use default `snapshot` tag name, and the version will have normalized branch name included. For example, `staging` branch **non-release** build will generate a version `v2.3.4-staging-snapshot.20190101000000` release on `snapshot` npm tag. `staging` branch **release** build will generate a version `v2.3.4-dev.20190101000000` release on `dev` tag. And a branch `feature/lts` build will generate a version `v2.3.4-feature-lts-snapshot.20190101000000` release on `snapshot` tag.
 - For pax/zip packages, each branch can also have a release tag name. By default, `master`'s tag is 'snapshot'. If it's not defined, artifactory publish will use branch name as tag name. For example, `master` **non-release** build will publish artifact to `libs-snapshot-local/org/zowe/<component>/2.3.4-snapshot/` and **release** build will publish to `libs-release-local/org/zowe/<component>/2.3.4/`. `staging` **non-release** build will publish artifact to `libs-snapshot-local/org/zowe/<component>/2.3.4-staging/` and **release** build will publish to `libs-release-local/org/zowe/<component>/2.3.4-rc1/`, the `rc1` is the pre-release string which is required.
 
 ### Pipeline Build Scenarios
@@ -84,7 +84,7 @@ All below scenarios are based on `master` version `v2.3.4` as example, timestamp
   - A **PATCH** level version bump will be performed on GitHub. This is to avoid release the same version again. So after version bump, `master` has version of `2.4.0`, and a commit can be seen from github commit history. This commit should be merged/cherry-picked back to `staging`.
 - **Scenario #dev-1**
   - Build on `staging` which **IS** a release branch with default parameter values (`Perform Release` = _false_, `Pre-Release String` = _empty_)
-    - for npm package, it will be published to `npm-local-release` as `v2.3.4-snapshot-staging.20190101000000` with npm tag `snapshot`.
+    - for npm package, it will be published to `npm-local-release` as `v2.3.4-staging-snapshot.20190101000000` with npm tag `snapshot`.
     - for pax/zip(gradle) package, it will be published to `libs-snapshot-local/org/zowe/<component>/2.3.4-staging/` as `<component>-2.3.4-staging.20190101000000.(pax|zip)`.
   - No github tag will be created.
   - No version bump will be performed on GitHub.
