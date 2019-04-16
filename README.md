@@ -48,6 +48,7 @@ All below scenarios are based on `master` version `v2.3.4` as example, timestamp
 
 ### Things We Want to Avoid
 
+- To avoid creating a separated Jenkins job only for release purpose.
 - To avoid modifying `package.json` or similar manifest file for versions with pre-release strings like adding `-latest.20190101000000` to the version `2.3.4` definition. The `package.json` will be kept as `2.3.4` until released.
 - To avoid tagging the branch too often. We don't want to create daily tags `v2.1.0-beta.201902072129` to github repository.
 - To avoid providing option to build any specific version. This specific version release may cause conflicts and confusion. If we want to build a specific version, we should update the code base (`package.json` or other manifest file) to the version we want to build. The release version shouldn't be decided when we start a release build.
