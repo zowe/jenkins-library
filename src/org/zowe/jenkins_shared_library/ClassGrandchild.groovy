@@ -20,7 +20,6 @@ class ClassGrandchild extends ClassChild {
         steps.echo "ClassGrandchild construction"
     }
 
-    @Override
     void test() {
         super.test()
         steps.echo "ClassGrandchild.test()"
