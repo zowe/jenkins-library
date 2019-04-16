@@ -12,7 +12,7 @@ package org.zowe.jenkins_shared_library
 
 import java.util.logging.Level
 
-class ClassGrandchild {
+class ClassGrandchild extends ClassChild {
     def steps
 
     ClassGrandchild(steps) {
