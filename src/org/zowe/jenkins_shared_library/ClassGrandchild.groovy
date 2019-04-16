@@ -16,19 +16,19 @@ class ClassGrandchild extends ClassChild {
     ClassGrandchild(steps) {
         super(steps)
         steps.echo "ClassGrandchild construction"
-        steps.echo "super = ${super}"
-        steps.echo "super.getClass = ${super.getClass()}"
-        steps.echo "super.metaClass = ${super.metaClass}"
     }
 
     void test() {
-        steps.echo "ClassGrandchild.test()"
+        steps.echo "ClassGrandchild.test() started"
         steps.echo "super = ${super}"
         steps.echo "super.getClass = ${super.getClass()}"
         steps.echo "super.metaClass = ${super.metaClass}"
-        steps.echo "super.test = ${super.test}"
-        steps.echo "super.test.getClass = ${super.test.getClass()}"
+        super.metaClass.methods.name.unique().each{
+            str += it+"(); ";
+        }
+        // steps.echo "super.test = ${super.test}"
+        // steps.echo "super.test.getClass = ${super.test.getClass()}"
         super.test()
-        steps.echo "ClassGrandchild.test()"
+        steps.echo "ClassGrandchild.test() done"
     }
 }

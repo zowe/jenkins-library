@@ -17,6 +17,7 @@ class ClassBase {
 
     ClassBase(steps) {
         steps.echo "ClassBase construction"
+        this.steps = steps
     }
 
     void test() {
