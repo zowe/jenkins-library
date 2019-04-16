@@ -70,10 +70,17 @@ class BasePipelineMultibranchPipelineTest extends IntegrationTest {
     void testConsoleLog() {
         // console log
         assertThat('Build console log', buildLog, not(equalTo('')))
-        // custom stage is configured and started
-        assertThat('Build console log', buildLog, containsString('This step can be skipped by setting the `Skip Stage: CustomStage` option to true'))
-        assertThat('Build console log', buildLog, containsString('This is a custom stage, skippable'))
-        // complete stage should be started
-        assertThat('Build console log', buildLog, containsString('Pipeline Execution Complete'))
+        [
+            // custom stage is configured and started
+            'This step can be skipped by setting the `Skip Stage: CustomStage` option to true',
+            'This is a custom stage, skippable',
+            // complete stage
+            'Pipeline Execution Complete',
+            // sending email
+            'Sending email notification...',
+            "Subject: [${buildInformation['result']}] Job \'${fullTestJobName.join('/')}/${TEST_BRANCH} [${buildInformation['number']}]\'"
+        ].each {
+            assertThat('Build console log', buildLog, containsString(it))
+        }
     }
 }
