@@ -16,6 +16,9 @@ class ClassGrandchild extends ClassChild {
     ClassGrandchild(steps) {
         super(steps)
         steps.echo "ClassGrandchild construction"
+        super.metaClass.methods.name.unique().each{
+            steps.echo "- ${it}(); "
+        }
     }
 
     void test() {
@@ -24,7 +27,7 @@ class ClassGrandchild extends ClassChild {
         steps.echo "super.getClass = ${super.getClass()}"
         steps.echo "super.metaClass = ${super.metaClass}"
         super.metaClass.methods.name.unique().each{
-            str += it+"(); ";
+            steps.echo "- ${it}(); "
         }
         // steps.echo "super.test = ${super.test}"
         // steps.echo "super.test.getClass = ${super.test.getClass()}"
