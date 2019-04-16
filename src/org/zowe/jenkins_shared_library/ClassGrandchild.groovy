@@ -15,36 +15,19 @@ import java.util.logging.Level
 class ClassGrandchild extends ClassChild {
     def steps
 
-    String printAllMethods( obj ){
-        if( !obj ){
-            return "Object is null";
-        }
-        if( !obj.metaClass && obj.getClass() ){
-            return printAllMethods( obj.getClass() );
-        }
-
-        def str = "class ${obj.getClass().name} functions:\r\n";
-        obj.metaClass.methods.name.unique().each{
-            str += it+"(); ";
-        }
-
-        return str
-    }
-
-
     ClassGrandchild(steps) {
         super(steps)
         steps.echo "ClassGrandchild construction"
-        steps.echo printAllMethods(super)
         steps.echo "super = ${super}"
         steps.echo "super.getClass = ${super.getClass()}"
+        steps.echo "super.metaClass = ${super.metaClass}"
     }
 
     void test() {
         steps.echo "ClassGrandchild.test()"
-        steps.echo printAllMethods(super)
         steps.echo "super = ${super}"
         steps.echo "super.getClass = ${super.getClass()}"
+        steps.echo "super.metaClass = ${super.metaClass}"
         steps.echo "super.test = ${super.test}"
         steps.echo "super.test.getClass = ${super.test.getClass()}"
         super.test()
