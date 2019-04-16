@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library
 
 import java.util.logging.Level
+import com.cloudbees.groovy.cps.NonCPS
 
 class ClassGrandchild extends ClassChild {
     ClassGrandchild(steps) {
@@ -21,6 +22,8 @@ class ClassGrandchild extends ClassChild {
         }
     }
 
+    @NonCPS
+    @Override
     void test() {
         steps.echo "ClassGrandchild.test() started"
         steps.echo "super = ${super}"

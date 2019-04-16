@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library
 
 import java.util.logging.Level
+import com.cloudbees.groovy.cps.NonCPS
 
 class ClassBase {
     def steps

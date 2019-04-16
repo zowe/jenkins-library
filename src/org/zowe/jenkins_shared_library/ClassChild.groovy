@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library
 
 import java.util.logging.Level
+import com.cloudbees.groovy.cps.NonCPS
 
 class ClassChild extends ClassBase {
     ClassChild(steps) {
@@ -18,6 +19,8 @@ class ClassChild extends ClassBase {
         steps.echo "ClassChild construction"
     }
 
+    @NonCPS
+    @Override
     void test() {
         super.test()
         steps.echo "ClassChild.test()"
