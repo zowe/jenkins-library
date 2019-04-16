@@ -19,7 +19,6 @@ class ClassChild extends ClassBase {
         steps.echo "ClassChild construction"
     }
 
-    @NonCPS
     @Override
     void test() {
         super.test()
