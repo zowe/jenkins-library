@@ -87,10 +87,10 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
             'Executing stage Publish',
             'Deploying artifact:',
             'Deploying build info to:',
-            'Artifact uploading is successful.'
+            'Artifact uploading is successful.',
             // Verify Artifact Uploaded stage
             'Executing stage Verify Artifact Uploaded',
-            'Successfully found artifact uploaded:'
+            'Successfully found artifact uploaded:',
             // complete stage
             'Pipeline Execution Complete',
             // sending email
