@@ -10,41 +10,46 @@
 
 package org.zowe.jenkins_shared_library.behavior
 
-import com.cloudbees.groovy.cps.NonCPS
-
 /**
- * This demostrate after the children class calling super.method(), the remaining code of the children method will be skipped.
+ * This demostrate after the children class calling super.method(), the method is altered by CPS
+ * plugin, and the context to super is lost.
  *
- * When calling (new NonCPSGrandchild()).test():
+ * But super on construction method is working properly.
+ *
+ *
+ * When calling (new NonCPSNonOverrideGrandchild()).test():
  *
  * Expected to see:
  * NonCPSBase construction
  * NonCPSChild construction
- * NonCPSGrandchild construction
- * NonCPSGrandchild.test() started
+ * NonCPSNonOverrideGrandchild construction
+ * NonCPSNonOverrideGrandchild.test() started
  * NonCPSChild.test() started
  * NonCPSBase.test()
  * NonCPSChild.test() done
- * NonCPSGrandchild.test() done
+ * NonCPSNonOverrideGrandchild.test() done
  *
- * Actual we get:
+ * Actual we get if we capture and ignore the error:
  * NonCPSBase construction
  * NonCPSChild construction
  * NonCPSGrandchild construction
  * NonCPSGrandchild.test() started
  * NonCPSChild.test() started
- * NonCPSBase.test()
+ * NonCPSChild.test() started
+ * NonCPSChild.test() started
+ * NonCPSChild.test() started
+ * NonCPSChild.test() started
+ * NonCPSChild.test() started
+ * ... infinite loop
  */
-class NonCPSGrandchild extends NonCPSChild {
-    NonCPSGrandchild(steps) {
+class CPSNonOverrideGrandchild extends CPSNonOverrideChild {
+    CPSNonOverrideGrandchild(steps) {
         super(steps)
-        steps.echo "NonCPSGrandchild construction"
+        steps.echo "CPSNonOverrideGrandchild construction"
     }
 
-    @NonCPS
-    @Override
     void test() {
-        steps.echo "NonCPSGrandchild.test() started"
+        steps.echo "CPSNonOverrideGrandchild.test() started"
         // steps.echo "super = ${super}"
         // steps.echo "super.getClass = ${super.getClass()}"
         // steps.echo "super.metaClass = ${super.metaClass}"
@@ -52,6 +57,6 @@ class NonCPSGrandchild extends NonCPSChild {
         //     steps.echo "- ${it}(); "
         // }
         super.test()
-        steps.echo "NonCPSGrandchild.test() done"
+        steps.echo "CPSNonOverrideGrandchild.test() done"
     }
 }

@@ -10,6 +10,38 @@
 
 package org.zowe.jenkins_shared_library.behavior
 
+/**
+ * This demostrate after the children class calling super.method(), the method is altered by CPS
+ * plugin, and the context to super is lost.
+ *
+ * But super on construction method is working properly.
+ *
+ *
+ * When calling (new NonCPSGrandchild()).test():
+ *
+ * Expected to see:
+ * CPSBase construction
+ * CPSChild construction
+ * CPSGrandchild construction
+ * CPSGrandchild.test() started
+ * CPSChild.test() started
+ * CPSBase.test()
+ * CPSChild.test() done
+ * CPSGrandchild.test() done
+ *
+ * Actual we get if we capture and ignore the error:
+ * CPSBase construction
+ * CPSChild construction
+ * CPSGrandchild construction
+ * CPSGrandchild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * ... infinite loop
+ */
 class CPSGrandchild extends CPSChild {
     CPSGrandchild(steps) {
         super(steps)
