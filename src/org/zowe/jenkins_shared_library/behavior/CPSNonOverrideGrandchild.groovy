@@ -17,29 +17,29 @@ package org.zowe.jenkins_shared_library.behavior
  * But super on construction method is working properly.
  *
  *
- * When calling (new NonCPSNonOverrideGrandchild()).test():
+ * When calling (new CPSNonOverrideGrandchild()).test():
  *
  * Expected to see:
- * NonCPSBase construction
- * NonCPSChild construction
- * NonCPSNonOverrideGrandchild construction
- * NonCPSNonOverrideGrandchild.test() started
- * NonCPSChild.test() started
- * NonCPSBase.test()
- * NonCPSChild.test() done
- * NonCPSNonOverrideGrandchild.test() done
+ * CPSBase construction
+ * CPSChild construction
+ * CPSNonOverrideGrandchild construction
+ * CPSNonOverrideGrandchild.test() started
+ * CPSChild.test() started
+ * CPSBase.test()
+ * CPSChild.test() done
+ * CPSNonOverrideGrandchild.test() done
  *
  * Actual we get if we capture and ignore the error:
- * NonCPSBase construction
- * NonCPSChild construction
- * NonCPSGrandchild construction
- * NonCPSGrandchild.test() started
- * NonCPSChild.test() started
- * NonCPSChild.test() started
- * NonCPSChild.test() started
- * NonCPSChild.test() started
- * NonCPSChild.test() started
- * NonCPSChild.test() started
+ * CPSBase construction
+ * CPSChild construction
+ * CPSGrandchild construction
+ * CPSGrandchild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
+ * CPSChild.test() started
  * ... infinite loop
  */
 class CPSNonOverrideGrandchild extends CPSNonOverrideChild {

@@ -10,8 +10,6 @@
 
 package org.zowe.jenkins_shared_library.behavior
 
-import com.cloudbees.groovy.cps.NonCPS
-
 class CPSNonOverrideChild extends CPSBase {
     CPSNonOverrideChild(steps) {
         super(steps)

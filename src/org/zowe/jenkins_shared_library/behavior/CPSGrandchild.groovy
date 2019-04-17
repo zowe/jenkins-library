@@ -17,7 +17,7 @@ package org.zowe.jenkins_shared_library.behavior
  * But super on construction method is working properly.
  *
  *
- * When calling (new NonCPSGrandchild()).test():
+ * When calling (new CPSGrandchild()).test():
  *
  * Expected to see:
  * CPSBase construction
