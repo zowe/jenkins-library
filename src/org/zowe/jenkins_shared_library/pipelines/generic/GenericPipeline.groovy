@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.generic
 
 // import com.cloudbees.groovy.cps.NonCPS
+import groovy.util.logging.Log
 import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
