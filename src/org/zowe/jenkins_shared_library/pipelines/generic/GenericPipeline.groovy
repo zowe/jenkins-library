@@ -318,15 +318,13 @@ class GenericPipeline extends Pipeline {
         }
 
         if (!macros.containsKey('package')) {
-            macros['package'] = this.packageName
+            macros['package'] = this.getPackageName().replace('.', '/')
         }
         if (!macros['package']) {
             throw new PublishStageException('Cannot determin package name for artifact upload path', '-')
         }
         if (!macros.containsKey('subproject')) {
             macros['subproject'] = ''
-        } else if (!macros['subproject'].startsWith('/')) {
-            macros['subproject'] = '/' + macros['subproject']
         }
         if (!macros.containsKey('version')) {
             macros['version'] = this.getVersion()
@@ -351,6 +349,12 @@ class GenericPipeline extends Pipeline {
 
         // provide default values for known macros
         macros = this.fillArtifactoryUploadTargetPathDefaultMacros(macros)
+        if (macros['subproject'] && !macros['subproject'].startsWith('/')) {
+            macros['subproject'] = '/' + macros['subproject']
+        }
+        if (macros['branchtag'] && !macros['branchtag'].startsWith('-')) {
+            macros['branchtag'] = '-' + macros['branchtag']
+        }
 
         log.fine("parseArtifactoryUploadTargetPath macros: ${macros}")
 
