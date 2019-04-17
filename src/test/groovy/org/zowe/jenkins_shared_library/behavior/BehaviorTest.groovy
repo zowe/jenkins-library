@@ -11,8 +11,8 @@
 import java.util.logging.Logger
 import org.hamcrest.collection.IsMapContaining
 import org.junit.*
-import org.zowe.jenkins_shared_library.behavior.NonCPSGrandchild
 import org.zowe.jenkins_shared_library.behavior.CPSGrandchild
+import org.zowe.jenkins_shared_library.behavior.NonCPSGrandchild
 import org.zowe.jenkins_shared_library.integrationtest.MockJenkinsSteps
 import org.zowe.jenkins_shared_library.Utils
 import static groovy.test.GroovyAssert.*
