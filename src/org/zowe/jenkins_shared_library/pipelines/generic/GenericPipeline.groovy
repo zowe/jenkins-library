@@ -458,12 +458,14 @@ class GenericPipeline extends Pipeline {
         String fileName
         String fileExt
 
-        String baseName = file.lastIndexOf('/').with {it != -1 ? file[(it + 1)..-1] : file}​​​​​​​​​
-        Integer idx = baseName.lastIndexOf('.')​​​​
+        String baseName = file.lastIndexOf('/').with {
+            it != -1 ? file[(it + 1)..-1] : file
+        }
+        Integer idx = baseName.lastIndexOf('.')
         if (idx != -1) {
             fileName = baseName[0..(idx - 1)]
             fileExt = baseName[idx..-1]
-        }​ else {
+        } else {
             fileName = baseName
             fileExt = ''
         }
