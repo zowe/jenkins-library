@@ -83,6 +83,11 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
             'Recording test results', // junit
             '[Cobertura] Publishing Cobertura coverage report...', // cobertura
             '[htmlpublisher] Archiving HTML reports...',
+            // publish stage
+            'Executing stage Publish',
+            'Deploying artifact:',
+            'Deploying build info to:',
+            'Artifact uploading is successful.',
             // complete stage
             'Pipeline Execution Complete',
             // sending email

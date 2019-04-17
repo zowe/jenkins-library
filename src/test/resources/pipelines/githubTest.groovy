@@ -60,7 +60,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      */
     stage('commit') {
         // make modification
-        sh "echo '- ${env.JOB_NAME}#${env.BUILD_NUMBER}' >> '${CLONE_DIRECTORY}/test-commit'"
+        sh "echo '- ${env.JOB_NAME}#${env.BUILD_NUMBER}' >> '${CLONE_DIRECTORY}/test-commit.txt'"
         // commit
         def msg = "Automated commit from ${env.JOB_NAME}#${env.BUILD_NUMBER}"
         github.commit(msg)

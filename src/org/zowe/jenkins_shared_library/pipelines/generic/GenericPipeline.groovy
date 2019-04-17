@@ -25,6 +25,7 @@ import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git.*
 import org.zowe.jenkins_shared_library.pipelines.generic.models.*
 import org.zowe.jenkins_shared_library.scm.GitHub
+import org.zowe.jenkins_shared_library.Utils
 
 /**
  * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
@@ -93,6 +94,16 @@ class GenericPipeline extends Pipeline {
     protected static final String _CI_SKIP = "[ci skip]"
 
     /**
+     * Build parameter name for "Perform Release"
+     */
+    protected static final String BUILD_PARAMETER_PERFORM_RELEASE = 'Perform Release'
+
+    /**
+     * Build parameter name for "Pre-Release String"
+     */
+    protected static final String BUILD_PARAMETER_PRE_RELEASE_STRING = 'Pre-Release String'
+
+    /**
      * Temporary upload spec name
      */
     protected static final String temporaryUploadSpecName = '.tmp-pipeline-publish-spec.json'
@@ -154,8 +165,15 @@ class GenericPipeline extends Pipeline {
      * - subproject: optional value passed when parsing the path string
      * - version: the current version
      * - branchtag: branch tag
+     * - timestamp: timestamp in yyyyMMddHHmmss format
+     * - buildnumber: current build number
      */
     String artifactoryUploadTargetPath = '{repository}/{package}{subproject}/{version}{branchtag}/'
+
+    /**
+     * Default artifactory file name pattern
+     */
+    String artifactoryUploadTargetFile = '{filename}{branchtag}{buildnumber}{timestamp}{fileext}'
 
     /**
      * GitHub instance
@@ -273,14 +291,54 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
+     * If current pipeline branch can do a formal release
+     *
+     * @param  branch     the branch name to check. By default, empty string will check current branch
+     * @return               true or false
+     */
+    protected Boolean isFormalReleaseBranch(String branch = '') {
+        // use BRANCH_NAME as default value
+        if (!branch && steps.env && steps.env.BRANCH_NAME) {
+            branch = steps.env.BRANCH_NAME
+        }
+        // not a multibranch pipeline, always allow release?
+        if (!steps.env || !steps.env.BRANCH_NAME) {
+            return true
+        }
+
+        def result = false
+
+        for (String formalReleaseBranch : formalReleaseBranches) {
+            if (branch.matches(formalReleaseBranch)) {
+                result = true
+                break
+            }
+        }
+
+        result
+    }
+
+    /**
      * If current build is a release build
      * @return            true or false
      */
     protected Boolean isPerformingRelease() {
-        if (steps && steps.params && steps.params['Perform Release']) {
+        if (steps && steps.params && steps.params[BUILD_PARAMETER_PERFORM_RELEASE]) {
             return true
         } else {
             return false
+        }
+    }
+
+    /**
+     * If current build is a release build
+     * @return            true or false
+     */
+    protected String getPreReleaseString() {
+        if (steps && steps.params && steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]) {
+            return steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]
+        } else {
+            return ''
         }
     }
 
@@ -295,7 +353,7 @@ class GenericPipeline extends Pipeline {
             branch = steps.env.BRANCH_NAME
         }
 
-        String result = defaultBranchTag
+        String result = branch ?: defaultBranchTag
 
         if (branch) {
             for (String branchTag : branchTags) {
@@ -307,12 +365,17 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        result
+        return Utils.sanitizeBranchName(result)
     }
 
     protected Map fillArtifactoryUploadTargetPathDefaultMacros(Map macros = [:]) {
+        Boolean _isReleaseBranch = this.isReleaseBranch()
+        Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
+        Boolean _isPerformingRelease = this.isPerformingRelease()
+        String _preReleaseString = this.getPreReleaseString()
+
         if (!macros.containsKey('repository')) {
-            macros['repository'] = this.isReleaseBranch() && this.isPerformingRelease() ?
+            macros['repository'] = _isReleaseBranch && _isPerformingRelease ?
                                    JFrogArtifactory.REPOSITORY_RELEASE :
                                    JFrogArtifactory.REPOSITORY_SNAPSHOT
         }
@@ -333,7 +396,21 @@ class GenericPipeline extends Pipeline {
             throw new PublishStageException('Cannot determin version for artifact upload path', '-')
         }
         if (!macros.containsKey('branchtag')) {
-            macros['branchtag'] = this.getBranchTag()
+            if (_isReleaseBranch && _isPerformingRelease) {
+                if (_isFormalReleaseBranch) {
+                    macros['branchtag'] = ''
+                } else {
+                    macros['branchtag'] = _preReleaseString
+                }
+            } else {
+                macros['branchtag'] = this.getBranchTag()
+            }
+        }
+        if (!macros.containsKey('timestamp')) {
+            macros['timestamp'] = Utils.getTimestamp()
+        }
+        if (!macros.containsKey('buildnumber')) {
+            macros['buildnumber'] = (steps.env && steps.env.BUILD_NUMBER) ?: ''
         }
 
         return macros
@@ -341,12 +418,12 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Parse Artifactory upload target path
+     *
+     * @param  target     target path string
      * @param  macros     map of macros to replace
      * @return           return target path
      */
-    protected String parseArtifactoryUploadTargetPath(Map macros = [:]) {
-        String target = artifactoryUploadTargetPath
-
+    protected String parseArtifactoryUploadTargetPath(String target, Map macros = [:]) {
         // provide default values for known macros
         macros = this.fillArtifactoryUploadTargetPathDefaultMacros(macros)
         if (macros['subproject'] && !macros['subproject'].startsWith('/')) {
@@ -354,6 +431,12 @@ class GenericPipeline extends Pipeline {
         }
         if (macros['branchtag'] && !macros['branchtag'].startsWith('-')) {
             macros['branchtag'] = '-' + macros['branchtag']
+        }
+        if (macros['timestamp'] && !macros['timestamp'].startsWith('-')) {
+            macros['timestamp'] = '-' + macros['timestamp']
+        }
+        if (macros['buildnumber'] && !macros['buildnumber'].startsWith('-')) {
+            macros['buildnumber'] = '-' + macros['buildnumber']
         }
 
         log.fine("parseArtifactoryUploadTargetPath macros: ${macros}")
@@ -363,6 +446,30 @@ class GenericPipeline extends Pipeline {
         }
 
         return target
+    }
+
+    /**
+     * Replace macro of "filename" and "fileext" for artifactory upload file
+     * @param  file     original file name
+     * @return          target file
+     */
+    protected String getArtifactoryUploadTargetFile(String file) {
+        String pattern = artifactoryUploadTargetFile
+        String fileName
+        String fileExt
+
+        String baseName = file.lastIndexOf('/').with {it != -1 ? file[(it + 1)..-1] : file}​​​​​​​​​
+        Integer idx = baseName.lastIndexOf('.')​​​​
+        if (idx != -1) {
+            fileName = baseName[0..(idx - 1)]
+            fileExt = baseName[idx..-1]
+        }​ else {
+            fileName = baseName
+            fileExt = ''
+        }
+
+        return pattern.replace('{filename}', fileName)
+                      .replace('{fileext}', fileExt)
     }
 
     /**
@@ -426,12 +533,14 @@ class GenericPipeline extends Pipeline {
         // can we do a release? if so, allow a release parameter
         if (isReleaseBranch()) {
             this.addBuildParameter(steps.booleanParam(
-                name         : 'Perform Release',
+                name         : BUILD_PARAMETER_PERFORM_RELEASE,
                 description  : "Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn't have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on ${releaseBranches.join(', ')} branches.",
                 defaultValue : false
             ))
+        }
+        if (isFormalReleaseBranch()) {
             this.addBuildParameter(steps.string(
-                name         : 'Pre-Release String',
+                name         : BUILD_PARAMETER_PRE_RELEASE_STRING,
                 description  : "Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on \"Formal Release Branches\" like ${formalReleaseBranches.join(', ')}",
                 defaultValue : '',
                 trim         : true
@@ -779,6 +888,20 @@ class GenericPipeline extends Pipeline {
             } else if (_control.prePublishTests.size() == 0) {
                 throw new PublishStageException("At least one test stage must be defined", args.name)
             }
+            Boolean _isReleaseBranch = this.isReleaseBranch()
+            Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
+            Boolean _isPerformingRelease = this.isPerformingRelease()
+            String _preReleaseString = this.getPreReleaseString()
+
+            if (_isPerformingRelease && !_isReleaseBranch) {
+                throw new PublishStageException("Cannot perform publish/release on non-release branch", args.name)
+            }
+            if (_isPerformingRelease && _isFormalReleaseBranch && !_isReleaseBranch) {
+                throw new PublishStageException("Cannot perform formal release on non-release branch", args.name)
+            }
+            if (_isPerformingRelease && _isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
+                throw new PublishStageException("Pre-release string is required to perform a non-formal-release", args.name)
+            }
 
             // execute operation Closure if provided
             if (args.operation) {
@@ -787,8 +910,8 @@ class GenericPipeline extends Pipeline {
 
             // upload artifacts if provided
             if (args.artifacts && args.artifacts.size() > 0) {
-                def targetPath = args.publishTargetPath ? args.publishTargetPath : parseArtifactoryUploadTargetPath()
-                this.uploadArtifacts(args.artifacts, targetPath)
+                def baseTargetPath = args.publishTargetPath ?: artifactoryUploadTargetPath
+                this.uploadArtifacts(args.artifacts, baseTargetPath)
             } else {
                 steps.echo "No artifacts to publish."
             }
@@ -797,13 +920,20 @@ class GenericPipeline extends Pipeline {
         createStage(args)
     }
 
-    protected void uploadArtifacts(List<String> artifacts, String targetPath) {
+    protected void uploadArtifacts(List<String> artifacts, String baseTargetPath) {
+        if (!baseTargetPath.endsWith('/')) {
+            baseTargetPath += '/'
+        }
+
         Map uploadSpec = steps.readJSON text: '{"files":[]}'
-        artifacts.each {
-            uploadSpec['files'].push([
-                "pattern" : it,
-                "target"  : targetPath
-            ])
+        artifacts.each { artifact ->
+            def files = findFiles glob: artifact
+            files.each { file ->
+                uploadSpec['files'].push([
+                    "pattern" : file,
+                    "target"  : parseArtifactoryUploadTargetPath(baseTargetPath + getArtifactoryUploadTargetFile(file))
+                ])
+            }
         }
 
         log.fine("Spec of uploading artifact: ${uploadSpec}")
