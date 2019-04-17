@@ -418,7 +418,7 @@ class GenericPipeline extends Pipeline {
             ))
             buildParameters.push(steps.string(
                 name         : 'Pre-Release String',
-                description  : 'Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on "Formal Release Branches" like ${formalReleaseBranches.join(', ')}',
+                description  : "Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on \"Formal Release Branches\" like ${formalReleaseBranches.join(', ')}",
                 defaultValue : '',
                 trim         : true
             ))
