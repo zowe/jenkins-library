@@ -932,8 +932,8 @@ class GenericPipeline extends Pipeline {
             def files = steps.findFiles glob: artifact
             files.each { file ->
                 uploadSpec['files'].push([
-                    "pattern" : file,
-                    "target"  : parseArtifactoryUploadTargetPath(baseTargetPath + getArtifactoryUploadTargetFile(file))
+                    "pattern" : file.toString(),
+                    "target"  : parseArtifactoryUploadTargetPath(baseTargetPath + getArtifactoryUploadTargetFile(file.toString()))
                 ])
             }
         }
