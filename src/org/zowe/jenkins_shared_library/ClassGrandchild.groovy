@@ -23,7 +23,6 @@ class ClassGrandchild extends ClassChild {
     }
 
     @NonCPS
-    @Override
     void test() {
         steps.echo "ClassGrandchild.test() started"
         steps.echo "super = ${super}"
