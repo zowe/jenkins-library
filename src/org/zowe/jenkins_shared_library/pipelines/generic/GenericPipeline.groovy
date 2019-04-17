@@ -173,7 +173,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Default artifactory file name pattern
      */
-    String artifactoryUploadTargetFile = '{filename}{branchtag}{buildnumber}{timestamp}{fileext}'
+    String artifactoryUploadTargetFile = '{filename}-{version}{branchtag}{buildnumber}{timestamp}{fileext}'
 
     /**
      * GitHub instance
