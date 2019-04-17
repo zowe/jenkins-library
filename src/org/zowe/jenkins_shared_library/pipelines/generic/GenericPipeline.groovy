@@ -355,7 +355,7 @@ class GenericPipeline extends Pipeline {
         log.fine("parseArtifactoryUploadTargetPath macros: ${macros}")
 
         for (String m : macros) {
-            target = target.replace(m.key, m.value)
+            target = target.replace("{${m.key}}", m.value)
         }
 
         return target
@@ -794,7 +794,7 @@ class GenericPipeline extends Pipeline {
     }
 
     protected void uploadArtifacts(List<String> artifacts, String targetPath) {
-        Map uploadSpec = ["files": []]
+        Map uploadSpec = steps.readJSON text: '{"files":[]}'
         artifacts.each {
             uploadSpec['files'].push([
                 "pattern" : it,
