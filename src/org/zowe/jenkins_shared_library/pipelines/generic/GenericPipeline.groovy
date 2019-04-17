@@ -193,7 +193,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Initialize github configurations
      *
-     * @param gitConfig            github configuration object
+     * @param config            github configuration object
      */
     void configureGitHub(GitConfig config) {
         github.init([
@@ -203,15 +203,33 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
+     * Initialize github configurations
+     *
+     * @param config            github configuration object
+     */
+    void configureGitHub(Map config) {
+        this.configureGitHub(config as GitConfig)
+    }
+
+    /**
      * Initialize artifactory configurations
      *
-     * @param ArtifactoryConfig            artifactory configuration object
+     * @param config            artifactory configuration object
      */
     void configureArtifactory(ArtifactoryConfig config) {
         artifactory.init([
             'url'                        : config.url,
             'usernamePasswordCredential' : config.credentialsId,
         ])
+    }
+
+    /**
+     * Initialize artifactory configurations
+     *
+     * @param config            artifactory configuration object
+     */
+    void configureArtifactory(Map config) {
+        this.configureArtifactory(config as ArtifactoryConfig)
     }
 
     /**
