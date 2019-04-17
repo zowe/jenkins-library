@@ -8,22 +8,19 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library
+package org.zowe.jenkins_shared_library.behavior
 
-import java.util.logging.Level
 import com.cloudbees.groovy.cps.NonCPS
 
-class ClassChild extends ClassBase {
-    ClassChild(steps) {
-        super(steps)
-        steps.echo "ClassChild construction"
+class NonCPSBase {
+    def steps
+
+    NonCPSBase(steps) {
+        steps.echo "NonCPSBase construction"
+        this.steps = steps
     }
 
-    @NonCPS
-    @Override
     void test() {
-        steps.echo "ClassChild.test() started"
-        super.test()
-        steps.echo "ClassChild.test() done"
+        steps.echo "NonCPSBase.test()"
     }
 }

@@ -8,20 +8,20 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library
+package org.zowe.jenkins_shared_library.behavior
 
-import java.util.logging.Level
 import com.cloudbees.groovy.cps.NonCPS
 
-class ClassBase {
-    def steps
-
-    ClassBase(steps) {
-        steps.echo "ClassBase construction"
-        this.steps = steps
+class CPSChild extends CPSBase {
+    CPSChild(steps) {
+        super(steps)
+        steps.echo "CPSChild construction"
     }
 
+    @Override
     void test() {
-        steps.echo "ClassBase.test()"
+        steps.echo "CPSChild.test() started"
+        super.test()
+        steps.echo "CPSChild.test() done"
     }
 }
