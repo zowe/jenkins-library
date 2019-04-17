@@ -129,6 +129,17 @@ class Pipeline {
     protected static final String _VERSION_CONTROLLER_REPO = "zowe/zowe-cli-version-controller"
 
     /**
+     * Package name of the project
+     *
+     */
+    String packageName
+
+    /**
+     * Package current version
+     */
+    String version
+
+    /**
      * This is a list of administrator ids that will receive notifications when a build
      * happens on a protected branch.
      */

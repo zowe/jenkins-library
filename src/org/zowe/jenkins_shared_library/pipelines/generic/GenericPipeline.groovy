@@ -91,6 +91,11 @@ class GenericPipeline extends Pipeline {
     protected static final String _CI_SKIP = "[ci skip]"
 
     /**
+     * Temporary upload spec name
+     */
+    protected static final String temporaryUploadSpecName = '.tmp-pipeline-publish-spec.json'
+
+    /**
      * Stores the change information for reference later.
      */
     final ChangeInformation changeInfo
@@ -130,8 +135,25 @@ class GenericPipeline extends Pipeline {
      */
     Map<String, String> branchTags = [
         'master': 'snapshot',
-        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master': 'v1.x/snapshot', // FIXME
+        '(v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?)/master': '$1-snapshot',
     ]
+
+    /**
+     * Default branch tag
+     */
+    String defaultBranchTag = "snapshot"
+
+    /**
+     * Default artifactory upload path
+     *
+     * Allowed macros:
+     *
+     * - package: value defined by pipeline.setPackage(name)
+     * - subproject: optional value passed when parsing the path string
+     * - version: the current version
+     * - branchtag: branch tag
+     */
+    String artifactoryUploadTargetPath = '{repository}/{package}{subproject}/{version}{branchtag}/'
 
     /**
      * GitHub instance
@@ -205,9 +227,14 @@ class GenericPipeline extends Pipeline {
     /**
      * If current pipeline branch can do a release
      *
+     * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return               true or false
      */
-    protected Boolean isReleaseBranch() {
+    protected Boolean isReleaseBranch(String branch = '') {
+        // use BRANCH_NAME as default value
+        if (!branch && steps.env && steps.env.BRANCH_NAME) {
+            branch = steps.env.BRANCH_NAME
+        }
         // not a multibranch pipeline, always allow release?
         if (!steps.env || !steps.env.BRANCH_NAME) {
             return true
@@ -216,13 +243,94 @@ class GenericPipeline extends Pipeline {
         def result = false
 
         for (String releaseBranch : releaseBranches) {
-            if (steps.env.BRANCH_NAME.matches(releaseBranch)) {
+            if (branch.matches(releaseBranch)) {
                 result = true
                 break
             }
         }
 
         result
+    }
+
+    /**
+     * If current build is a release build
+     * @return            true or false
+     */
+    protected Boolean isPerformingRelease() {
+        if (steps && steps.params && steps.params['Perform Release']) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * Get branch tag
+     * @param  branch     the branch name to check. By default, empty string will check current branch
+     * @return            tag of the branch
+     */
+    protected String getBranchTag(String branch = '') {
+        // use BRANCH_NAME as default value
+        if (!branch && steps.env && steps.env.BRANCH_NAME) {
+            branch = steps.env.BRANCH_NAME
+        }
+
+        String result = defaultBranchTag
+
+        if (branch) {
+            for (String branchTag : branchTags) {
+                def replaced = branch.replaceAll(branchTag.key, branchTag.value)
+                if (branch != replaced) { // really replaced
+                    result = replaced
+                    break
+                }
+            }
+        }
+
+        result
+    }
+
+    protected Map fillArtifactoryUploadTargetPathDefaultMacros(Map macros = [:]) {
+        if (!macros.containsKey('repository')) {
+            macros['repository'] = this.isReleaseBranch() && this.isPerformingRelease() ?
+                                   JFrogArtifactory.REPOSITORY_RELEASE :
+                                   JFrogArtifactory.REPOSITORY_SNAPSHOT
+        }
+
+        if (!macros.containsKey('package')) {
+            macros['package'] = this.packageName
+        }
+        if (!macros.containsKey('subproject')) {
+            macros['subproject'] = ''
+        } else if (!macros['subproject'].startsWith('/')) {
+            macros['subproject'] = '/' + macros['subproject']
+        }
+        if (!macros.containsKey('version')) {
+            macros['version'] = this.getVersion()
+        }
+        if (!macros.containsKey('branchtag')) {
+            macros['branchtag'] = this.getBranchTag()
+        }
+
+        return macros
+    }
+
+    /**
+     * Parse Artifactory upload target path
+     * @param  macros     map of macros to replace
+     * @return           return target path
+     */
+    protected String parseArtifactoryUploadTargetPath(Map macros = [:]) {
+        String target = artifactoryUploadTargetPath
+
+        // provide default values for known macros
+        macros = this.fillArtifactoryUploadTargetPathDefaultMacros(macros)
+
+        for (String macro : macros) {
+            target = target.replace(macro.key, macro.value)
+        }
+
+        return target
     }
 
     /**
@@ -603,7 +711,7 @@ class GenericPipeline extends Pipeline {
     void publishGeneric(Map arguments) {
         arguments.resultThreshold = ResultEnum.SUCCESS
 
-        GenericStageArguments args = arguments as GenericStageArguments
+        PublishStageArguments args = arguments as PublishStageArguments
 
         args.name = "Publish${arguments.name ? ": ${arguments.name}" : ""}"
 
@@ -640,10 +748,34 @@ class GenericPipeline extends Pipeline {
                 throw new PublishStageException("At least one test stage must be defined", args.name)
             }
 
-            args.operation(stageName)
+            // execute operation Closure if provided
+            if (args.operation) {
+                args.operation(stageName)
+            }
+
+            // upload artifacts if provided
+            if (args.artifacts && args.artifacts.size() > 0) {
+                def targetPath = args.publishTargetPath ? args.publishTargetPath : parseArtifactoryUploadTargetPath()
+                this.uploadArtifacts(args.artifacts, targetPath)
+            } else {
+                steps.echo "No artifacts to publish."
+            }
         }
 
         createStage(args)
+    }
+
+    protected void uploadArtifacts(List<String> artifacts, String targetPath) {
+        Map uploadSpec = ["files": []]
+        artifacts.each {
+            uploadSpec['files'].push([
+                "pattern" : it,
+                "target"  : targetPath
+            ])
+        }
+
+        steps.writeJSON file: temporaryUploadSpecName, json: input
+        artifactory.upload(spec: temporaryUploadSpecName)
     }
 
     /**

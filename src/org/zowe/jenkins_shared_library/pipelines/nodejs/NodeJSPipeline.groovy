@@ -16,7 +16,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import org.zowe.jenkins_shared_library.pipelines.Build
 import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
-import org.zowe.jenkins_shared_library.pipelines.generic.arguments.VersionStageArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.ReleaseStageArguments
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.nodejs.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
@@ -227,7 +227,7 @@ class NodeJSPipeline extends GenericPipeline {
      *     <dl>
      *         <dt><b>{@link IllegalArgumentException}</b></dt>
      *         <dd>When versionArguments.operation is provided. This is an invalid parameter.</dd>
-     *         <dt><b>{@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.VersionStageException}</b></dt>
+     *         <dt><b>{@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.ReleaseStageException}</b></dt>
      *         <dd>
      *             When no pipeline admins are defined and auto deploy is false. Pipeline admins are used as approvers
      *             for the build. If there are none, the build can never be approved.
@@ -295,7 +295,7 @@ class NodeJSPipeline extends GenericPipeline {
                 steps.env.DEPLOY_APPROVER = AUTO_APPROVE_ID
             } else if (admins.size == 0) {
                 steps.echo "ERROR"
-                throw new VersionStageException("No approvers available! Please specify at least one NodeJSPipeline.admin before deploying.", stageName)
+                throw new ReleaseStageException("No approvers available! Please specify at least one NodeJSPipeline.admin before deploying.", stageName)
             } else {
                 Stage currentStage = getStage(stageName)
 
@@ -305,7 +305,7 @@ class NodeJSPipeline extends GenericPipeline {
                 StageTimeout timeout = currentStage.args.timeout.subtract(time: 1, unit: TimeUnit.MINUTES)
 
                 if (timeout.time <= 0) {
-                    throw new VersionStageException("Unable to wait for input! Timeout for $stageName, must be greater than 1 minute." +
+                    throw new ReleaseStageException("Unable to wait for input! Timeout for $stageName, must be greater than 1 minute." +
                             "Timeout was ${currentStage.args.timeout.toString()}", stageName)
                 }
 
@@ -508,7 +508,7 @@ class NodeJSPipeline extends GenericPipeline {
      *          <dl>
      *              <dt><b>{@link IllegalArgumentException}</b></dt>
      *              <dd>When versionArguments.operation is provided. This is an invalid parameter.</dd>
-     *              <dt><b>{@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.DeployStageException}</b></dt>
+     *              <dt><b>{@link org.zowe.jenkins_shared_library.pipelines.generic.exceptions.PublishStageException}</b></dt>
      *              <dd>
      *                  When no pipeline admins are defined and auto deploy is false. Pipeline admins
      *                  are used as approvers for the build. If there are none, the build can never be
@@ -659,7 +659,7 @@ class NodeJSPipeline extends GenericPipeline {
                     steps.env.DEPLOY_APPROVER = AUTO_APPROVE_ID
                 } else if (admins.size == 0) {
                     steps.echo "ERROR"
-                    throw new DeployStageException(
+                    throw new PublishStageException(
                             "No approvers available! Please specify at least one NodeJSPipeline.admin before deploying.",
                             stageName
                     )
@@ -672,7 +672,7 @@ class NodeJSPipeline extends GenericPipeline {
                     StageTimeout timeout = currentStage.args.timeout.subtract(time: 1, unit: TimeUnit.MINUTES)
 
                     if (timeout.time <= 0) {
-                        throw new DeployStageException(
+                        throw new PublishStageException(
                                 "Unable to wait for input! Timeout for $stageName, must be greater than 1 minute." +
                                         " Timeout was ${currentStage.args.timeout.toString()}", stageName
                         )
