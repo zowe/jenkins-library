@@ -84,6 +84,7 @@ import org.zowe.jenkins_shared_library.scm.GitHub
  * }
  * </pre>
  */
+@Log
 class GenericPipeline extends Pipeline {
     /**
      * Text used for the CI SKIP commit.
@@ -344,8 +345,10 @@ class GenericPipeline extends Pipeline {
         // provide default values for known macros
         macros = this.fillArtifactoryUploadTargetPathDefaultMacros(macros)
 
-        for (String macro : macros) {
-            target = target.replace(macro.key, macro.value)
+        log.fine("parseArtifactoryUploadTargetPath macros: ${macros}")
+
+        for (String m : macros) {
+            target = target.replace(m.key, m.value)
         }
 
         return target
@@ -411,12 +414,12 @@ class GenericPipeline extends Pipeline {
     void endGeneric(Map options = [:]) {
         // can we do a release? if so, allow a release parameter
         if (isReleaseBranch()) {
-            buildParameters.push(steps.booleanParam(
+            this.addBuildParameter(steps.booleanParam(
                 name         : 'Perform Release',
                 description  : "Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn't have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on ${releaseBranches.join(', ')} branches.",
                 defaultValue : false
             ))
-            buildParameters.push(steps.string(
+            this.addBuildParameter(steps.string(
                 name         : 'Pre-Release String',
                 description  : "Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on \"Formal Release Branches\" like ${formalReleaseBranches.join(', ')}",
                 defaultValue : '',
