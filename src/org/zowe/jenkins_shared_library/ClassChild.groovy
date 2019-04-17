@@ -20,6 +20,7 @@ class ClassChild extends ClassBase {
     }
 
     @NonCPS
+    @Override
     void test() {
         steps.echo "ClassChild.test() started"
         super.test()
