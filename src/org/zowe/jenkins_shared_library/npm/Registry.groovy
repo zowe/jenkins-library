@@ -173,7 +173,7 @@ class Registry {
                 }
             }
         } else {
-            throw new NpmException("packageJsonFile is not defined or the value \"${this.packageJsonFile}\" doesn't not exist.")
+            throw new NpmException("packageJsonFile is not defined or file \"${this.packageJsonFile}\" doesn't not exist.")
         }
 
         log.fine("Package information of ${this.packageJsonFile}: ${info}")

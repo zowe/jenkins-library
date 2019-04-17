@@ -802,7 +802,9 @@ class GenericPipeline extends Pipeline {
             ])
         }
 
-        steps.writeJSON file: temporaryUploadSpecName, json: input
+        log.fine("Spec of uploading artifact: ${uploadSpec}")
+
+        steps.writeJSON file: temporaryUploadSpecName, json: uploadSpec
         artifactory.upload(spec: temporaryUploadSpecName)
     }
 
