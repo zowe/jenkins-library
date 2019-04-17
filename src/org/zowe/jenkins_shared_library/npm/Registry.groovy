@@ -10,10 +10,12 @@
 
 package org.zowe.jenkins_shared_library.npm
 
+import groovy.util.logging.Log
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.Utils
 
+@Log
 class Registry {
     /**
      * Constant of .npmrc file name
@@ -55,7 +57,7 @@ class Registry {
     /**
      * package.json file name, default is PACKAGE_JSON
      */
-    String packageJsonFile
+    String packageJsonFile = PACKAGE_JSON
 
     /**
      * Constructs the class.
@@ -160,7 +162,7 @@ class Registry {
                         info['versionTrunks']['patch'] = matches[0][3].toInteger()
                         info['versionTrunks']['metadata'] = matches[0][4]
                     } else {
-                        this.steps.echo "WARNING: Version \"${info['version']}\" is not a semantic version."
+                        throw new NpmException("Version \"${info['version']}\" is not a valid semantic version.")
                     }
                 }
                 if (pkg['license']) {
@@ -170,7 +172,11 @@ class Registry {
                     info['registry'] = pkg['publishConfig']['registry']
                 }
             }
+        } else {
+            throw new NpmException("packageJsonFile is not defined or the value \"${this.packageJsonFile}\" doesn't not exist.")
         }
+
+        log.fine("Package information of ${this.packageJsonFile}: ${info}")
 
         return info
     }
