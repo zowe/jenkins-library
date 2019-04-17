@@ -166,6 +166,9 @@ class Registry {
                 if (pkg['license']) {
                     info['license'] = pkg['license']
                 }
+                if (pkg['publishConfig'] && pkg['publishConfig']['registry']) {
+                    info['registry'] = pkg['publishConfig']['registry']
+                }
             }
         }
 

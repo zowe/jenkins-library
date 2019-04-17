@@ -321,7 +321,7 @@ class GenericPipeline extends Pipeline {
             macros['package'] = this.packageName
         }
         if (!macros['package']) {
-            throw new PublishStageException('Cannot determin package name for artifact upload path')
+            throw new PublishStageException('Cannot determin package name for artifact upload path', '-')
         }
         if (!macros.containsKey('subproject')) {
             macros['subproject'] = ''
@@ -332,7 +332,7 @@ class GenericPipeline extends Pipeline {
             macros['version'] = this.getVersion()
         }
         if (!macros['version']) {
-            throw new PublishStageException('Cannot determin version for artifact upload path')
+            throw new PublishStageException('Cannot determin version for artifact upload path', '-')
         }
         if (!macros.containsKey('branchtag')) {
             macros['branchtag'] = this.getBranchTag()
