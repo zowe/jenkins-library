@@ -929,7 +929,7 @@ class GenericPipeline extends Pipeline {
 
         Map uploadSpec = steps.readJSON text: '{"files":[]}'
         artifacts.each { artifact ->
-            def files = findFiles glob: artifact
+            def files = steps.findFiles glob: artifact
             files.each { file ->
                 uploadSpec['files'].push([
                     "pattern" : file,
