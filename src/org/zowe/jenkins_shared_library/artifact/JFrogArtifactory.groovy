@@ -128,10 +128,10 @@ class JFrogArtifactory implements ArtifactInterface {
         if (args['build-name']) {
             // limit to build
             if (args['build-number']) {
-                searchOptions = "--build=\"${args['build-name']}/${args['build-number']}\""
+                searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}/${args['build-number']}\""
                 searchOptionText = "in build ${args['build-name']}/${args['build-number']}"
             } else {
-                searchOptions = "--build=\"${args['build-name']}\""
+                searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}\""
                 searchOptionText = "in build ${args['build-name']}"
             }
         }
