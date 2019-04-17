@@ -21,7 +21,8 @@ class ClassChild extends ClassBase {
 
     @NonCPS
     void test() {
+        steps.echo "ClassChild.test() started"
         super.test()
-        steps.echo "ClassChild.test()"
+        steps.echo "ClassChild.test() done"
     }
 }
