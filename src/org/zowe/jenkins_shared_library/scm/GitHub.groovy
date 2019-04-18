@@ -229,7 +229,7 @@ class GitHub {
         }
         // using https repository, indicate git push to check ~/.git-credentials
         this.command('git config credential.helper store')
-}
+    }
 
     /**
      * Issue git command and get stdout return
@@ -259,6 +259,9 @@ class GitHub {
         if (!message) {
             throw new InvalidArgumentException('message')
         }
+
+        // using https repository, indicate git push to check ~/.git-credentials
+        this.command('git config credential.helper store')
 
         this.command("git add . && git commit -m '${message}'")
     }
@@ -400,6 +403,9 @@ class GitHub {
         if (args.size() > 0) {
             this.init(args)
         }
+
+        // using https repository, indicate git push to check ~/.git-credentials
+        this.command('git config credential.helper store')
 
         this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
     }
