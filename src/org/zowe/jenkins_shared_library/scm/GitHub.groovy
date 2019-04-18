@@ -155,7 +155,7 @@ class GitHub {
                     log.fine("found remote ${repo}")
                     // origin   https://github.com/zowe/zowe-install-packaging.git (fetch)
                     // origin   git@github.com:zowe/zowe-install-packaging.git (fetch)
-                    def mt = repo =~ /origin\s+(https:\/\/|git@)${GITHUB_DOMAIN}(\/|:)\.git\s+\(fetch\)/
+                    def mt = repo =~ /origin\s+(https:\/\/|git@)${GITHUB_DOMAIN}(\/|:)(.+)\.git\s+\(fetch\)/
                     if (mt && mt[0] && mt[0][3]) {
                         log.fine("use repository ${mt[0][3]}")
                         this.repository = mt[0][3]
