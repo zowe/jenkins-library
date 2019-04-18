@@ -1104,7 +1104,9 @@ class GenericPipeline extends Pipeline {
         if (_preReleaseString) {
             tag += '-' + _preReleaseString
         }
-        log.info("Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\" ")
+        this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
+        // wait for debugging
+        this.steps.sleep time: 10, unit: 'MINUTES'
 
         this.github.tag(tag: tag)
     }
