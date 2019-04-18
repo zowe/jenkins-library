@@ -407,10 +407,18 @@ class GenericPipeline extends Pipeline {
             }
         }
         if (!macros.containsKey('timestamp')) {
-            macros['timestamp'] = Utils.getTimestamp()
+            if (_isReleaseBranch && _isPerformingRelease) {
+                macros['timestamp'] = ''
+            } else {
+                macros['timestamp'] = Utils.getTimestamp()
+            }
         }
         if (!macros.containsKey('buildnumber')) {
-            macros['buildnumber'] = (steps.env && steps.env.BUILD_NUMBER) ?: ''
+            if (_isReleaseBranch && _isPerformingRelease) {
+                macros['buildnumber'] = ''
+            } else {
+                macros['buildnumber'] = (steps.env && steps.env.BUILD_NUMBER) ?: ''
+            }
         }
 
         return macros
