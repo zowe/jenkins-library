@@ -253,6 +253,13 @@ class GitHub {
         if (args.size() > 0) {
             this.init(args)
         }
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
 
         def message = args['message'] ? args['message'] : ''
         // validate arguments
@@ -402,6 +409,13 @@ class GitHub {
         // init with arguments
         if (args.size() > 0) {
             this.init(args)
+        }
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
         }
 
         // using https repository, indicate git push to check ~/.git-credentials
