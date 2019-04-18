@@ -1076,7 +1076,7 @@ class GenericPipeline extends Pipeline {
             }
 
             // execute operation Closure if provided
-            if (!args.operation) {
+            if (args.operation) {
                 args.operation(stageName)
             } else {
                 // this is the default release behaviors
