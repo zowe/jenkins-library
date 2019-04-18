@@ -1022,7 +1022,7 @@ class GenericPipeline extends Pipeline {
 
         // Execute the stage if this is a protected branch and the original should execute function are both true
         args.shouldExecute = {
-            boolean shouldExecute = true
+            boolean shouldExecute = this.isPerformingRelease()
 
             if (arguments.shouldExecute) {
                 shouldExecute = arguments.shouldExecute()
@@ -1039,14 +1039,37 @@ class GenericPipeline extends Pipeline {
             }
 
             if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new ReleaseStageException("Build must be successful to publish", args.name)
+                throw new ReleaseStageException("Build must be successful to release", args.name)
+            } else if (_control.publish?.status != StageStatus.SUCCESS) {
+                throw new ReleaseStageException("Publish must be successful to release", args.name)
             } else if (_control.prePublishTests && _control.prePublishTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
                 throw new ReleaseStageException("All test stages before publish must be successful or skipped!", args.name)
             } else if (_control.prePublishTests.size() == 0) {
                 throw new ReleaseStageException("At least one test stage must be defined", args.name)
             }
+            Boolean _isReleaseBranch = this.isReleaseBranch()
+            Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
+            Boolean _isPerformingRelease = this.isPerformingRelease()
+            String _preReleaseString = this.getPreReleaseString()
 
-            args.operation(stageName)
+            if (_isPerformingRelease && !_isReleaseBranch) {
+                throw new ReleaseStageException("Cannot perform publish/release on non-release branch", args.name)
+            }
+            if (_isPerformingRelease && _isFormalReleaseBranch && !_isReleaseBranch) {
+                throw new ReleaseStageException("Cannot perform formal release on non-release branch", args.name)
+            }
+            if (_isPerformingRelease && _isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
+                throw new ReleaseStageException("Pre-release string is required to perform a non-formal-release", args.name)
+            }
+
+            // execute operation Closure if provided
+            if (!args.operation) {
+                args.operation(stageName)
+            } else {
+                // this is the default release behaviors
+                this.tagBranch()
+                this.bumpVersion()
+            }
         }
 
         // Create the stage and ensure that the first one is the stage of reference
@@ -1054,6 +1077,30 @@ class GenericPipeline extends Pipeline {
         if (!_control.release) {
             _control.release = release
         }
+    }
+
+    /**
+     * Tag branch when release
+     */
+    protected void tagBranch() {
+        // should be able to guess repository and branch name
+        this.github.initFromFolder()
+        def tag = 'v' + this.getVersion()
+        if (_preReleaseString) {
+            tag += '-' + _preReleaseString
+        }
+        log.info("Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\" ")
+
+        this.github.tag(tag: tag)
+    }
+
+    /**
+     * This method should be overridden to properly bump version in different kind of project.
+     *
+     * For example, npm package should use `npm version patch` to bump, and gradle project should ...
+     */
+    protected void bumpVersion() {
+        log.warn('This method should be overriden.')
     }
 
     /**

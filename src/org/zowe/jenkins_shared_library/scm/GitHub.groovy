@@ -133,6 +133,53 @@ class GitHub {
     }
 
     /**
+     * We can guess repository/branch information from an existing git folder
+     *
+     * @param folder          which folder to test
+     */
+    void initFromFolder(String folder = '') {
+        if (!folder) {
+            folder = './'
+        }
+
+        // work in target folder
+        this.steps.dir(folder) {
+            // is this a git folder?
+            if (this.steps.fileExists('.git')) {
+                // try to guess repository
+                if (!this.repository) {
+                    def repo = this.steps.sh(script: 'git remote -v | grep origin | grep fetch', returnStdout: true).trim()
+                    // origin   https://github.com/zowe/zowe-install-packaging.git (fetch)
+                    // origin   git@github.com:zowe/zowe-install-packaging.git (fetch)
+                    def mt = repo =~ /origin\s+(https:\/\/|git@)${GITHUB_DOMAIN}(\/|:)\.git\s+\(fetch\)/
+                    if (mt && mt[0] && mt[0][3]) {
+                        this.repository = mt[0][3]
+                    }
+                }
+
+                // try to guess branch name
+                if (!this.branch) {
+                    if (this.steps.env && this.steps.env.CHANGE_BRANCH) {
+                        // this is a PR and CHANGE_BRANCH is the original branch name
+                        this.branch = this.steps.env.CHANGE_BRANCH
+                    } else if (this.steps.env && this.steps.env.BRANCH_NAME) {
+                        // this is multibranch pipeline and BRANCH_NAME is the branch name
+                        this.branch = this.steps.env.BRANCH_NAME
+                    } else {
+                        // we try to use git command
+                        def current = this.steps.sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                        if (current == 'HEAD') {
+                            // detached mode, get commit id
+                            current = this.steps.sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                        }
+                        this.branch = current
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Clone a repository
      *
      * Use similar parameters like init() method and with these extra:
