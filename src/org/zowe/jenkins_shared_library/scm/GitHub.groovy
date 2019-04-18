@@ -10,10 +10,12 @@
 
 package org.zowe.jenkins_shared_library.scm
 
+import groovy.util.logging.Log
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
 
+@Log
 class GitHub {
     /**
      * Reference to the groovy pipeline variable.
@@ -148,12 +150,17 @@ class GitHub {
             if (this.steps.fileExists('.git')) {
                 // try to guess repository
                 if (!this.repository) {
+                    log.fine('try to init repository')
                     def repo = this.steps.sh(script: 'git remote -v | grep origin | grep fetch', returnStdout: true).trim()
+                    log.fine("found remote ${repo}")
                     // origin   https://github.com/zowe/zowe-install-packaging.git (fetch)
                     // origin   git@github.com:zowe/zowe-install-packaging.git (fetch)
                     def mt = repo =~ /origin\s+(https:\/\/|git@)${GITHUB_DOMAIN}(\/|:)\.git\s+\(fetch\)/
                     if (mt && mt[0] && mt[0][3]) {
+                        log.fine("use repository ${mt[0][3]}")
                         this.repository = mt[0][3]
+                    } else {
+                        log.fine("failed to extract repository")
                     }
                 }
 

@@ -25,6 +25,7 @@ import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git.*
 import org.zowe.jenkins_shared_library.pipelines.generic.models.*
 import org.zowe.jenkins_shared_library.scm.GitHub
+import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Utils
 
 /**
@@ -1100,13 +1101,14 @@ class GenericPipeline extends Pipeline {
 
         // should be able to guess repository and branch name
         this.github.initFromFolder()
+        if (!this.github.repository) {
+            throw new ScmException('Github repository is not defined and cannot be determined.')
+        }
         def tag = 'v' + this.getVersion()
         if (_preReleaseString) {
             tag += '-' + _preReleaseString
         }
         this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
-        // wait for debugging
-        this.steps.sleep time: 120, unit: 'MINUTES'
 
         this.github.tag(tag: tag)
     }
