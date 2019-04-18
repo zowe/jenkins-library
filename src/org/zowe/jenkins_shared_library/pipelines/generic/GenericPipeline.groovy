@@ -1119,7 +1119,7 @@ class GenericPipeline extends Pipeline {
      * For example, npm package should use `npm version patch` to bump, and gradle project should ...
      */
     protected void bumpVersion() {
-        log.warn('This method should be overriden.')
+        log.warning('This method should be overriden.')
     }
 
     /**
