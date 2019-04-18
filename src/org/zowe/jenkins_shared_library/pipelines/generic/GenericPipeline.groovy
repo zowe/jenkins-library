@@ -1096,6 +1096,8 @@ class GenericPipeline extends Pipeline {
      * Tag branch when release
      */
     protected void tagBranch() {
+        String _preReleaseString = this.getPreReleaseString()
+
         // should be able to guess repository and branch name
         this.github.initFromFolder()
         def tag = 'v' + this.getVersion()
