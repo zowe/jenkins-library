@@ -860,6 +860,11 @@ class GenericPipeline extends Pipeline {
      *                        provided.
      */
     void publishGeneric(Map arguments) {
+        if (!arguments) {
+            // can be empty
+            arguments = [:]
+        }
+
         arguments.resultThreshold = ResultEnum.SUCCESS
 
         PublishStageArguments args = arguments as PublishStageArguments
@@ -1007,6 +1012,11 @@ class GenericPipeline extends Pipeline {
      * @param arguments A map of arguments to be applied to the {@link ReleaseStageArguments} used to define the stage.
      */
     void releaseGeneric(Map arguments = [:]) {
+        if (!arguments) {
+            // can be empty
+            arguments = [:]
+        }
+
         // Force build to only happen on success, this cannot be overridden
         arguments.resultThreshold = ResultEnum.SUCCESS
 
