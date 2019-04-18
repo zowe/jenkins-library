@@ -932,7 +932,10 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        createStage(args)
+        Stage publish = createStage(args)
+        if (!_control.publish) {
+            _control.publish = publish
+        }
     }
 
     protected void uploadArtifacts(List<String> artifacts, String baseTargetPath) {
