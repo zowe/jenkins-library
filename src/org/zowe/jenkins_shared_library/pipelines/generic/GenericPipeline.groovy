@@ -1106,7 +1106,7 @@ class GenericPipeline extends Pipeline {
         }
         this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
         // wait for debugging
-        this.steps.sleep time: 10, unit: 'MINUTES'
+        this.steps.sleep time: 120, unit: 'MINUTES'
 
         this.github.tag(tag: tag)
     }
