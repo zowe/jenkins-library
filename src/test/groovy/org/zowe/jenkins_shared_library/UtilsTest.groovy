@@ -9,11 +9,12 @@
  */
 
 import java.util.logging.Logger
-import org.junit.*
-import static org.hamcrest.CoreMatchers.*;
 import org.hamcrest.collection.IsMapContaining
+import org.junit.*
+import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.Utils
 import static groovy.test.GroovyAssert.*
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * Test {@link org.zowe.jenkins_shared_library.Utils}
@@ -43,6 +44,30 @@ class UtilsTest {
         def test2 = Utils.sanitizeBranchName('special+chars=<ok>')
         logger.fine("[testSanitizeBranchName] test2 = \"${test2}\"")
         assertThat(test2, equalTo('special-chars-ok-'))
+    }
+
+    @Test
+    void testParseSemanticVersion() {
+        // test success
+        def test1 = Utils.parseSemanticVersion('1.2.3-beta.1+56789')
+        logger.fine("[testParseSemanticVersion] test1 = \"${test1}\"")
+        assertThat('version trunks', test1, IsMapContaining.hasKey('major'));
+        assertThat('version trunks', test1, IsMapContaining.hasKey('minor'));
+        assertThat('version trunks', test1, IsMapContaining.hasKey('patch'));
+        assertThat('version trunks', test1, IsMapContaining.hasKey('prerelease'));
+        assertThat('version trunks', test1, IsMapContaining.hasKey('metadata'));
+        assertThat(test1['major'], equalTo(1))
+        assertThat(test1['minor'], equalTo(2))
+        assertThat(test1['patch'], equalTo(3))
+        assertThat(test1['prerelease'], equalTo('beta.1'))
+        assertThat(test1['metadata'], equalTo('56789'))
+
+        // test failure
+        def err = shouldFail InvalidArgumentException, {
+            // not a semver
+            Utils.parseSemanticVersion('1.2.3.4')
+        }
+        assertThat('parseSemanticVersion error', err.getMessage(), containsString('not a valid semantic version.'))
     }
 
     @Test

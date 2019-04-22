@@ -10,10 +10,14 @@
 
 import java.util.logging.Logger
 import org.junit.*
+import org.junit.runners.MethodSorters
 import static org.hamcrest.CoreMatchers.*;
 import org.hamcrest.collection.IsMapContaining
 import org.zowe.jenkins_shared_library.integrationtest.*
 import static groovy.test.GroovyAssert.*
+import org.zowe.jenkins_shared_library.Utils
+import org.zowe.jenkins_shared_library.integrationtest.HttpRequest
+import org.zowe.jenkins_shared_library.scm.GitHub
 
 /**
  * Test {@link org.zowe.jenkins_shared_library.pipelines.generic.Pipeline}
@@ -25,6 +29,7 @@ import static groovy.test.GroovyAssert.*
  * - start with default parameter and the job should success
  * - test a PATCH release
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
     // this github owner will be used for testing
     static final String TEST_OWNER = 'zowe'
@@ -58,7 +63,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
     }
 
     @Test
-    void testBuildInformation() {
+    void testABuildInformation() {
         // buildInformation
         assertThat('Build result', buildInformation, IsMapContaining.hasKey('number'));
         assertThat('Build result', buildInformation, IsMapContaining.hasKey('result'));
@@ -66,7 +71,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
     }
 
     @Test
-    void testConsoleLog() {
+    void testBConsoleLog() {
         // console log
         assertThat('Build console log', buildLog, not(equalTo('')))
         [
@@ -99,5 +104,44 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         ].each {
             assertThat('Build console log', buildLog, containsString(it))
         }
+    }
+
+    @Test
+    void testCRelease() {
+        // try a release build
+
+        List job = fullTestJobName.collect()
+        job.add(TEST_BRANCH)
+        // reset result
+        buildInformation = [:]
+        buildLog = ''
+
+        // prepare test
+        String preReleaseString = "test.${Utils.getTimestamp()}"
+        // retrieve current version
+        String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
+        def currentPkg = HttpRequest.getJson(packageJsonUrl)
+        def currentVersion Utils.parseSemanticVersion(currentPkg['version'])
+
+        // start the job, wait for it's done and get build result
+        buildInformation = jenkins.startJobAndGetBuildInformation(job, [
+            'FETCH_PARAMETER_ONLY' : 'false',
+            'LIBRARY_BRANCH'       : System.getProperty('library.branch'),
+            'Perform Release'      : true,
+            'Pre-Release String'   : preReleaseString
+        ])
+        // load job console log
+        if (buildInformation && buildInformation['number']) {
+            buildLog = jenkins.getBuildLog(job, buildInformation['number'])
+        }
+
+        // retrieve version after release
+        def newPkg = HttpRequest.getJson(packageJsonUrl)
+        def newVersion Utils.parseSemanticVersion(newPkg['version'])
+
+        // check if we have a patch level release
+        assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
+        assertThat('minor version', newVersion['minor'], equalTo(currentVersion['minor']));
+        assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch'] + 1));
     }
 }

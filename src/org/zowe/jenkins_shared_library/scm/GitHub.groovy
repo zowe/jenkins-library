@@ -28,6 +28,11 @@ class GitHub {
     public static final String GITHUB_DOMAIN = 'github.com'
 
     /**
+     * github domain name for downloading user content
+     */
+    public static final String GITHUB_DOWNLOAD_DOMAIN = 'raw.githubusercontent.com'
+
+    /**
      * Default branch name
      */
     public static final String DEFAULT_BRANCH = 'master'

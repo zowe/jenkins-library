@@ -19,6 +19,7 @@ import java.util.logging.Handler
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.apache.commons.lang3.StringEscapeUtils
+import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 
 /**
  * Various static methods which doesn't have a class.
@@ -54,6 +55,30 @@ class Utils {
                        .toLowerCase()
 
         return branch
+    }
+
+    /**
+     * Parse semantic version into trunks.
+     *
+     * @param  version     version to parse
+     * @return             a map with major, minor, path, prerelease and metadata keys.
+     */
+    static Map parseSemanticVersion(String version) {
+        // https://github.com/semver/semver/issues/232
+        def matches = version =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/
+        // println "${matches.matches()}: ${matches[0].size()}"
+        if (matches.matches() && matches[0] && matches[0].size() == 10) {
+            Map trunks = [:]
+            trunks['major'] = matches[0][1].toInteger()
+            trunks['minor'] = matches[0][2].toInteger()
+            trunks['patch'] = matches[0][3].toInteger()
+            trunks['prerelease'] = matches[0][4] ? (matches[0][4].startsWith('-') ? matches[0][4].substring(1) : matches[0][4]) : ''
+            trunks['metadata'] = matches[0][8] ? (matches[0][8].startsWith('+') ? matches[0][8].substring(1) : matches[0][8]) : ''
+
+            return trunks
+        } else {
+            throw new InvalidArgumentException('version', "Version \"${version}\" is not a valid semantic version.")
+        }
     }
 
     /**

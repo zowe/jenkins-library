@@ -154,16 +154,7 @@ class Registry {
                 }
                 if (pkg['version']) {
                     info['version'] = pkg['version']
-                    def matches = info['version'] =~ /^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$/
-                    if (matches && matches[0]) {
-                        info['versionTrunks'] = [:]
-                        info['versionTrunks']['major'] = matches[0][1].toInteger()
-                        info['versionTrunks']['minor'] = matches[0][2].toInteger()
-                        info['versionTrunks']['patch'] = matches[0][3].toInteger()
-                        info['versionTrunks']['metadata'] = matches[0][4]
-                    } else {
-                        throw new NpmException("Version \"${info['version']}\" is not a valid semantic version.")
-                    }
+                    info['versionTrunks'] = Utils.parseSemanticVersion(info['version'])
                 }
                 if (pkg['license']) {
                     info['license'] = pkg['license']
