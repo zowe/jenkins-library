@@ -57,10 +57,10 @@ import java.util.concurrent.TimeUnit
  *         [name: "lts-stable", tag: "lts-stable", level: SemverLevel.PATCH]
  *     ])
  *
- *     pipeline.gitConfig = [
+ *     pipeline.configureGitHub([
  *         email: 'robot-user@example.com',
- *         credentialsId: 'robot-user'
- *     ]
+ *         usernamePasswordCredential: 'robot-user'
+ *     ])
  *
  *     pipeline.publishConfig = [
  *         email: nodejs.gitConfig.email,

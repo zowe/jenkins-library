@@ -19,10 +19,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.Pipeline
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.*
-import org.zowe.jenkins_shared_library.pipelines.generic.enums.BuildType
-import org.zowe.jenkins_shared_library.pipelines.generic.enums.GitOperation
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
-import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.git.*
 import org.zowe.jenkins_shared_library.pipelines.generic.models.*
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.scm.ScmException
@@ -214,43 +211,23 @@ class GenericPipeline extends Pipeline {
     /**
      * Initialize github configurations
      *
-     * @param config            github configuration object
-     */
-    void configureGitHub(GitConfig config) {
-        github.init([
-            'email'                      : config.email,
-            'usernamePasswordCredential' : config.credentialsId,
-        ])
-    }
-
-    /**
-     * Initialize github configurations
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.scm.GitHub#init}.
      *
-     * @param config            github configuration object
+     * @param config            github configuration map
      */
     void configureGitHub(Map config) {
-        this.configureGitHub(config as GitConfig)
+        github.init(config)
     }
 
     /**
      * Initialize artifactory configurations
      *
-     * @param config            artifactory configuration object
-     */
-    void configureArtifactory(ArtifactoryConfig config) {
-        artifactory.init([
-            'url'                        : config.url,
-            'usernamePasswordCredential' : config.credentialsId,
-        ])
-    }
-
-    /**
-     * Initialize artifactory configurations
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory#init}.
      *
-     * @param config            artifactory configuration object
+     * @param config            artifactory configuration map
      */
     void configureArtifactory(Map config) {
-        this.configureArtifactory(config as ArtifactoryConfig)
+        artifactory.init(config)
     }
 
     /**

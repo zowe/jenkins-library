@@ -19,7 +19,6 @@ import static org.hamcrest.CoreMatchers.*;
 /**
  * Test {@link org.zowe.jenkins_shared_library.Utils}
  */
-@Ignore
 class UtilsTest {
     /**
      * Logger object
