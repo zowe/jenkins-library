@@ -150,7 +150,6 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         def tags = HttpRequest.getJson(tagsUrl)
         List<String> tagNames = []
         tags.each {
-            logger.fine("tag: ${it['name']} (${it['name'].getClass()})")
             tagNames.push(it['name'])
         }
         String expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"
