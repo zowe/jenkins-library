@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.*;
 /**
  * Test {@link org.zowe.jenkins_shared_library.behavior}
  */
+@Ignore
 class BehaviorTest {
     /**
      * Logger object

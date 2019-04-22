@@ -25,6 +25,7 @@ import static groovy.test.GroovyAssert.*
  * - start with default parameter and the job should success
  * - test a PATCH release
  */
+@Ignore
 class BasePipelineMultibranchPipelineTest extends IntegrationTest {
     // this github owner will be used for testing
     static final String TEST_OWNER = 'zowe'
