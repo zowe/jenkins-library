@@ -147,8 +147,8 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
 
         // list tags
         String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${TEST_OWNER}/${TEST_REPORSITORY}/tags"
-        def tags = HttpRequest.getJson(tagsUrl)
-        def tagNames = []
+        Map tags = HttpRequest.getJson(tagsUrl)
+        List<String> tagNames = []
         tags.each {
             tagNames.push(it['name'])
         }
@@ -156,7 +156,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         logger.fine("All tags: ${tagNames}")
         logger.fine("Expected tag: ${expectedTag}")
         // check if we have the tag
-        assertThat('Tags', tagNames, hasItems(expectedTag))
+        assertThat('Tags', tagNames, hasItem(expectedTag))
 
         // version is not bumped because default GenericPipeline.bumpVersion() is empty
         assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
