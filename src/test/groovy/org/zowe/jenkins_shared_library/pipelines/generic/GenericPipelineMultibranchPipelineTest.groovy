@@ -139,9 +139,19 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         def newPkg = HttpRequest.getJson(packageJsonUrl)
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
 
-        // check if we have a patch level release
+        // list tags
+        String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${TEST_OWNER}/${TEST_REPORSITORY}/tags"
+        def tags = HttpRequest.getJson(tagsUrl)
+        def tagNames = []
+        tags.each {
+            tagNames.push(it['name'])
+        }
+        // check if we have a tag
+        assertThat('Tags', tagNames, contains("${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"))
+
+        // version is not bumped because default GenericPipeline.bumpVersion() is empty
         assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
         assertThat('minor version', newVersion['minor'], equalTo(currentVersion['minor']));
-        assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch'] + 1));
+        assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch']));
     }
 }
