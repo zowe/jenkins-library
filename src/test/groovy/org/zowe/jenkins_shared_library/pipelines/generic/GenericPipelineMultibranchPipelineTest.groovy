@@ -147,7 +147,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
 
         // list tags
         String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${TEST_OWNER}/${TEST_REPORSITORY}/tags"
-        Map tags = HttpRequest.getJson(tagsUrl)
+        def tags = HttpRequest.getJson(tagsUrl)
         List<String> tagNames = []
         tags.each {
             tagNames.push(it['name'])
