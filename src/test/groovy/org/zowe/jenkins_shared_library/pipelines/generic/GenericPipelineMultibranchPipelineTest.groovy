@@ -121,7 +121,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         // retrieve current version
         String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
         def currentPkg = HttpRequest.getJson(packageJsonUrl)
-        def currentVersion Utils.parseSemanticVersion(currentPkg['version'])
+        def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
 
         // start the job, wait for it's done and get build result
         buildInformation = jenkins.startJobAndGetBuildInformation(job, [
@@ -137,7 +137,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
 
         // retrieve version after release
         def newPkg = HttpRequest.getJson(packageJsonUrl)
-        def newVersion Utils.parseSemanticVersion(newPkg['version'])
+        def newVersion = Utils.parseSemanticVersion(newPkg['version'])
 
         // check if we have a patch level release
         assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
