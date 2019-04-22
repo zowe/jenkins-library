@@ -122,8 +122,10 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
         def currentPkg = HttpRequest.getJson(packageJsonUrl)
         def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
+        logger.fine("Current package version is: ${currentVersion}")
 
         // start the job, wait for it's done and get build result
+        logger.fine("Starting a release build with pre-release string ${preReleaseString} ...")
         buildInformation = jenkins.startJobAndGetBuildInformation(job, [
             'FETCH_PARAMETER_ONLY' : 'false',
             'LIBRARY_BRANCH'       : System.getProperty('library.branch'),
@@ -138,6 +140,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         // retrieve version after release
         def newPkg = HttpRequest.getJson(packageJsonUrl)
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
+        logger.fine("New package version is: ${newVersion}")
 
         // we created a tag
         assertThat('Build console log', buildLog, containsString('[new tag]'))
@@ -149,8 +152,11 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         tags.each {
             tagNames.push(it['name'])
         }
+        def expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"
+        logger.fine("All tags: ${tagNames}")
+        logger.fine("Expected tag: ${expectedTag}")
         // check if we have the tag
-        assertThat('Tags', tagNames, contains("${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"))
+        assertThat('Tags', tagNames, hasItems(expectedTag))
 
         // version is not bumped because default GenericPipeline.bumpVersion() is empty
         assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
