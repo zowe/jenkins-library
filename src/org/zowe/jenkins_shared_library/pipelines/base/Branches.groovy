@@ -10,31 +10,31 @@
 
 package org.zowe.jenkins_shared_library.pipelines.base
 
-import org.zowe.jenkins_shared_library.pipelines.base.exceptions.ProtectedBranchException
-import org.zowe.jenkins_shared_library.pipelines.base.interfaces.ProtectedBranchProperties
+import org.zowe.jenkins_shared_library.pipelines.base.exceptions.BranchException
+import org.zowe.jenkins_shared_library.pipelines.base.interfaces.BranchProperties
 
 /**
- * Manages the protected branches of a Pipeline.
- * @param <T> This type ensures that the branch properties implement the {@link ProtectedBranchProperties}
+ * Manages the branches of a Pipeline.
+ * @param <T> This type ensures that the branch properties implement the {@link BranchProperties}
  *            interface and all branches are of the same property.
  */
-final class ProtectedBranches<T extends ProtectedBranchProperties> implements Serializable {
+final class Branches<T extends BranchProperties> implements Serializable {
     /**
-     * The class object used to instantiate a new protected branch value.
+     * The class object used to instantiate a new branch value.
      */
     final Class<T> propertyClass
 
     /**
-     * The mapping of protected branches.
+     * The mapping of branches.
      */
-    private HashMap<String, T> _protectedBranches = new HashMap()
+    private HashMap<String, T> _branches = new HashMap()
 
     /**
      * Constructs the class with the specified factory class.
      *
      * @param propertyClass The class that is used to instantiate a new property object.
      */
-    ProtectedBranches(final Class<T> propertyClass) {
+    Branches(final Class<T> propertyClass) {
         this.propertyClass = propertyClass
     }
 
@@ -42,14 +42,14 @@ final class ProtectedBranches<T extends ProtectedBranchProperties> implements Se
      * Adds a branch object as protected.
      * @param branch The properties of a branch that is protected.
      * @return The object that was added.
-     * @throws ProtectedBranchException when a branch is already protected.
+     * @throws BranchException when a branch is already protected.
      */
-    T add(T branch) throws ProtectedBranchException {
-        if (_protectedBranches.hasProperty(branch.name)) {
-            throw new ProtectedBranchException("${branch.name} already exists as a protected branch.")
+    T add(T branch) throws BranchException {
+        if (_branches.hasProperty(branch.name)) {
+            throw new BranchException("${branch.name} already exists as a protected branch.")
         }
 
-        return _protectedBranches.put(branch.name, branch)
+        return _branches.put(branch.name, branch)
     }
 
     /**
@@ -85,11 +85,35 @@ final class ProtectedBranches<T extends ProtectedBranchProperties> implements Se
 
     /**
      * Gets a protected branch's properties from the map.
-     * @param branchName The name of the branch to retrieve
+     *
+     * This method is used to access the property based on raw branch name or name pattern.
+     *
+     * @param branchName The name or the pattern of the branch to retrieve
      * @return The object for the branch name or null if there is no branch of the corresponding name.
      */
     T get(String branchName) {
-        return _protectedBranches.get(branchName)
+        return _branches.get(branchName)
+    }
+
+    /**
+     * Gets a protected branch's properties from the map by name pattern.
+     *
+     * This should be the suggested way to find a branch property.
+     *
+     * @param branchName The name of the branch to retrieve
+     * @return The object for the branch name or null if there is no branch of the corresponding name.
+     */
+    T getByPattern(String branchName) {
+        def result
+
+        for (def b in _branches) {
+            if (branchName.matches(b.key)) {
+                result = b.value
+                break
+            }
+        }
+
+        return result
     }
 
     /**
@@ -98,7 +122,8 @@ final class ProtectedBranches<T extends ProtectedBranchProperties> implements Se
      * @return True if the branch is protected, false otherwise.
      */
     boolean isProtected(String branchName) {
-        return _protectedBranches.containsKey(branchName)
+        def branch = this.getByPattern(branchName)
+        return branch && branch.getIsProtected()
     }
 
     /**
@@ -107,6 +132,6 @@ final class ProtectedBranches<T extends ProtectedBranchProperties> implements Se
      * @return The object that was removed or null if none was removed
      */
     T remove(String branchName) {
-        return _protectedBranches.remove(branchName)
+        return _branches.remove(branchName)
     }
 }

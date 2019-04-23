@@ -18,7 +18,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.exceptions.AdminInitializa
  * An admin of the pipeline.
  *
  * <p>This should be a user that is trusted to perform admin operations of a pipeline, such as
- * approving a deploy. An admin user will always receive an email on completion of a {@link ProtectedBranch}
+ * approving a deploy. An admin user will always receive an email on completion of a {@link Branch}
  * build.</p>
  */
 final class PipelineAdmin {

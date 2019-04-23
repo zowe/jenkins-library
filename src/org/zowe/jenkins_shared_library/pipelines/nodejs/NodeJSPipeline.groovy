@@ -10,19 +10,19 @@
 
 package org.zowe.jenkins_shared_library.pipelines.nodejs
 
+import java.util.concurrent.TimeUnit
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
-import org.zowe.jenkins_shared_library.pipelines.base.ProtectedBranches
+import org.zowe.jenkins_shared_library.npm.Registry
+import org.zowe.jenkins_shared_library.pipelines.base.Branches
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import org.zowe.jenkins_shared_library.pipelines.Build
-import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.ReleaseStageArguments
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
+import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
 import org.zowe.jenkins_shared_library.pipelines.nodejs.arguments.*
-import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
 import org.zowe.jenkins_shared_library.pipelines.nodejs.exceptions.*
-
-import java.util.concurrent.TimeUnit
+import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
 
 /**
  * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline} class.
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit
  *     // Set your config up before calling setup
  *     pipeline.admins.add("userid1", "userid2", "userid3")
  *
- *     pipeline.protectedBranches.addMap([
+ *     pipeline.branches.addMap([
  *         [name: "master", tag: "daily", prerelease: "alpha"],
  *         [name: "beta", tag: "beta", prerelease: "beta"],
  *         [name: "dummy", tag: "dummy", autoDeploy: true],
@@ -82,13 +82,16 @@ import java.util.concurrent.TimeUnit
  *     })
  *
  *     // Run a build
- *     pipeline.build()               ///////////////////////////////////////////////////
- *                                    //                                               //
- *     // Run a test                  //                                               //
- *     pipeline.test()                // Provide required parameters in your pipeline. //
- *                                    //                                               //
- *     // Deploy your application     //                                               //
- *     pipeline.deploy()              ///////////////////////////////////////////////////
+ *     pipeline.build()   // Provide required parameters in your pipeline
+ *
+ *     // Run a test
+ *     pipeline.test()    // Provide required parameters in your pipeline
+ *
+ *     // publish artifact to artifactory
+ *     pipeline.publish() // Provide required parameters in your pipeline
+ *
+ *     // release version bump and git tag
+ *     pipeline.release() // Provide required parameters in your pipeline
  *
  *     // MUST BE CALLED LAST
  *     pipeline.end()
@@ -112,12 +115,12 @@ class NodeJSPipeline extends GenericPipeline {
     static final String TIMEOUT_APPROVE_ID = "[TIMEOUT_APPROVED]"
 
     /**
-     * A map of protected branches.
+     * A map of branches.
      *
      * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
      * is to prevent issues with publishing.</p>
      */
-    ProtectedBranches<NodeJSProtectedBranch> protectedBranches = new ProtectedBranches<>(NodeJSProtectedBranch.class)
+    Branches<NodeJSBranch> branches = new Branches<>(NodeJSBranch.class)
 
     /**
      * This is the connection information for the registry where code is published
@@ -136,6 +139,11 @@ class NodeJSPipeline extends GenericPipeline {
     RegistryConfig[] registryConfig
 
     /**
+     * Artifactory instance
+     */
+    Registry npmRegistry
+
+    /**
      * Constructs the class.
      *
      * <p>When invoking from a Jenkins pipeline script, the NodeJSPipeline must be passed
@@ -150,6 +158,145 @@ class NodeJSPipeline extends GenericPipeline {
      */
     NodeJSPipeline(steps) {
         super(steps)
+
+        npmRegistry = new Registry(steps)
+    }
+
+    /**
+     * Initialize npm registry configurations
+     *
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
+     *
+     * @param config            npm registry configuration map
+     */
+    void configureRegistry(Map config) {
+        npmRegistry.init(config)
+    }
+
+    /**
+     * Calls {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric()} to setup the build.
+     *
+     * @Stages
+     * This method adds one stage to the build:
+     *
+     * <dl>
+     *     <dt><b>Install Node Package Dependencies</b></dt>
+     *     <dd>
+     *         <p>
+     *             This step will install all your package dependencies via `npm install`. Prior to install
+     *             the stage will login to any registries specified in the {@link #registryConfig} array. On
+     *             exit, the step will try to logout of the registries specified in {@link #registryConfig}.
+     *         </p>
+     *         <dl>
+     *             <dt><b>Exceptions:</b></dt>
+     *             <dd>
+     *                 <dl>
+     *                     <dt><b>{@link NodeJSPipelineException}</b></dt>
+     *                     <dd>
+     *                         When two default registries, a registry that omits a url, are specified.
+     *                     </dd>
+     *                     <dd>
+     *                         When a login to a registry fails. <b>Note:</b> Failure to logout of a
+     *                         registry will not result in a failed build.
+     *                     </dd>
+     *                     <dt><b>{@link Exception}</b></dt>
+     *                     <dd>
+     *                         When a failure to install dependencies occurs.
+     *                     </dd>
+     *                 </dl>
+     *             </dd>
+     *         </dl>
+     *     </dd>
+     * </dl>
+     */
+    void setup(NodeJSSetupArguments timeouts) {
+        super.setupGeneric(timeouts)
+
+        createStage(name: 'Install Node Package Dependencies', stage: {
+            try {
+                if (registryConfig) {
+                    // Only one is allowed to use the default registry
+                    // This will keep track of that
+                    def didUseDefaultRegistry = false
+
+                    steps.echo "Login to registries"
+
+                    for (int i = 0; i < registryConfig.length; i++) {
+                        def registry = registryConfig[i]
+
+                        if (!registry.url) {
+                            if (didUseDefaultRegistry) {
+                                throw new NodeJSPipelineException("No registry specified for registryConfig[${i}] and was already logged into the default")
+                            }
+                            didUseDefaultRegistry = true
+                        }
+
+                        _loginToRegistry(registry)
+                    }
+                }
+
+                steps.sh "npm install"
+
+                // Get the branch that will be used to install dependencies for
+                String branch
+
+                // If this is a pull request, then we will be checking if the base branch is protected
+                if (changeInfo.isPullRequest) {
+                    branch = changeInfo.baseBranch
+                }
+                // Otherwise we are checking if the current branch is protected
+                else {
+                    branch = changeInfo.branchName
+                }
+
+                if (branches.isProtected(branch)) {
+                    def branchProps = branches.get(branch)
+
+                    def depInstall = "npm install"
+                    def devInstall = "npm install"
+
+                    // If this is a pull request, we don't want to make any commits
+                    if (changeInfo.isPullRequest) {
+                        depInstall += " --no-save"
+                        devInstall += " --no-save"
+                    }
+                    // Otherwise we need to save the version properly
+                    else {
+                        depInstall += " --save"
+                        devInstall += " --save-dev"
+                    }
+
+                    branchProps.dependencies.each { npmPackage, version -> steps.sh "$depInstall $npmPackage@$version" }
+                    branchProps.devDependencies.each { npmPackage, version -> steps.sh "$devInstall $npmPackage@$version" }
+
+                    if (!changeInfo.isPullRequest) {
+                        // Add package and package lock to the commit tree. This will not fail if
+                        // unable to add an item for any reasons.
+                        steps.sh "git add package.json package-lock.json --ignore-errors || exit 0"
+                        gitCommit("Updating dependencies")
+                    }
+                }
+            } finally {
+                // Always try to logout regardless of errors
+                if (registryConfig) {
+                    steps.echo "Logout of registries"
+
+                    for (int i = 0; i < registryConfig.length; i++) {
+                        _logoutOfRegistry(registryConfig[i])
+                    }
+                }
+            }
+        }, isSkippable: false, timeout: timeouts.installDependencies)
+    }
+
+    /**
+     * Initialize the pipeline.
+     *
+     * @param timeouts A map that can be instantiated as {@link NodeJSSetupArguments}
+     * @see #setup(NodeJSSetupArguments)
+     */
+    void setup(Map timeouts = [:]) {
+        setup(timeouts as NodeJSSetupArguments)
     }
 
     /**
@@ -177,25 +324,35 @@ class NodeJSPipeline extends GenericPipeline {
             } else {
                 steps.sh 'npm run build'
             }
-
-            // archive the build
-            steps.sh "mkdir -p temp"
-
-            steps.dir("temp") {
-                def json = steps.readJSON file: "../package.json"
-                def revision = steps.sh(returnStdout: true, script: "git rev-parse HEAD").trim()
-
-                // Replace special file character names
-                def name = json.name.replaceAll("@", "")
-                    .replaceAll("/", "-")
-
-                def archiveName = "${name}.revision.${revision}.tgz"
-
-                steps.sh "PACK_NAME=\$(npm pack ../ | tail -1) && mv \$PACK_NAME $archiveName "
-                steps.archiveArtifacts archiveName
-                steps.sh "rm -f $archiveName"
-            }
         }])
+    }
+
+    /**
+     * Creates a stage that will execute tests on your application.
+     *
+     * <p>Arguments passed to this function will map to the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} class.</p>
+     *
+     * <p>The stage will be created with the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method and will
+     * have the following additional operations: <ul>
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#operation} is not
+     *     provided, this method will default to executing {@code npm run test}</li>
+     * </ul>
+     * </p>
+     *
+     *
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
+     *                  the stage.
+     */
+    void test(Map arguments = [:]) {
+        if (!arguments.operation) {
+            arguments.operation = {
+                steps.sh "npm run test"
+            }
+        }
+
+        super.testGeneric(arguments)
     }
 
     /**
@@ -208,10 +365,10 @@ class NodeJSPipeline extends GenericPipeline {
      * method.</p>
      *
      * <p>In a Node JS Pipeline, this stage will always be executed on a protected branch. When in this stage,
-     * the build will determine the possible versions based on the {@link NodeJSProtectedBranch#prerelease} and
-     * {@link NodeJSProtectedBranch#level} properties.</p>
+     * the build will determine the possible versions based on the {@link NodeJSBranch#prerelease} and
+     * {@link NodeJSBranch#level} properties.</p>
      *
-     * <p>If the branch is set to {@link NodeJSProtectedBranch#autoDeploy}, then the default version will be used to publish
+     * <p>If the branch is set to {@link NodeJSBranch#autoDeploy}, then the default version will be used to publish
      * (with any prerelease strings needed/removed). Otherwise, an email will be sent out asking what the new version
      * should be. This email will list the possible versions and give a link back to the build. The build will wait
      * for one of the {@link #admins} to open the link and select the version. If the wait period expires, the build will
@@ -242,7 +399,7 @@ class NodeJSPipeline extends GenericPipeline {
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.VersionStageArguments} used to
      *                  define the stage.
      */
-    void version(Map arguments = [:]) {
+    void release(Map arguments = [:]) {
         IllegalArgumentException versionException
 
         if (arguments.operation) {
@@ -264,7 +421,7 @@ class NodeJSPipeline extends GenericPipeline {
             // Extract the raw version
             def rawVersion = baseVersion.split("\\.")
 
-            NodeJSProtectedBranch branch = protectedBranches.get(changeInfo.branchName)
+            NodeJSBranch branch = branches.get(changeInfo.branchName)
 
             // Format the prerelease to be applied to every item
             String prereleaseString = branch.prerelease ? "-${branch.prerelease}." + new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("UTC")) : ""
@@ -449,7 +606,7 @@ class NodeJSPipeline extends GenericPipeline {
      *
      * @see #deploy(java.util.Map, java.util.Map)
      */
-    void deploy(Map arguments = [:]) {
+    void publish(Map arguments = [:]) {
         if (!arguments.versionArguments) {
             arguments.versionArguments = [:]
         }
@@ -490,10 +647,10 @@ class NodeJSPipeline extends GenericPipeline {
      *     <dd>
      *          <p>In a Node JS Pipeline, this stage will always be executed on a protected branch.
      *          When in this stage, the build will determine the possible versions based on the
-     *          {@link NodeJSProtectedBranch#prerelease} and {@link NodeJSProtectedBranch#level}
+     *          {@link NodeJSBranch#prerelease} and {@link NodeJSBranch#level}
      *          properties.</p>
      *
-     *          <p>If the branch is set to {@link NodeJSProtectedBranch#autoDeploy}, then
+     *          <p>If the branch is set to {@link NodeJSBranch#autoDeploy}, then
      *          the default version will be used to publish (with any prerelease strings needed/removed).
      *          Otherwise, an email will be sent out asking what the new version should be. This
      *          email will list the possible versions and give a link back to the build. The build
@@ -534,7 +691,7 @@ class NodeJSPipeline extends GenericPipeline {
      *         <p>Prior to executing the deploy, changes will be pushed to
      *         the remote server. If the pipeline is behind the branch's remote, the push will
      *         fail and the deploy will stop. After changes are successfully pushed, the npm
-     *         publish command will be executed with the {@link NodeJSProtectedBranch#tag} specified.
+     *         publish command will be executed with the {@link NodeJSBranch#tag} specified.
      *         On successful deploy, an email will be sent out to the {@link #admins}.</p>
      *
      *         <p>Note that the local npmrc configuration file will not affect publishing in any way.
@@ -551,7 +708,7 @@ class NodeJSPipeline extends GenericPipeline {
      * @param deployArguments The arguments for the Deploy stage.
      * @param versionArguments The arguments for the Version stage.
      */
-    protected void deploy(Map deployArguments, Map versionArguments) {
+    protected void publish(Map deployArguments, Map versionArguments) {
         IllegalArgumentException deployException
         IllegalArgumentException versionException
 
@@ -583,7 +740,7 @@ class NodeJSPipeline extends GenericPipeline {
                 _loginToRegistry(publishConfig)
             }
 
-            NodeJSProtectedBranch branch = protectedBranches.get(changeInfo.branchName)
+            NodeJSBranch branch = branches.get(changeInfo.branchName)
 
             try {
                 // Prevent npm publish from being affected by the local npmrc file
@@ -628,7 +785,7 @@ class NodeJSPipeline extends GenericPipeline {
                 // Extract the raw version
                 def rawVersion = baseVersion.split("\\.")
 
-                NodeJSProtectedBranch branch = protectedBranches.get(changeInfo.branchName)
+                NodeJSBranch branch = branches.get(changeInfo.branchName)
 
                 // Format the prerelease to be applied to every item
                 String prereleaseString = branch.prerelease ? "-${branch.prerelease}." + new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("UTC")) : ""
@@ -791,240 +948,5 @@ class NodeJSPipeline extends GenericPipeline {
      */
     void end(Map options = [:]) {
         super.endGeneric(options)
-    }
-
-
-    /**
-     * Calls {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric()} to setup the build.
-     *
-     * @Stages
-     * This method adds one stage to the build:
-     *
-     * <dl>
-     *     <dt><b>Install Node Package Dependencies</b></dt>
-     *     <dd>
-     *         <p>
-     *             This step will install all your package dependencies via `npm install`. Prior to install
-     *             the stage will login to any registries specified in the {@link #registryConfig} array. On
-     *             exit, the step will try to logout of the registries specified in {@link #registryConfig}.
-     *         </p>
-     *         <dl>
-     *             <dt><b>Exceptions:</b></dt>
-     *             <dd>
-     *                 <dl>
-     *                     <dt><b>{@link NodeJSPipelineException}</b></dt>
-     *                     <dd>
-     *                         When two default registries, a registry that omits a url, are specified.
-     *                     </dd>
-     *                     <dd>
-     *                         When a login to a registry fails. <b>Note:</b> Failure to logout of a
-     *                         registry will not result in a failed build.
-     *                     </dd>
-     *                     <dt><b>{@link Exception}</b></dt>
-     *                     <dd>
-     *                         When a failure to install dependencies occurs.
-     *                     </dd>
-     *                 </dl>
-     *             </dd>
-     *         </dl>
-     *     </dd>
-     * </dl>
-     */
-    void setup(NodeJSSetupArguments timeouts) {
-        super.setupGeneric(timeouts)
-
-        createStage(name: 'Install Node Package Dependencies', stage: {
-            try {
-                if (registryConfig) {
-                    // Only one is allowed to use the default registry
-                    // This will keep track of that
-                    def didUseDefaultRegistry = false
-
-                    steps.echo "Login to registries"
-
-                    for (int i = 0; i < registryConfig.length; i++) {
-                        def registry = registryConfig[i]
-
-                        if (!registry.url) {
-                            if (didUseDefaultRegistry) {
-                                throw new NodeJSPipelineException("No registry specified for registryConfig[${i}] and was already logged into the default")
-                            }
-                            didUseDefaultRegistry = true
-                        }
-
-                        _loginToRegistry(registry)
-                    }
-                }
-
-                steps.sh "npm install"
-
-                // Get the branch that will be used to install dependencies for
-                String branch
-
-                // If this is a pull request, then we will be checking if the base branch is protected
-                if (changeInfo.isPullRequest) {
-                    branch = changeInfo.baseBranch
-                }
-                // Otherwise we are checking if the current branch is protected
-                else {
-                    branch = changeInfo.branchName
-                }
-
-                if (protectedBranches.isProtected(branch)) {
-                    def branchProps = protectedBranches.get(branch)
-
-                    def depInstall = "npm install"
-                    def devInstall = "npm install"
-
-                    // If this is a pull request, we don't want to make any commits
-                    if (changeInfo.isPullRequest) {
-                        depInstall += " --no-save"
-                        devInstall += " --no-save"
-                    }
-                    // Otherwise we need to save the version properly
-                    else {
-                        depInstall += " --save"
-                        devInstall += " --save-dev"
-                    }
-
-                    branchProps.dependencies.each { npmPackage, version -> steps.sh "$depInstall $npmPackage@$version" }
-                    branchProps.devDependencies.each { npmPackage, version -> steps.sh "$devInstall $npmPackage@$version" }
-
-                    if (!changeInfo.isPullRequest) {
-                        // Add package and package lock to the commit tree. This will not fail if
-                        // unable to add an item for any reasons.
-                        steps.sh "git add package.json package-lock.json --ignore-errors || exit 0"
-                        gitCommit("Updating dependencies")
-                    }
-                }
-            } finally {
-                // Always try to logout regardless of errors
-                if (registryConfig) {
-                    steps.echo "Logout of registries"
-
-                    for (int i = 0; i < registryConfig.length; i++) {
-                        _logoutOfRegistry(registryConfig[i])
-                    }
-                }
-            }
-        }, isSkippable: false, timeout: timeouts.installDependencies)
-    }
-
-    /**
-     * Initialize the pipeline.
-     *
-     * @param timeouts A map that can be instantiated as {@link NodeJSSetupArguments}
-     * @see #setup(NodeJSSetupArguments)
-     */
-    void setup(Map timeouts = [:]) {
-        setup(timeouts as NodeJSSetupArguments)
-    }
-
-    /**
-     * Creates a stage that will execute tests on your application.
-     *
-     * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} class.</p>
-     *
-     * <p>The stage will be created with the
-     * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method and will
-     * have the following additional operations: <ul>
-     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#operation} is not
-     *     provided, this method will default to executing {@code npm run test}</li>
-     * </ul>
-     * </p>
-     *
-     *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
-     *                  the stage.
-     */
-    void test(Map arguments = [:]) {
-        if (!arguments.operation) {
-            arguments.operation = {
-                steps.sh "npm run test"
-            }
-        }
-
-        super.testGeneric(arguments)
-    }
-
-    /**
-     * Login to the specified registry.
-     *
-     * @param registry The registry to login to
-     * @throw {@link NodeJSPipelineException} when either the email address or credentials property
-     *         is missing from the specified registry.
-     */
-    protected void _loginToRegistry(RegistryConfig registry) throws NodeJSPipelineException {
-        if (!registry.email) {
-            throw new NodeJSPipelineException("Missing email address for registry: ${registry.url ? registry.url : "default"}")
-        }
-        if (!registry.credentialsId) {
-            throw new NodeJSPipelineException("Missing credentials for registry: ${registry.url ? registry.url : "default"}")
-        }
-
-        if (!registry.url) {
-            steps.echo "Attempting to login to the default registry${registry.scope ? " under the scope: ${registry.scope}" : ""}"
-        } else {
-            steps.echo "Attempting to login to the ${registry.url} registry${registry.scope ? " under the scope: ${registry.scope}" : ""}"
-        }
-
-        // Bad formatting but this is probably the cleanest way to do the expect script
-        def expectCommand = """/usr/bin/expect <<EOD
-set timeout 60
-#npm login command, add whatever command-line arguments are necessary
-spawn npm login ${registry.url ? "--registry ${registry.url}" : ""}${registry.scope ? " --scope=${registry.scope}" : ""}
-match_max 100000
-
-expect "Username"
-send "\$EXPECT_USERNAME\\r"
-
-expect "Password"
-send "\$EXPECT_PASSWORD\\r"
-
-expect "Email"
-send "\$EXPECT_EMAIL\\r"
-
-expect {
-   timeout      exit 1
-   eof
-}
-"""
-        // Echo the command that was run
-        steps.echo expectCommand
-
-        steps.withCredentials([
-                steps.usernamePassword(
-                        credentialsId: registry.credentialsId,
-                        usernameVariable: 'EXPECT_USERNAME',
-                        passwordVariable: 'EXPECT_PASSWORD'
-                )
-        ]) {
-            steps.withEnv(["EXPECT_EMAIL=${registry.email}"]) {
-                steps.sh expectCommand
-            }
-        }
-    }
-
-    /**
-     * Logout of the specified registry.
-     *
-     * @param registry The registry to logout of.
-     */
-    protected void _logoutOfRegistry(RegistryConfig registry) {
-        if (!registry.url) {
-            steps.echo "Attempting to logout of the default registry${registry.scope ? " under the scope: ${registry.scope}" : ""}"
-        } else {
-            steps.echo "Attempting to logout of the ${registry.url} registry${registry.scope ? " under the scope: ${registry.scope}" : ""}"
-        }
-
-        try {
-            // If the logout fails, don't blow up. Coded this way because a failed
-            // logout doesn't mean we've failed. It also doesn't stop any other
-            // logouts that might need to be done.
-            steps.sh "npm logout ${registry.url ? "--registry ${registry.url}" : ""}${registry.scope ? " --scope=${registry.scope}" : ""}"
-        } catch (e) {
-            steps.echo "Failed logout but will continue"
-        }
     }
 }

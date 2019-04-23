@@ -11,15 +11,15 @@
 package org.zowe.jenkins_shared_library.pipelines.base.exceptions
 
 /**
- * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.pipelines.base.ProtectedBranches}
+ * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.pipelines.base.Branches}
  * class.
  */
-class ProtectedBranchException extends Exception {
+class BranchException extends Exception {
     /**
      * Construct the exception.
      * @param message The exception message.
      */
-    ProtectedBranchException(String message) {
+    BranchException(String message) {
         super(message)
     }
 }

@@ -21,6 +21,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.base.models.*
 import org.zowe.jenkins_shared_library.pipelines.Build
+import org.zowe.jenkins_shared_library.pipelines.Constants
 
 /**
  * This class represents a basic Jenkins pipeline. Use the methods of this class to add stages to
@@ -57,11 +58,11 @@ import org.zowe.jenkins_shared_library.pipelines.Build
  *   // Set your config up before calling setup
  *   pipeline.admins.add("userid1", "userid2", "userid3")
  *
- *   // Define some protected branches
- *   pipeline.protectedBranches.addMap([
- *       [name: "master"],
- *       [name: "beta"],
- *       [name: "rc"]
+ *   // Define some branch properties
+ *   pipeline.branches.addMap([
+ *       [name: "master", isProtected: true, buildHistory: 20],
+ *       [name: "beta", isProtected: true, buildHistory: 20],
+ *       [name: "rc", isProtected: true, buildHistory: 20]
  *   ])
  *
  *   // MUST BE CALLED FIRST
@@ -146,43 +147,12 @@ class Pipeline {
     final PipelineAdmins admins = new PipelineAdmins()
 
     /**
-     * The number of historical builds kept for a non-protected branch.
-     */
-    String defaultBuildHistory = '5'
-
-    /**
-     * Images embedded in notification emails depending on the status of the build.
-     */
-    Map<String, List<String>> notificationImages = [
-        SUCCESS : [
-            'https://i.imgur.com/ixx5WSq.png', /*happy seal*/
-            'https://i.imgur.com/jiCQkYj.png'  /*happy puppy*/
-        ],
-        UNSTABLE: [
-            'https://i.imgur.com/fV89ZD8.png',  /*not sure if*/
-            'https://media.giphy.com/media/rmRUASq4WujsY/giphy.gif' /*f1 tires fly off*/
-        ],
-        FAILURE : [
-            'https://i.imgur.com/iQ4DuYL.png',  /*this is fine fire */
-            'https://media.giphy.com/media/3X0nMYG46US2c/giphy.gif' /*terminator sink into lava*/
-        ],
-        ABORTED : [
-            'https://i.imgur.com/Zq0iBJK.jpg' /* surprised pikachu */
-        ]
-    ]
-
-    /**
-     * The number of historical builds kept for a protected branch.
-     */
-    String protectedBranchBuildHistory = '20'
-
-    /**
-     * A map of protected branches.
+     * A map of branches.
      *
      * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
      * is to prevent issues with publishing.</p>
      */
-    ProtectedBranches<ProtectedBranch> protectedBranches = new ProtectedBranches<ProtectedBranch>(ProtectedBranch.class)
+    Branches<Branch> branches = new Branches<Branch>(Branch.class)
 
     /**
      * This control variable represents internal states of items in the pipeline.
@@ -259,6 +229,26 @@ class Pipeline {
         this.steps = steps
 
         this._email = new Email(steps)
+
+        this.defineDefaultBranches()
+    }
+
+    /**
+     * Setup default branch settings
+     */
+    protected void defineDefaultBranches() {
+        branches.addMap([
+            [
+                name               : 'master',
+                'protected'        : true,
+                buildHistory       : 20,
+            ],
+            [
+                name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
+                'protected'        : true,
+                buildHistory       : 20,
+            ],
+        ])
     }
 
     /**
@@ -596,13 +586,20 @@ class Pipeline {
 
         try {
             // First setup the build properties
-            def history = defaultBuildHistory
+            def history = Constants.DEFAULT_BUILD_HISTORY
 
             if (steps.env.BRANCH_NAME) {
-                // Add protected branch to build options
-                if (protectedBranches.isProtected(steps.env.BRANCH_NAME)) {
-                    _isProtectedBranch = true
-                    history = protectedBranchBuildHistory
+                def branchProperties = branches.getByPattern(steps.env.BRANCH_NAME)
+                if (branchProperties) {
+                    // Add protected branch to build options
+                    if (branchProperties.isProtected) {
+                        _isProtectedBranch = true
+                    }
+                    if (branchProperties.buildHistory) {
+                        history = branchProperties.buildHistory
+                    } else if (_isProtectedBranch) {
+                        history = Constants.DEFAULT_BUILD_HISTORY_FOR_PROTECTED_BRANCH
+                    }
                 }
             }
 
@@ -735,9 +732,9 @@ ${steps.env.BRANCH_NAME ? "<p>Branch: <b>${steps.env.BRANCH_NAME}</b></p>" : ''}
 """
 
             // add an image reflecting the result
-            if (notificationImages.containsKey(buildStatus) &&
-                notificationImages[buildStatus].size() > 0) {
-                def imageList = notificationImages[buildStatus]
+            if (Constants.notificationImages.containsKey(buildStatus) &&
+                Constants.notificationImages[buildStatus].size() > 0) {
+                def imageList = Constants.notificationImages[buildStatus]
                 def imageIndex = Math.abs(new Random().nextInt() % imageList.size())
                 bodyText += "<p><img src=\"" + imageList[imageIndex] + "\" width=\"500\"/></p>"
             }

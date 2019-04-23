@@ -11,10 +11,10 @@
 package org.zowe.jenkins_shared_library.pipelines.base.interfaces
 
 /**
- * Required properties of a model used in the {@link org.zowe.jenkins_shared_library.pipelines.base.ProtectedBranches}
+ * Required properties of a model used in the {@link org.zowe.jenkins_shared_library.pipelines.base.Branches}
  * class.
  */
-interface ProtectedBranchProperties {
+interface BranchProperties {
     /**
      * The branch must have a name associated with it.
      * @return The name of the branch

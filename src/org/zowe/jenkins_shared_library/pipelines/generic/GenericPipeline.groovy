@@ -14,6 +14,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic
 import groovy.util.logging.Log
 import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
+import org.zowe.jenkins_shared_library.pipelines.base.Branches
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
@@ -59,10 +60,10 @@ import org.zowe.jenkins_shared_library.Utils
  *     pipeline.admins.add("userid1", "userid2", "userid3")
  *
  *     // Define some protected branches
- *     pipeline.protectedBranches.addMap([
- *         [name: "master"],
- *         [name: "beta"],
- *         [name: "rc"]
+ *     pipeline.branches.addMap([
+ *       [name: "master", isProtected: true, buildHistory: 20],
+ *       [name: "beta", isProtected: true, buildHistory: 20],
+ *       [name: "rc", isProtected: true, buildHistory: 20]
  *     ])
  *
  *     // Define the git configuration
@@ -87,11 +88,6 @@ import org.zowe.jenkins_shared_library.Utils
 @Log
 class GenericPipeline extends Pipeline {
     /**
-     * Text used for the CI SKIP commit.
-     */
-    protected static final String _CI_SKIP = "[ci skip]"
-
-    /**
      * Build parameter name for "Perform Release"
      */
     protected static final String BUILD_PARAMETER_PERFORM_RELEASE = 'Perform Release'
@@ -102,6 +98,14 @@ class GenericPipeline extends Pipeline {
     protected static final String BUILD_PARAMETER_PRE_RELEASE_STRING = 'Pre-Release String'
 
     /**
+     * A map of branches.
+     *
+     * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
+     * is to prevent issues with publishing.</p>
+     */
+    Branches<GenericBranch> branches = new Branches<>(GenericBranch.class)
+
+    /**
      * Temporary upload spec name
      */
     protected static final String temporaryUploadSpecName = '.tmp-pipeline-publish-spec.json'
@@ -110,49 +114,6 @@ class GenericPipeline extends Pipeline {
      * Stores the change information for reference later.
      */
     final ChangeInformation changeInfo
-
-    /**
-     * Branches where we can do a formal release like v2.3.4.
-     *
-     * Default formal release branches are:
-     * - master:         regular release branch
-     * - v?.x/master:    LTS v?.x release branch
-     */
-    List<String> formalReleaseBranches = [
-        'master',
-        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
-    ]
-
-    /**
-     * Branches where we can do a release like v2.3.4 and v2.3.4-beta.1.
-     *
-     * Default release branches are:
-     * - master:         regular release branch
-     * - v?.x/master:    LTS v?.x release branch
-     * - staging:        regular release branch
-     * - v?.x/staging:   LTS v?.x release branch
-     */
-    List<String> releaseBranches = [
-        'master',
-        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
-        'staging',
-        'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
-    ]
-
-    /**
-     * Branch tags
-     *
-     * This tag will be used to define the way we publish & release
-     */
-    Map<String, String> branchTags = [
-        'master': 'snapshot',
-        '(v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?)/master': '$1-snapshot',
-    ]
-
-    /**
-     * Default branch tag
-     */
-    String defaultBranchTag = "snapshot"
 
     /**
      * Default artifactory upload path
@@ -206,6 +167,43 @@ class GenericPipeline extends Pipeline {
         changeInfo = new ChangeInformation(steps)
         github = new GitHub(steps)
         artifactory = new JFrogArtifactory(steps)
+        this.defineDefaultBranches()
+    }
+
+    /**
+     * Setup default branch settings
+     */
+    protected void defineDefaultBranches() {
+        branches.addMap([
+            [
+                name               : 'master',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+                allowFormalRelease : true,
+                releaseTag         : 'snapshot',
+            ],
+            [
+                name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+                allowFormalRelease : true,
+                releaseTag         : '$1-snapshot',
+            ],
+            [
+                name               : 'staging',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+            ],
+            [
+                name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+            ],
+        ])
     }
 
     /**
@@ -231,16 +229,6 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Add branches which can do release
-     * @param branches      branch list
-     */
-    void addReleaseBranches(String... branches) {
-        for (String branch : branches) {
-            releaseBranches << branch
-        }
-    }
-
-    /**
      * If current pipeline branch can do a release
      *
      * @param  branch     the branch name to check. By default, empty string will check current branch
@@ -258,10 +246,12 @@ class GenericPipeline extends Pipeline {
 
         def result = false
 
-        for (String releaseBranch : releaseBranches) {
-            if (branch.matches(releaseBranch)) {
-                result = true
-                break
+        for (def b in this.branches) {
+            if (branchName.matches(b.key)) {
+                if (b.value.getAllowRelease()) {
+                    result = true
+                    break
+                }
             }
         }
 
@@ -286,10 +276,12 @@ class GenericPipeline extends Pipeline {
 
         def result = false
 
-        for (String formalReleaseBranch : formalReleaseBranches) {
-            if (branch.matches(formalReleaseBranch)) {
-                result = true
-                break
+        for (def b in this.branches) {
+            if (branchName.matches(b.key)) {
+                if (b.value.getAllowFormalRelease()) {
+                    result = true
+                    break
+                }
             }
         }
 
@@ -331,14 +323,19 @@ class GenericPipeline extends Pipeline {
             branch = steps.env.BRANCH_NAME
         }
 
-        String result = branch ?: defaultBranchTag
+        String result = branch ?: Constants.DEFAULT_BRANCH_RELEASE_TAG
 
         if (branch) {
-            for (String branchTag : branchTags) {
-                def replaced = branch.replaceAll(branchTag.key, branchTag.value)
-                if (branch != replaced) { // really replaced
-                    result = replaced
-                    break
+            for (def b in this.branches) {
+                if (branchName.matches(b.key)) {
+                    def tag = b.value.getReleaseTag()
+                    if (tag) { // has release tag defined
+                        def replaced = branch.replaceAll(b.key, tag)
+                        if (branch != replaced) { // really replaced
+                            result = replaced
+                            break
+                        }
+                    }
                 }
             }
         }
@@ -484,9 +481,9 @@ class GenericPipeline extends Pipeline {
 
         createStage(name: 'Check for CI Skip', stage: {
             // This checks for the [ci skip] text. If found, the status code is 0
-            def result = steps.sh returnStatus: true, script: 'git log -1 | grep \'.*\\[ci skip\\].*\''
+            def result = steps.sh returnStatus: true, script: "git log -1 | grep '.*\\[ci skip\\].*'"
             if (result == 0) {
-                steps.echo "\"${_CI_SKIP}\" spotted in the git commit. Aborting."
+                steps.echo "\"${Constants.CI_SKIP}\" spotted in the git commit. Aborting."
                 _shouldSkipRemainingStages = true
                 setResult(ResultEnum.NOT_BUILT)
             }
@@ -522,14 +519,14 @@ class GenericPipeline extends Pipeline {
         if (isReleaseBranch()) {
             this.addBuildParameter(steps.booleanParam(
                 name         : BUILD_PARAMETER_PERFORM_RELEASE,
-                description  : "Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn't have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on ${releaseBranches.join(', ')} branches.",
+                description  : 'Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn\'t have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on branches which "allowRelease" is true.',
                 defaultValue : false
             ))
         }
         if (isFormalReleaseBranch()) {
             this.addBuildParameter(steps.string(
                 name         : BUILD_PARAMETER_PRE_RELEASE_STRING,
-                description  : "Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on \"Formal Release Branches\" like ${formalReleaseBranches.join(', ')}",
+                description  : 'Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on branches which "allowFormalRelease" is true.',
                 defaultValue : '',
                 trim         : true
             ))

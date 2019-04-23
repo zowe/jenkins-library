@@ -10,12 +10,12 @@
 
 package org.zowe.jenkins_shared_library.pipelines.nodejs.models
 
-import org.zowe.jenkins_shared_library.pipelines.base.models.ProtectedBranch
+import org.zowe.jenkins_shared_library.pipelines.base.models.Branch
 
 /**
- * @see org.zowe.jenkins_shared_library.pipelines.base.models.ProtectedBranch
+ * @see org.zowe.jenkins_shared_library.pipelines.base.models.Branch
  */
-class NodeJSProtectedBranch extends ProtectedBranch {
+class NodeJSBranch extends Branch {
     /**
      * Does the publish require approval?
      *
