@@ -608,7 +608,7 @@ class Pipeline {
             buildOptions.push(steps.disableConcurrentBuilds())
 
             // Add log rotator to build options
-            buildOptions.push(steps.buildDiscarder(steps.logRotator(numToKeepStr: history)))
+            buildOptions.push(steps.buildDiscarder(steps.logRotator(numToKeepStr: "${history}")))
 
             // setup upstream
             if (buildUpstreams.size() > 0) {
