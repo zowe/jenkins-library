@@ -640,7 +640,7 @@ class Pipeline {
                 // Move to the next stage
                 stage = stage.next
             }
-            stageList.push("Total: ${stage.size() - 1}")
+            stageList.push("Total: ${stageList.size() - 1}")
             logger.fine(stageList.join("\n"))
 
             // Execute the pipeline
