@@ -50,6 +50,11 @@ class Registry {
     String tokenCredential
 
     /**
+     * Jenkins credential ID for NPM username/base64_password
+     */
+    String usernamePasswordCredential
+
+    /**
      * npm user email, required for publishing
      */
     String email
@@ -79,10 +84,11 @@ class Registry {
 
     /**
      * Initialize npm registry properties
-     * @param   registry         the registry URL
-     * @param   tokenCredential  Jenkins credential ID for NPM token
-     * @param   email            NPM user email
-     * @param   packageJsonFile  package.json file name
+     * @param   registry                    the registry URL
+     * @param   tokenCredential             Jenkins credential ID for NPM token
+     * @param   usernamePasswordCredential  Jenkins credential ID for NPM username/base64_password
+     * @param   email                       NPM user email
+     * @param   packageJsonFile             package.json file name
      */
     void init(Map args = [:]) {
         if (args['packageJsonFile']) {
@@ -111,6 +117,9 @@ class Registry {
         }
         if (args['tokenCredential']) {
             this.tokenCredential = args['tokenCredential']
+        }
+        if (args['usernamePasswordCredential']) {
+            this.usernamePasswordCredential = args['usernamePasswordCredential']
         }
     }
 
@@ -165,6 +174,7 @@ class Registry {
                 if (pkg['publishConfig'] && pkg['publishConfig']['registry']) {
                     info['registry'] = pkg['publishConfig']['registry']
                 }
+
             }
         } else {
             throw new NpmException("packageJsonFile is not defined or file \"${this.packageJsonFile}\" doesn't not exist.")
@@ -178,10 +188,11 @@ class Registry {
     /**
      * Login to NPM registry
      *
-     * @param   registry         the registry URL
-     * @param   tokenCredential  Jenkins credential ID for NPM token
-     * @param   email            NPM user email
-     * @return                   username who login
+     * @param   registry                    the registry URL
+     * @param   tokenCredential             Jenkins credential ID for NPM token
+     * @param   usernamePasswordCredential  Jenkins credential ID for NPM username/base64_password
+     * @param   email                       NPM user email
+     * @return                              username who login
      */
     String login(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
@@ -195,7 +206,7 @@ class Registry {
         if (!email) {
             throw new InvalidArgumentException('email')
         }
-        if (!tokenCredential) {
+        if (!tokenCredential && !usernamePasswordCredential) {
             throw new InvalidArgumentException('token')
         }
 
@@ -228,18 +239,36 @@ class Registry {
         }
 
         // update auth in .npmrc
-        this.steps.withCredentials([
-            this.steps.string(
-                credentialsId: tokenCredential,
-                variable: 'TOKEN'
-            )
-        ]) {
-            this.steps.sh """
+        if (tokenCredential) {
+            this.steps.withCredentials([
+                this.steps.string(
+                    credentialsId: tokenCredential,
+                    variable: 'TOKEN'
+                )
+            ]) {
+                this.steps.sh """
 npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
 npm config set ${registryWithoutProtocol}:_authToken \${TOKEN}
 npm config set email ${this.email}
 npm config set always-auth true
 """
+            }
+        } else if (usernamePasswordCredential) {
+            this.steps.withCredentials([
+                this.steps.usernamePassword(
+                    credentialsId: this.usernamePasswordCredential,
+                    passwordVariable: 'PASSWORD',
+                    usernameVariable: 'USERNAME'
+                )
+            ]) {
+                this.steps.sh """
+npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
+npm config set ${registryWithoutProtocol}:username \${USERNAME}
+npm config set ${registryWithoutProtocol}:_password \${PASSWORD}
+npm config set email ${this.email}
+npm config set always-auth true
+"""
+            }
         }
 
         // get login information
