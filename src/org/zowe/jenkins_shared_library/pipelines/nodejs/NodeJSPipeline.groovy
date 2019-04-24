@@ -154,6 +154,47 @@ class NodeJSPipeline extends GenericPipeline {
     }
 
     /**
+     * Setup default branch settings
+     */
+    @Override
+    protected void defineDefaultBranches() {
+        this.branches.addMap([
+            [
+                name               : 'master',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+                allowFormalRelease : true,
+                releaseTag         : 'snapshot',
+                npmTag             : 'latest',
+            ],
+            [
+                name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+                allowFormalRelease : true,
+                releaseTag         : '$1-snapshot',
+                npmTag             : '$1-latest',
+            ],
+            [
+                name               : 'staging',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+                npmTag             : 'dev',
+            ],
+            [
+                name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
+                'protected'        : true,
+                buildHistory       : 20,
+                allowRelease       : true,
+                npmTag             : '$1-dev',
+            ],
+        ])
+    }
+
+    /**
      * Initialize npm publish registry configurations
      *
      * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
@@ -261,8 +302,11 @@ class NodeJSPipeline extends GenericPipeline {
      *     </dd>
      * </dl>
      */
-    void setup(NodeJSSetupArguments timeouts) {
+    void setupNodeJS(NodeJSSetupArguments timeouts) {
         super.setupGeneric(timeouts)
+
+        // prepare default configurations
+        this.defineDefaultBranches()
 
         // version could be used to publish artifacts
         def packageInfo = publishRegistry.getPackageInfo()
@@ -288,8 +332,17 @@ class NodeJSPipeline extends GenericPipeline {
      * @param timeouts A map that can be instantiated as {@link NodeJSSetupArguments}
      * @see #setup(NodeJSSetupArguments)
      */
-    void setup(Map timeouts = [:]) {
+    void setupNodeJS(Map timeouts = [:]) {
         setup(timeouts as NodeJSSetupArguments)
+    }
+
+    /**
+     * Pseudo setup method, should be overridden by inherited classes
+     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     */
+    @Override
+    protected void setup(Map timeouts = [:]) {
+        setupNodeJS(timeouts)
     }
 
     /**
@@ -309,7 +362,7 @@ class NodeJSPipeline extends GenericPipeline {
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
      */
-    void build(Map arguments = [:]) {
+    void buildNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.sh "npm run build"
@@ -317,6 +370,16 @@ class NodeJSPipeline extends GenericPipeline {
         }
 
         super.buildGeneric(arguments)
+    }
+
+    /**
+     * Pseudo build method, should be overridden by inherited classes
+     * @param arguments A map of arguments to be applied to the {@link BuildStageArguments} used to define
+     *                  the stage.
+     */
+    @Override
+    protected void build(Map arguments = [:]) {
+        buildNodeJS(arguments)
     }
 
     /**
@@ -337,7 +400,7 @@ class NodeJSPipeline extends GenericPipeline {
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
-    void test(Map arguments = [:]) {
+    void testNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.sh "npm run test"
@@ -345,6 +408,16 @@ class NodeJSPipeline extends GenericPipeline {
         }
 
         super.testGeneric(arguments)
+    }
+
+    /**
+     * Pseudo test method, should be overridden by inherited classes
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
+     *                  the stage.
+     */
+    @Override
+    protected void test(Map arguments = [:]) {
+        testNodeJS(arguments)
     }
 
     /**
@@ -385,7 +458,7 @@ class NodeJSPipeline extends GenericPipeline {
      *
      * @param arguments The arguments for the Deploy stage.
      */
-    protected void publish(Map arguments) {
+    protected void publishNodeJS(Map arguments) {
         if (!arguments.operation) {
             // Set the publish operation for an npm pipeline
             arguments.operation = { String stageName ->
@@ -409,6 +482,16 @@ class NodeJSPipeline extends GenericPipeline {
     }
 
     /**
+     * Pseudo publish method, should be overridden by inherited classes
+     * @param arguments The arguments for the publish step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    @Override
+    protected void publish(Map arguments) {
+        publishNodeJS(arguments)
+    }
+
+    /**
      * Bump patch level version
      */
     @Override
@@ -428,6 +511,7 @@ class NodeJSPipeline extends GenericPipeline {
     /**
      * Signal that no more stages will be added and begin pipeline execution.
      */
+    @Override
     void end(Map options = [:]) {
         super.endGeneric(options)
     }

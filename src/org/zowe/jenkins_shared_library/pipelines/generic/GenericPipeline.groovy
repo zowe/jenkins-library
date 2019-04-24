@@ -10,7 +10,7 @@
 
 package org.zowe.jenkins_shared_library.pipelines.generic
 
-import com.cloudbees.groovy.cps.NonCPS
+// import com.cloudbees.groovy.cps.NonCPS
 import groovy.util.logging.Log
 import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
@@ -167,13 +167,12 @@ class GenericPipeline extends Pipeline {
         changeInfo = new ChangeInformation(steps)
         github = new GitHub(steps)
         artifactory = new JFrogArtifactory(steps)
-        this.defineDefaultBranches()
     }
 
     /**
      * Setup default branch settings
      */
-    @NonCPS
+    @Override
     protected void defineDefaultBranches() {
         this.branches.addMap([
             [
@@ -479,6 +478,9 @@ class GenericPipeline extends Pipeline {
     void setupGeneric(GenericSetupArguments timeouts) {
         // Call setup from the super class
         super.setupBase(timeouts)
+
+        // prepare default configurations
+        this.defineDefaultBranches()
 
         createStage(name: 'Check for CI Skip', stage: {
             // This checks for the [ci skip] text. If found, the status code is 0

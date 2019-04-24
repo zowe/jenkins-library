@@ -45,10 +45,7 @@ final class Branches<T extends BranchProperties> implements Serializable {
      * @throws BranchException when a branch is already protected.
      */
     T add(T branch) throws BranchException {
-        if (_branches.hasProperty(branch.name)) {
-            throw new BranchException("${branch.name} already exists as a protected branch.")
-        }
-
+        // if it's already defined, we will overwrite the config
         return _branches.put(branch.name, branch)
     }
 

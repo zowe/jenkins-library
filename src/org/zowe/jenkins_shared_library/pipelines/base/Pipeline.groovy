@@ -229,8 +229,6 @@ class Pipeline {
         this.steps = steps
 
         this._email = new Email(steps)
-
-        this.defineDefaultBranches()
     }
 
     /**
@@ -484,6 +482,9 @@ class Pipeline {
      * @param timeouts The timeouts for the added stages.
      */
     void setupBase(SetupArguments timeouts) {
+        // prepare default configurations
+        this.defineDefaultBranches()
+
         // Create the stage and hold the variable for the future
         Stage setup = createStage(name: _SETUP_STAGE_NAME, stage: {
             steps.echo "Setup was called first"
