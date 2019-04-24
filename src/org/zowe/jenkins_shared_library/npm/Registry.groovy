@@ -305,14 +305,6 @@ npm config set ${registryWithoutProtocol}:always-auth true
     }
 
     /**
-     * Publish npm package with tag
-     * @param tag          npm publish tag, default is empty which is (latest)
-     */
-    void publish(String tag = '') {
-        publish([tag: tag])
-    }
-
-    /**
      * Declare a new version of npm package
      *
      * @param github         GitHub instance must have been initialized with repository, credential, etc
