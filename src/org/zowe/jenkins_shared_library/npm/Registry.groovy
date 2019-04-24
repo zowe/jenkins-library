@@ -102,6 +102,9 @@ class Registry {
         }
         if (args['scope']) {
             this.scope = args['scope']
+            if (this.scope.startsWith('@')) {
+                this.scope = this.scope.substring(1)
+            }
         }
         if (args['email']) {
             this.email = args['email']
@@ -196,11 +199,33 @@ class Registry {
             throw new InvalidArgumentException('token')
         }
 
+        // normalize registry url
+        if (!registry.endsWith('/')) {
+            registry += '/'
+        }
+        registry = registry.toLowerCase()
+        // per registry authentication in npmrc is:
+        // //registry.npmjs.org/:_authToken=<token>
+        // without protocol, with _authToken key
+        def registryWithoutProtocol
+        if (registry.startsWith('https://')) {
+            registryWithoutProtocol = registry.substring(6)
+        } else if (registry.startsWith('http://')) {
+            registryWithoutProtocol = registry.substring(5)
+        } else {
+            throw new InvalidArgumentException('registry', "Unknown registry protocol")
+        }
+
         this.steps.echo "login to npm registry: ${registry}"
 
         // create if it's not existed
         // backup current .npmrc
-        this.steps.sh "touch ${NPMRC_FILE} && mv ${NPMRC_FILE} ${NPMRC_FILE}-bak"
+        // this.steps.sh "touch ${NPMRC_FILE} && mv ${NPMRC_FILE} ${NPMRC_FILE}-bak"
+
+        // Prevent npm publish from being affected by the local npmrc file
+        if (this.steps.fileExists('.npmrc')) {
+            this.steps.sh "rm -f .npmrc || exit 0"
+        }
 
         // update auth in .npmrc
         this.steps.withCredentials([
@@ -210,15 +235,15 @@ class Registry {
             )
         ]) {
             this.steps.sh """
-npm config set registry ${this.registry}
-npm config set _auth \${TOKEN}
+npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
+npm config set ${registryWithoutProtocol}:_authToken \${TOKEN}
 npm config set email ${this.email}
 npm config set always-auth true
 """
         }
 
         // get login information
-        def whoami = this.steps.sh(script: "npm whoami", returnStdout: true).trim()
+        def whoami = this.steps.sh(script: "npm whoami --registry ${this.registry}", returnStdout: true).trim()
         this.steps.echo "npm user: ${whoami}"
 
         return whoami
