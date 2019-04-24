@@ -130,6 +130,11 @@ class NodeJSPipeline extends GenericPipeline {
     Registry publishRegistry
 
     /**
+     * Package information extracted from package.json
+     */
+    Map packageInfo
+
+    /**
      * Artifactory instances for npm install registries
      */
     List<Registry> installRegistries = []
@@ -226,12 +231,11 @@ class NodeJSPipeline extends GenericPipeline {
     void loginToPublishRegistry() {
         // try to determin registry again if not presented
         if (!publishRegistry.registry || !publishRegistry.scope) {
-            Map info = publishRegistry.getPackageInfo()
-            if (!publishRegistry.registry && info.containsKey('registry')) {
-                publishRegistry.registry = info['registry']
+            if (!publishRegistry.registry && this.packageInfo && this.packageInfo.containsKey('registry')) {
+                publishRegistry.registry = this.packageInfo['registry']
             }
-            if (!publishRegistry.scope && info.containsKey('scope')) {
-                publishRegistry.scope = info['scope']
+            if (!publishRegistry.scope && this.packageInfo && this.packageInfo.containsKey('scope')) {
+                publishRegistry.scope = this.packageInfo['scope']
             }
         }
 
@@ -297,14 +301,14 @@ class NodeJSPipeline extends GenericPipeline {
         // prepare default configurations
         this.defineDefaultBranches()
 
-        // version could be used to publish artifacts
-        def packageInfo = publishRegistry.getPackageInfo()
-        this.setVersion(packageInfo['version'])
-
         // this stage should always happen for node.js project?
         createStage(name: 'Install Node Package Dependencies', stage: {
             // try to login to npm install registries
             this.loginToInstallRegistries()
+            // init package info from package.json
+            this.packageInfo = publishRegistry.getPackageInfo()
+            // version could be used to publish artifact
+            this.setVersion(this.packageInfo['version'])
 
             if (steps.fileExists('pacakge-lock.json')) {
                 // if we have package-lock.json, try to use everything defined in that file
