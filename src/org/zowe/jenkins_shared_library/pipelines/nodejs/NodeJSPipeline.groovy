@@ -447,7 +447,7 @@ class NodeJSPipeline extends GenericPipeline {
      *
      * @param arguments The arguments for the Deploy stage.
      */
-    protected void publishNodeJS(Map arguments) {
+    protected void publishNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             // Set the publish operation for an npm pipeline
             arguments.operation = { String stageName ->
@@ -476,7 +476,7 @@ class NodeJSPipeline extends GenericPipeline {
      *                        provided.
      */
     @Override
-    protected void publish(Map arguments) {
+    protected void publish(Map arguments = [:]) {
         publishNodeJS(arguments)
     }
 
