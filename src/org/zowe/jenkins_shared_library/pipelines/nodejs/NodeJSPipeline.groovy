@@ -467,7 +467,7 @@ class NodeJSPipeline extends GenericPipeline {
 
         // should we upload anything else by default, like npm build log?
 
-        super.deployGeneric(arguments)
+        super.publishGeneric(arguments)
     }
 
     /**
