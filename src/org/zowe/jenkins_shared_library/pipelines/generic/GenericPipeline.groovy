@@ -245,14 +245,9 @@ class GenericPipeline extends Pipeline {
         }
 
         def result = false
-
-        for (def b in this.branches) {
-            if (branchName.matches(b.key)) {
-                if (b.value.getAllowRelease()) {
-                    result = true
-                    break
-                }
-            }
+        def branchProps = branches.getByPattern(branch)
+        if (branchProps.getAllowRelease()) {
+            result = true
         }
 
         result
@@ -275,14 +270,9 @@ class GenericPipeline extends Pipeline {
         }
 
         def result = false
-
-        for (def b in this.branches) {
-            if (branchName.matches(b.key)) {
-                if (b.value.getAllowFormalRelease()) {
-                    result = true
-                    break
-                }
-            }
+        def branchProps = branches.getByPattern(branch)
+        if (branchProps.getAllowFormalRelease()) {
+            result = true
         }
 
         result
@@ -326,16 +316,12 @@ class GenericPipeline extends Pipeline {
         String result = branch ?: Constants.DEFAULT_BRANCH_RELEASE_TAG
 
         if (branch) {
-            for (def b in this.branches) {
-                if (branchName.matches(b.key)) {
-                    def tag = b.value.getReleaseTag()
-                    if (tag) { // has release tag defined
-                        def replaced = branch.replaceAll(b.key, tag)
-                        if (branch != replaced) { // really replaced
-                            result = replaced
-                            break
-                        }
-                    }
+            def branchProps = branches.getByPattern(branch)
+            def tag = branchProps.getReleaseTag()
+            if (tag) { // has release tag defined
+                def replaced = branch.replaceAll(branchProps.name, tag)
+                if (branch != replaced) { // really replaced
+                    result = replaced
                 }
             }
         }
