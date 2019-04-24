@@ -132,7 +132,7 @@ class NodeJSPipeline extends GenericPipeline {
     /**
      * Artifactory instances for npm install registries
      */
-    Registry[] installRegistries
+    Registry[] installRegistries = []
 
     /**
      * Constructs the class.
