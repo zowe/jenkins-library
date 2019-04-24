@@ -641,7 +641,7 @@ class Pipeline {
                 stage = stage.next
             }
             stageList.push("Total: ${stageList.size() - 1}")
-            logger.fine(stageList.join("\n"))
+            log.fine(stageList.join("\n"))
 
             // Execute the pipeline
             _stages.execute()
