@@ -161,7 +161,7 @@ class NodeJSPipeline extends GenericPipeline {
         this.branches.addMap([
             [
                 name               : 'master',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
                 allowFormalRelease : true,
@@ -170,7 +170,7 @@ class NodeJSPipeline extends GenericPipeline {
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
                 allowFormalRelease : true,
@@ -179,14 +179,14 @@ class NodeJSPipeline extends GenericPipeline {
             ],
             [
                 name               : 'staging',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
                 npmTag             : 'dev',
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
                 npmTag             : '$1-dev',

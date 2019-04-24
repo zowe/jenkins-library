@@ -177,7 +177,7 @@ class GenericPipeline extends Pipeline {
         this.branches.addMap([
             [
                 name               : 'master',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
                 allowFormalRelease : true,
@@ -185,7 +185,7 @@ class GenericPipeline extends Pipeline {
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
                 allowFormalRelease : true,
@@ -193,13 +193,13 @@ class GenericPipeline extends Pipeline {
             ],
             [
                 name               : 'staging',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
             ],

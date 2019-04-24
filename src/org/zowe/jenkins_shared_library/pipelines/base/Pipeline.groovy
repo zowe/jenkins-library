@@ -238,12 +238,12 @@ class Pipeline {
         branches.addMap([
             [
                 name               : 'master',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
-                'protected'        : true,
+                isProtected        : true,
                 buildHistory       : 20,
             ],
         ])
