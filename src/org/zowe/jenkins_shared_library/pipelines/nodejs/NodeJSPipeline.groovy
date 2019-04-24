@@ -132,7 +132,7 @@ class NodeJSPipeline extends GenericPipeline {
     /**
      * Artifactory instances for npm install registries
      */
-    Registry[] installRegistries = []
+    List<Registry> installRegistries = []
 
     /**
      * Constructs the class.
@@ -216,7 +216,7 @@ class NodeJSPipeline extends GenericPipeline {
         for (Map config : configs) {
             Registry registry = new Registry(steps)
             registry.init(config)
-            installRegistries << registry
+            installRegistries.push(registry)
         }
     }
 
