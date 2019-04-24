@@ -43,7 +43,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
     @BeforeClass
     public static void setup() {
         initMultiBranchPipelineJob([
-            'name'             : 'generic-multibranch',
+            'name'             : 'nodejs-multibranch',
             'git-credential'   : System.getProperty('github.credential'),
             'git-owner'        : TEST_OWNER,
             'git-repository'   : TEST_REPORSITORY,

@@ -10,7 +10,7 @@
 
 package org.zowe.jenkins_shared_library.pipelines.generic
 
-// import com.cloudbees.groovy.cps.NonCPS
+import com.cloudbees.groovy.cps.NonCPS
 import groovy.util.logging.Log
 import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
@@ -173,8 +173,9 @@ class GenericPipeline extends Pipeline {
     /**
      * Setup default branch settings
      */
+    @NonCPS
     protected void defineDefaultBranches() {
-        branches.addMap([
+        this.branches.addMap([
             [
                 name               : 'master',
                 'protected'        : true,
