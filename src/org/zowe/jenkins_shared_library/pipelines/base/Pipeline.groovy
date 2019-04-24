@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.pipelines.base
 
+import groovy.util.logging.Log
 import java.util.concurrent.TimeUnit
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
@@ -116,6 +117,7 @@ import org.zowe.jenkins_shared_library.pipelines.Constants
  * <p>This <a href="https://issues.jenkins-ci.org/browse/JENKINS-47355?jql=text%20~%20%22inherit%20class%22">issue</a>
  * seems to signify that they may never fix this problem.</p>
  */
+@Log
 class Pipeline {
     /**
      * The name of the setup stage.
@@ -627,6 +629,19 @@ class Pipeline {
 
             // update build properties
             steps.properties(buildOptions)
+
+            // debug info
+            def stageList = ["These stages are defined:"]
+            Stage stage = _stages.getFirstStageToExecute()
+            // Loop while we have a stage
+            while (stage) {
+                // Execute the stage
+                stageList.push("- ${stage.name}")
+                // Move to the next stage
+                stage = stage.next
+            }
+            stageList.push("Total: ${stage.size() - 1}")
+            logger.fine(stageList.join("\n"))
 
             // Execute the pipeline
             _stages.execute()

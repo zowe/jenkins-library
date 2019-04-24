@@ -322,7 +322,7 @@ class NodeJSPipeline extends GenericPipeline {
      * @see #setup(NodeJSSetupArguments)
      */
     void setupNodeJS(Map timeouts = [:]) {
-        setup(timeouts as NodeJSSetupArguments)
+        setupNodeJS(timeouts as NodeJSSetupArguments)
     }
 
     /**
