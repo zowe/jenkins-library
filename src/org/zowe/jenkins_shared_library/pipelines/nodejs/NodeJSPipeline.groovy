@@ -68,7 +68,7 @@ import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
  *         tokenCredential: 'robot-user'
  *     ])
  *
- *     pipeline.configureInstallRegistry([
+ *     pipeline.configureInstallRegistries([
  *         [email: 'email@example.com', tokenCredential: 'credentials-id'],
  *         [registry: 'https://registry.com', email: 'email@example.com', tokenCredential: 'credentials-id']
  *         [registry: 'https://registry.com', email: 'email@example.com', tokenCredential: 'credentials-id', scope: '@myOrg']
@@ -212,18 +212,7 @@ class NodeJSPipeline extends GenericPipeline {
      *
      * @param configs           npm registry configuration maps
      */
-    void configureInstallRegistry(Map... configs) {
-        configureInstallRegistry(configs)
-    }
-
-    /**
-     * Initialize npm publish registry configurations
-     *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
-     *
-     * @param configs           npm registry configuration maps
-     */
-    void configureInstallRegistry(List<Map> configs) {
+    void configureInstallRegistries(List<Map> configs) {
         for (Map config : configs) {
             Registry registry = new Registry(steps)
             registry.init(config)
