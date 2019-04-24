@@ -103,7 +103,7 @@ class GenericPipeline extends Pipeline {
      * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
      * is to prevent issues with publishing.</p>
      */
-    Branches<GenericBranch> branches = new Branches<>(GenericBranch.class)
+    protected Branches<GenericBranch> branches = new Branches<>(GenericBranch.class)
 
     /**
      * Temporary upload spec name

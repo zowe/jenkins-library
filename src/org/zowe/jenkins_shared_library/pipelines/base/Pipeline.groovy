@@ -152,7 +152,7 @@ class Pipeline {
      * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
      * is to prevent issues with publishing.</p>
      */
-    Branches<Branch> branches = new Branches<Branch>(Branch.class)
+    protected Branches<Branch> branches = new Branches<Branch>(Branch.class)
 
     /**
      * This control variable represents internal states of items in the pipeline.

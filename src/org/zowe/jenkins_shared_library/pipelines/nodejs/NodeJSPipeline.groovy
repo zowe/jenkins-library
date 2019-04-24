@@ -122,7 +122,7 @@ class NodeJSPipeline extends GenericPipeline {
      * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
      * is to prevent issues with publishing.</p>
      */
-    Branches<NodeJSBranch> branches = new Branches<>(NodeJSBranch.class)
+    protected Branches<NodeJSBranch> branches = new Branches<>(NodeJSBranch.class)
 
     /**
      * Artifactory instance
