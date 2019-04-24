@@ -51,4 +51,6 @@ class Constants {
             'https://i.imgur.com/Zq0iBJK.jpg' /* surprised pikachu */
         ]
     ]
+
+    static String DEFAULT_NPM_NON_RELEASE_TAG = 'snapshot'
 }

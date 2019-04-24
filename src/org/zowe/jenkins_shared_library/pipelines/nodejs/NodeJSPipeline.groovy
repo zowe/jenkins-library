@@ -18,6 +18,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.Branches
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import org.zowe.jenkins_shared_library.pipelines.Build
+import org.zowe.jenkins_shared_library.pipelines.Constants
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.ReleaseStageArguments
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
@@ -138,6 +139,11 @@ class NodeJSPipeline extends GenericPipeline {
      * Artifactory instances for npm install registries
      */
     List<Registry> installRegistries = []
+
+    /**
+     * Default artifactory file name pattern
+     */
+    String npmPublishTargetVersion = '{version}{branchtag}{buildnumber}{timestamp}'
 
     /**
      * Constructs the class.
@@ -458,14 +464,22 @@ class NodeJSPipeline extends GenericPipeline {
                 // Login to the publish registry
                 loginToPublishRegistry()
 
-                NodeJSBranch branchProps = branches.getByPattern(changeInfo.branchName)
-                String npmTag = branchProps.getNpmTag()
+                Boolean _isReleaseBranch = this.isReleaseBranch()
+                Boolean _isPerformingRelease = this.isPerformingRelease()
 
-                if (npmTag) {
-                    steps.sh "npm publish --tag ${npmTag}"
-                } else {
-                    steps.sh "npm publish"
+                NodeJSBranch branchProps = branches.getByPattern(changeInfo.branchName)
+                String npmTag = Constants.DEFAULT_NPM_NON_RELEASE_TAG
+                if (_isReleaseBranch && _isPerformingRelease) {
+                    npmTag = branchProps.getNpmTag()
                 }
+                String npmVersion = parseArtifactoryUploadTargetPath(npmPublishTargetVersion)
+
+                steps.echo "Publishing package v${npmVersion} as tag ${npmTag}"
+
+                this.publishRegistry.publish(
+                    tag     : npmTag,
+                    version : npmVersion
+                )
             }
         }
 

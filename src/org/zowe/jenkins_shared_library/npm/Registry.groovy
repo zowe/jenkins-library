@@ -106,6 +106,13 @@ class Registry {
                 this.registry = registryInPackageJson
             }
         }
+        // normalize registry url
+        if (this.registry) {
+            if (!registry.endsWith('/')) {
+                registry += '/'
+            }
+            registry = registry.toLowerCase()
+        }
         if (args['scope']) {
             this.scope = args['scope']
             if (this.scope.startsWith('@')) {
@@ -188,10 +195,8 @@ class Registry {
     /**
      * Login to NPM registry
      *
-     * @param   registry                    the registry URL
-     * @param   tokenCredential             Jenkins credential ID for NPM token
-     * @param   usernamePasswordCredential  Jenkins credential ID for NPM username/base64_password
-     * @param   email                       NPM user email
+     * Use similar parameters like init() method and with these extra:
+     *
      * @return                              username who login
      */
     String login(Map args = [:]) throws InvalidArgumentException {
@@ -210,11 +215,6 @@ class Registry {
             throw new InvalidArgumentException('token')
         }
 
-        // normalize registry url
-        if (!registry.endsWith('/')) {
-            registry += '/'
-        }
-        registry = registry.toLowerCase()
         // per registry authentication in npmrc is:
         // //registry.npmjs.org/:_authToken=<token>
         // without protocol, with _authToken key
@@ -249,8 +249,8 @@ class Registry {
                 this.steps.sh """
 npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
 npm config set ${registryWithoutProtocol}:_authToken \${TOKEN}
-npm config set email ${this.email}
-npm config set always-auth true
+npm config set ${registryWithoutProtocol}:email ${this.email}
+npm config set ${registryWithoutProtocol}:always-auth true
 """
             }
         } else if (usernamePasswordCredential) {
@@ -265,8 +265,8 @@ npm config set always-auth true
 npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
 npm config set ${registryWithoutProtocol}:username \${USERNAME}
 npm config set ${registryWithoutProtocol}:_password \${PASSWORD}
-npm config set email ${this.email}
-npm config set always-auth true
+npm config set ${registryWithoutProtocol}:email ${this.email}
+npm config set ${registryWithoutProtocol}:always-auth true
 """
             }
         }
@@ -279,13 +279,47 @@ npm config set always-auth true
     }
 
     /**
+     * Publish npm package with tag
+     *
+     * Use similar parameters like init() method and with these extra:
+     *
+     * @param tag          npm publish tag, default is empty which is (latest)
+     * @param version      package version to publish
+     */
+    void publish(Map args = [:]) {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        String optNpmTag = (args.containsKey('tag') && args['tag']) ? " --tag ${args['tag']}" : ""
+        String optNpmRegistry = this.registry ? " --registry ${this.registry}" : ""
+
+        log.fine("Publishing npm package to ${this.registry} with tag: ${args['tag']}, version: ${args['version']}")
+
+        if (args.containsKey('version')) {
+            steps.sh "npm version ${args.version}"
+        }
+
+        steps.sh "npm publish${optNpmTag}${optNpmRegistry}"
+    }
+
+    /**
+     * Publish npm package with tag
+     * @param tag          npm publish tag, default is empty which is (latest)
+     */
+    void publish(String tag = '') {
+        publish([tag: tag])
+    }
+
+    /**
      * Declare a new version of npm package
      *
      * @param github         GitHub instance must have been initialized with repository, credential, etc
      * @param branch         which branch to release
      * @param version        what kind of version bump we should make
      */
-    void version(Map args = [:]) throws InvalidArgumentException {
+    void version(Map args = [:]) throws InvalidArgumentException, NpmException {
         // init with arguments
         if (args.size() > 0) {
             this.init(args)
@@ -317,9 +351,9 @@ npm config set always-auth true
         this.steps.dir(tempFolder) {
             def res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
             if (res.contains('Git working directory not clean.')) {
-                throw new Exception('Working directory is not clean')
+                throw new NpmException('Working directory is not clean')
             } else if (!(res ==~ /^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
-                throw new Exception("Bump version failed: ${res}")
+                throw new NpmException("Bump version failed: ${res}")
             }
         }
 
@@ -327,7 +361,7 @@ npm config set always-auth true
         this.steps.echo "Pushing ${args['branch']} to remote ..."
         args['github'].push()
         if (!args['github'].isSynced()) {
-            throw new Exception('Branch is not synced with remote after npm version.')
+            throw new NpmException('Branch is not synced with remote after npm version.')
         }
 
         // remove temp folder
