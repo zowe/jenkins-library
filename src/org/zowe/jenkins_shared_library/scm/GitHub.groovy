@@ -132,7 +132,7 @@ class GitHub {
                 passwordVariable: 'PASSWORD',
                 usernameVariable: 'USERNAME'
             )]) {
-                this.username = "${USERNAME}"
+                this.username = "\${USERNAME}"
                 // FIXME: encode username/passsword?
                 this.steps.sh "echo \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}\" > ~/.git-credentials"
             }
