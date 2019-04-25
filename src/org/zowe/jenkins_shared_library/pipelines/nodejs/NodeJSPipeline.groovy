@@ -66,13 +66,13 @@ import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
  *
  *     pipeline.configurePublishRegistry([
  *         email: 'robot-user@example.com',
- *         tokenCredential: 'robot-user'
+ *         usernamePasswordCredential: 'robot-user'
  *     ])
  *
  *     pipeline.configureInstallRegistries([
- *         [email: 'email@example.com', tokenCredential: 'credentials-id'],
- *         [registry: 'https://registry.com', email: 'email@example.com', tokenCredential: 'credentials-id']
- *         [registry: 'https://registry.com', email: 'email@example.com', tokenCredential: 'credentials-id', scope: '@myOrg']
+ *         [email: 'email@example.com', usernamePasswordCredential: 'credentials-id'],
+ *         [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id']
+ *         [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id', scope: '@myOrg']
  *     ])
  *
  *     // MUST BE CALLED FIRST
@@ -245,7 +245,7 @@ class NodeJSPipeline extends GenericPipeline {
             }
         }
 
-        if (publishRegistry.tokenCredential) {
+        if (publishRegistry.tokenCredential || publishRegistry.usernamePasswordCredential) {
             // this is a custom registry with login credential
             // we need to login
             publishRegistry.login()
@@ -257,7 +257,7 @@ class NodeJSPipeline extends GenericPipeline {
      */
     void loginToInstallRegistries() {
         for (Registry registry : installRegistries) {
-            if (registry.tokenCredential) {
+            if (registry.tokenCredential || registry.usernamePasswordCredential) {
                 // this is a custom registry with login credential
                 // we need to login
                 registry.login()

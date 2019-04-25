@@ -54,7 +54,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         }
         npmRegistry.init([
             'email'                      : env.NPM_EMAIL,
-            'tokenCredential'            : env.NPM_CREDENTIAL,
+            'usernamePasswordCredential' : env.NPM_CREDENTIAL,
         ])
 
         echo "[NPM_REGISTRY_TEST] init successfully"

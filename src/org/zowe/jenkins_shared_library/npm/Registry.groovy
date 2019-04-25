@@ -28,6 +28,11 @@ class Registry {
     public static final String PACKAGE_JSON = 'package.json'
 
     /**
+     * Default npmjs registry
+     */
+    publis static final String DEFAULT_REGISTRY = 'https://registry.npmjs.org/'
+
+    /**
      * Reference to the groovy pipeline variable.
      */
     def steps
@@ -35,7 +40,7 @@ class Registry {
     /**
      * npm registry url
      */
-    String registry = 'https://registry.npmjs.org/'
+    String registry = DEFAULT_REGISTRY
 
     /**
      * npm package scope
@@ -181,7 +186,12 @@ class Registry {
                 if (pkg['publishConfig'] && pkg['publishConfig']['registry']) {
                     info['registry'] = pkg['publishConfig']['registry']
                 }
-
+                if (pkg['scripts']) {
+                    info['scripts'] = []
+                    pkg['scripts'].each { k, v ->
+                        info['scripts'].push(k)
+                    }
+                }
             }
         } else {
             throw new NpmException("packageJsonFile is not defined or file \"${this.packageJsonFile}\" doesn't not exist.")
