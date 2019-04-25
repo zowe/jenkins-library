@@ -48,5 +48,5 @@ class NodeJSSetupArguments extends GenericSetupArguments {
      *
      * Pipeline will always exit if there are changes other than lock files.
      */
-    Boolean exitIfFolderNotClean = true
+    Boolean exitIfFolderNotClean = false
 }
