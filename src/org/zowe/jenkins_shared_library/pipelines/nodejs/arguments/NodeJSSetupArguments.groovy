@@ -27,6 +27,12 @@ class NodeJSSetupArguments extends GenericSetupArguments {
      * @default 5 Minutes
      */
     StageTimeout installDependencies = [time: 5, unit: TimeUnit.MINUTES]
+    /**
+     * Amount of time allowed to audit.
+     *
+     * @default 5 Minutes
+     */
+    StageTimeout audit = [time: 5, unit: TimeUnit.MINUTES]
 
     /**
      * If we always use `npm install`.

@@ -316,20 +316,27 @@ class NodeJSPipeline extends GenericPipeline {
             // version could be used to publish artifact
             this.setVersion(this.packageInfo['version'])
 
+            // we save audit part to next stage
             if (arguments.alwaysUseNpmInstall) {
-                steps.sh "npm install"
+                steps.sh "npm install --no-audit"
             } else {
                 if (steps.fileExists('package-lock.json')) {
                     // if we have package-lock.json, try to use everything defined in that file
                     steps.sh "npm ci"
                 } else {
-                    steps.sh "npm install"
+                    steps.sh "npm install --no-audit"
                 }
             }
 
-            // debug
+            // debug purpose, sometimes npm install will update package-lock.json
             steps.sh 'git status'
         }, isSkippable: false, timeout: arguments.installDependencies)
+
+        // this stage should always happen for node.js project?
+        createStage(name: 'Audit', stage: {
+            // we should have login to npm install registries
+            steps.sh "npm audit"
+        }, isSkippable: false, timeout: arguments.audit)
     }
 
     /**
@@ -372,9 +379,6 @@ class NodeJSPipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.sh "npm run build"
-
-                // debug
-                steps.sh 'git status'
             }
         }
 
@@ -413,9 +417,6 @@ class NodeJSPipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.sh "npm run test"
-
-                // debug
-                steps.sh 'git status'
             }
         }
 
@@ -475,14 +476,8 @@ class NodeJSPipeline extends GenericPipeline {
             // Set the publish operation for an npm pipeline
             arguments.operation = { String stageName ->
 
-                // debug
-                steps.sh 'git status'
-
                 // Login to the publish registry
                 loginToPublishRegistry()
-
-                // debug
-                steps.sh 'git status'
 
                 Boolean _isReleaseBranch = this.isReleaseBranch()
                 Boolean _isPerformingRelease = this.isPerformingRelease()
@@ -495,9 +490,6 @@ class NodeJSPipeline extends GenericPipeline {
                 String npmVersion = parseArtifactoryUploadTargetPath(npmPublishTargetVersion)
 
                 steps.echo "Publishing package v${npmVersion} as tag ${npmTag}"
-
-                // debug
-                steps.sh 'git status'
 
                 this.publishRegistry.publish(
                     tag     : npmTag,
