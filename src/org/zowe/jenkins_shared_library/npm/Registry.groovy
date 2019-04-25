@@ -30,7 +30,7 @@ class Registry {
     /**
      * Default npmjs registry
      */
-    publis static final String DEFAULT_REGISTRY = 'https://registry.npmjs.org/'
+    public static final String DEFAULT_REGISTRY = 'https://registry.npmjs.org/'
 
     /**
      * Reference to the groovy pipeline variable.
