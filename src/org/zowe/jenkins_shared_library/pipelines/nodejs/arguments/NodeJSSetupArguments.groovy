@@ -27,4 +27,11 @@ class NodeJSSetupArguments extends GenericSetupArguments {
      * @default 5 Minutes
      */
     StageTimeout installDependencies = [time: 5, unit: TimeUnit.MINUTES]
+
+    /**
+     * If we always use `npm install`.
+     *
+     * By default, with value false, the install dependencies stage will try to decide whether use `npm ci` or `npm install` based on existence of `package.json`.
+     */
+    Boolean alwaysUseNpmInstall = false
 }

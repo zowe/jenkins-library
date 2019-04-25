@@ -301,8 +301,8 @@ class NodeJSPipeline extends GenericPipeline {
      *     </dd>
      * </dl>
      */
-    void setupNodeJS(NodeJSSetupArguments timeouts) {
-        super.setupGeneric(timeouts)
+    void setupNodeJS(NodeJSSetupArguments arguments) {
+        super.setupGeneric(arguments)
 
         // prepare default configurations
         this.defineDefaultBranches()
@@ -316,32 +316,36 @@ class NodeJSPipeline extends GenericPipeline {
             // version could be used to publish artifact
             this.setVersion(this.packageInfo['version'])
 
-            if (steps.fileExists('pacakge-lock.json')) {
-                // if we have package-lock.json, try to use everything defined in that file
-                steps.sh "npm ci"
-            } else {
+            if (arguments.alwaysUseNpmInstall) {
                 steps.sh "npm install"
+            } else {
+                if (steps.fileExists('package-lock.json')) {
+                    // if we have package-lock.json, try to use everything defined in that file
+                    steps.sh "npm ci"
+                } else {
+                    steps.sh "npm install"
+                }
             }
-        }, isSkippable: false, timeout: timeouts.installDependencies)
+        }, isSkippable: false, timeout: arguments.installDependencies)
     }
 
     /**
      * Initialize the pipeline.
      *
-     * @param timeouts A map that can be instantiated as {@link NodeJSSetupArguments}
+     * @param arguments A map that can be instantiated as {@link NodeJSSetupArguments}
      * @see #setup(NodeJSSetupArguments)
      */
-    void setupNodeJS(Map timeouts = [:]) {
-        setupNodeJS(timeouts as NodeJSSetupArguments)
+    void setupNodeJS(Map arguments = [:]) {
+        setupNodeJS(arguments as NodeJSSetupArguments)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     * @param arguments A map that can be instantiated as {@link SetupArguments}
      */
     @Override
-    protected void setup(Map timeouts = [:]) {
-        setupNodeJS(timeouts)
+    protected void setup(Map arguments = [:]) {
+        setupNodeJS(arguments)
     }
 
     /**

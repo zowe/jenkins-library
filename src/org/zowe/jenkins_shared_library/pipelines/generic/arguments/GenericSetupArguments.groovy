@@ -21,13 +21,6 @@ import java.util.concurrent.TimeUnit
  */
 class GenericSetupArguments extends SetupArguments {
     /**
-     * Amount of time allowed for the git setup.
-     *
-     * @default 1 Minute
-     */
-    StageTimeout gitSetup = [time: 1, unit: TimeUnit.MINUTES]
-
-    /**
      * Amount of time allowed for the CI Skip check.
      *
      * @default 1 Minute

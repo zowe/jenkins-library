@@ -481,9 +481,9 @@ class Pipeline {
      * @Note This method was intended to be called {@code setup} but had to be named
      *       {@code setupBase} due to the issues described in {@link Pipeline}.
      *
-     * @param timeouts The timeouts for the added stages.
+     * @param arguments The arguments for the added stages.
      */
-    void setupBase(SetupArguments timeouts) {
+    void setupBase(SetupArguments arguments) {
         // prepare default configurations
         this.defineDefaultBranches()
 
@@ -500,7 +500,7 @@ class Pipeline {
             } else {
                 steps.echo "No problems with pre-initialization of pipeline :)"
             }
-        }, isSkippable: false, timeout: timeouts.setup)
+        }, isSkippable: false, timeout: arguments.setup)
 
         // Check for duplicate setup call
         if (_control.setup) {
@@ -518,34 +518,34 @@ class Pipeline {
         if (steps.scm) {
             createStage(name: 'Checkout', stage: {
                 steps.checkout steps.scm
-            }, isSkippable: false, timeout: timeouts.checkout)
+            }, isSkippable: false, timeout: arguments.checkout)
         }
     }
 
     /**
      * Initialize the pipeline.
      *
-     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     * @param arguments A map that can be instantiated as {@link SetupArguments}
      * @see #setupBase(SetupArguments)
      */
-    void setupBase(Map timeouts = [:]) {
-        setupBase(timeouts as SetupArguments)
+    void setupBase(Map arguments = [:]) {
+        setupBase(arguments as SetupArguments)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param timeouts The timeouts for the added stages.
+     * @param arguments The arguments for the added stages.
      */
-    protected void setup(SetupArguments timeouts) {
-        setupBase(timeouts)
+    protected void setup(SetupArguments arguments) {
+        setupBase(arguments)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     * @param arguments A map that can be instantiated as {@link SetupArguments}
      */
-    protected void setup(Map timeouts = [:]) {
-        setupBase(timeouts)
+    protected void setup(Map arguments = [:]) {
+        setupBase(arguments)
     }
 
     /**

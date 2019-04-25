@@ -461,9 +461,9 @@ class GenericPipeline extends Pipeline {
      * @Note This method was intended to be called {@code setup} but had to be named
      * {@code setupGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
      */
-    void setupGeneric(GenericSetupArguments timeouts) {
+    void setupGeneric(GenericSetupArguments arguments) {
         // Call setup from the super class
-        super.setupBase(timeouts)
+        super.setupBase(arguments)
 
         // prepare default configurations
         this.defineDefaultBranches()
@@ -476,26 +476,26 @@ class GenericPipeline extends Pipeline {
                 _shouldSkipRemainingStages = true
                 setResult(ResultEnum.NOT_BUILT)
             }
-        }, timeout: timeouts.ciSkip)
+        }, timeout: arguments.ciSkip)
     }
 
     /**
      * Initialize the pipeline.
      *
-     * @param timeouts A map that can be instantiated as {@link GenericSetupArguments}
+     * @param arguments A map that can be instantiated as {@link GenericSetupArguments}
      * @see #setupGeneric(GenericSetupArguments)
      */
-    void setupGeneric(Map timeouts = [:]) {
-        setupGeneric(timeouts as GenericSetupArguments)
+    void setupGeneric(Map arguments = [:]) {
+        setupGeneric(arguments as GenericSetupArguments)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param timeouts A map that can be instantiated as {@link SetupArguments}
+     * @param arguments A map that can be instantiated as {@link SetupArguments}
      */
     @Override
-    protected void setup(Map timeouts = [:]) {
-        setupGeneric(timeouts)
+    protected void setup(Map arguments = [:]) {
+        setupGeneric(arguments)
     }
 
     /**
