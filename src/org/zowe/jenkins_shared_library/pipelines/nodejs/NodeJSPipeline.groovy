@@ -345,8 +345,10 @@ ${gitStatus}
                 } else {
                     // we decide to ignore lock files
                     if (gitStatus == 'M package-lock.json') {
+                        this.steps.echo "WARNING: package-lock.json will be reset to ignore the failure"
                         steps.sh 'git checkout -- package-lock.json'
                     } else if (gitStatus == 'M yarn.lock') {
+                        this.steps.echo "WARNING: yarn.lock will be reset to ignore the failure"
                         steps.sh 'git checkout -- yarn.lock'
                     } else {
                         steps.error 'Git folder is not clean other than lock files after installing dependencies.'
@@ -362,7 +364,7 @@ ${gitStatus}
                 steps.sh "npm audit"
             } catch (e) {
                 if (arguments.ignoreAuditFailure) {
-                    steps.echo "WARNING: npm audit failed\n${e}"
+                    steps.echo "WARNING: npm audit failed with error \"${e}\" but is ignored."
                 } else {
                     throw e
                 }
