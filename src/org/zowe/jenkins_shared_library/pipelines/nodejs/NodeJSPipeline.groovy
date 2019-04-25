@@ -316,20 +316,44 @@ class NodeJSPipeline extends GenericPipeline {
             // version could be used to publish artifact
             this.setVersion(this.packageInfo['version'])
 
-            // we save audit part to next stage
-            if (arguments.alwaysUseNpmInstall) {
-                steps.sh "npm install --no-audit"
+            if (steps.fileExists('yarn.lock')) {
+                steps.sh "yarn install"
             } else {
-                if (steps.fileExists('package-lock.json')) {
-                    // if we have package-lock.json, try to use everything defined in that file
-                    steps.sh "npm ci"
-                } else {
+                // we save audit part to next stage
+                if (arguments.alwaysUseNpmInstall) {
                     steps.sh "npm install --no-audit"
+                } else {
+                    if (steps.fileExists('package-lock.json')) {
+                        // if we have package-lock.json, try to use everything defined in that file
+                        steps.sh "npm ci"
+                    } else {
+                        steps.sh "npm install --no-audit"
+                    }
                 }
             }
 
             // debug purpose, sometimes npm install will update package-lock.json
-            steps.sh 'git status'
+            def gitStatus = this.steps.sh(script: 'git status --porcelain', returnStdout: true).trim()
+            if (gitStatus != '') {
+                this.steps.echo """
+======================= WARNING: git folder is not clean =======================
+${gitStatus}
+============ This may cause fail to publish artifact in later stage ============
+================================================================================
+"""
+                if (arguments.exitIfFolderNotClean) {
+                    steps.error 'Git folder is not clean after installing dependencies.'
+                } else {
+                    // we decide to ignore lock files
+                    if (gitStatus == ' M package-lock.json') {
+                        steps.sh 'git checkout -- package-lock.json'
+                    } else if (gitStatus == ' M yarn.lock') {
+                        steps.sh 'git checkout -- yarn.lock'
+                    } else {
+                        steps.error 'Git folder is not clean other than lock files after installing dependencies.'
+                    }
+                }
+            }
         }, isSkippable: false, timeout: arguments.installDependencies)
 
         // this stage should always happen for node.js project?

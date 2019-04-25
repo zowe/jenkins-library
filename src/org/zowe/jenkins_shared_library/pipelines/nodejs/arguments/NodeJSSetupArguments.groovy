@@ -40,4 +40,13 @@ class NodeJSSetupArguments extends GenericSetupArguments {
      * By default, with value false, the install dependencies stage will try to decide whether use `npm ci` or `npm install` based on existence of `package.json`.
      */
     Boolean alwaysUseNpmInstall = false
+
+    /**
+     * If exit the pipeline if the git folder is not clean after install dependencies.
+     *
+     * Usually the failure is caused by mismatched package-lock.json or wrong registry configuration.
+     *
+     * Pipeline will always exit if there are changes other than lock files.
+     */
+    Boolean exitIfFolderNotClean = true
 }
