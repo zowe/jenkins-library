@@ -311,6 +311,7 @@ npm config set ${registryWithoutProtocol}:always-auth true
      * Use similar parameters like init() method and with these extra:
      *
      * @param tag          npm publish tag, default is empty which is (latest)
+     * @param github       GitHub instance must have been initialized with repository, credential, etc
      * @param version      package version to publish
      */
     void publish(Map args = [:]) {
@@ -325,6 +326,10 @@ npm config set ${registryWithoutProtocol}:always-auth true
         log.fine("Publishing npm package to ${this.registry} with tag: ${args['tag']}, version: ${args['version']}")
 
         if (args.containsKey('version')) {
+            if (args.containsKey('github')) {
+                // ensure git config is in place
+                args['github'].config()
+            }
             steps.sh "npm version ${args.version}"
         }
 

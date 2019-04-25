@@ -524,6 +524,7 @@ ${gitStatus}
 
                 this.publishRegistry.publish(
                     tag     : npmTag,
+                    github  : this.github,
                     version : npmVersion
                 )
             }
