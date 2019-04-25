@@ -358,7 +358,15 @@ ${gitStatus}
         // this stage should always happen for node.js project?
         createStage(name: 'Audit', stage: {
             // we should have login to npm install registries
-            steps.sh "npm audit"
+            try {
+                steps.sh "npm audit"
+            } catch (e) {
+                if (arguments.ignoreAuditFailure) {
+                    steps.echo "WARNING: npm audit failed\n${e}"
+                } else {
+                    throw e
+                }
+            }
         }, isSkippable: false, timeout: arguments.audit)
     }
 

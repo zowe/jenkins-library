@@ -295,6 +295,9 @@ npm config set ${registryWithoutProtocol}:always-auth true
             }
         }
 
+        // show npm configs
+        this.steps.sh 'npm config list'
+
         // get login information
         def whoami = this.steps.sh(script: "npm whoami --registry ${this.registry}", returnStdout: true).trim()
         this.steps.echo "npm user: ${whoami}"
