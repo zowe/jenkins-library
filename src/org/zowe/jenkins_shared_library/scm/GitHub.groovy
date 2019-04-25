@@ -255,13 +255,13 @@ class GitHub {
             if (this.steps.fileExists('.git')) {
                 // git configs for the repository
                 if (this.username) {
-                    this.command("git config user.name \"${this.username}\"")
+                    this.steps.sh "git config user.name \"${this.username}\""
                 }
                 if (this.email) {
-                    this.command("git config user.email \"${this.email}\"")
+                    this.steps.sh "git config user.email \"${this.email}\""
                 }
                 // using https repository, indicate git push to check ~/.git-credentials
-                this.command('git config credential.helper store')
+                this.steps.sh 'git config credential.helper store'
             }
         }
     }
