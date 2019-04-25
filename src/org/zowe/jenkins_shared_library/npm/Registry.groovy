@@ -40,7 +40,7 @@ class Registry {
     /**
      * npm registry url
      */
-    String registry = DEFAULT_REGISTRY
+    String registry
 
     /**
      * npm package scope
@@ -216,7 +216,7 @@ class Registry {
         }
         // validate arguments
         if (!registry) {
-            throw new InvalidArgumentException('registry')
+            registry = DEFAULT_REGISTRY
         }
         if (!email) {
             throw new InvalidArgumentException('email')
