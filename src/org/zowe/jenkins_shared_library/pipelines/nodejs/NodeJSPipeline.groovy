@@ -339,15 +339,14 @@ class NodeJSPipeline extends GenericPipeline {
 ======================= WARNING: git folder is not clean =======================
 ${gitStatus}
 ============ This may cause fail to publish artifact in later stage ============
-================================================================================
 """
                 if (arguments.exitIfFolderNotClean) {
                     steps.error 'Git folder is not clean after installing dependencies.'
                 } else {
                     // we decide to ignore lock files
-                    if (gitStatus == ' M package-lock.json') {
+                    if (gitStatus == 'M package-lock.json') {
                         steps.sh 'git checkout -- package-lock.json'
-                    } else if (gitStatus == ' M yarn.lock') {
+                    } else if (gitStatus == 'M yarn.lock') {
                         steps.sh 'git checkout -- yarn.lock'
                     } else {
                         steps.error 'Git folder is not clean other than lock files after installing dependencies.'
