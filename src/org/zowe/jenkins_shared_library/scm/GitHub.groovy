@@ -142,6 +142,9 @@ class GitHub {
         if (args['username']) {
             this.username = args['username']
         }
+
+        // configure git config
+        this.config()
     }
 
     /**
@@ -237,15 +240,30 @@ class GitHub {
             )
         }
 
-        // git configs for the repository
-        if (this.username) {
-            this.command("git config user.name \"${this.username}\"")
+        this.config()
+    }
+
+    /**
+     * Setup git config based on properties
+     */
+    void config() {
+        def f = this.folder ?: './'
+
+        // work in target folder
+        this.steps.dir(f) {
+            // is this a git folder?
+            if (this.steps.fileExists('.git')) {
+                // git configs for the repository
+                if (this.username) {
+                    this.command("git config user.name \"${this.username}\"")
+                }
+                if (this.email) {
+                    this.command("git config user.email \"${this.email}\"")
+                }
+                // using https repository, indicate git push to check ~/.git-credentials
+                this.command('git config credential.helper store')
+            }
         }
-        if (this.email) {
-            this.command("git config user.email \"${this.email}\"")
-        }
-        // using https repository, indicate git push to check ~/.git-credentials
-        this.command('git config credential.helper store')
     }
 
     /**
