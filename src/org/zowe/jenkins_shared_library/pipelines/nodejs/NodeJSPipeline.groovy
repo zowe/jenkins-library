@@ -326,6 +326,9 @@ class NodeJSPipeline extends GenericPipeline {
                     steps.sh "npm install"
                 }
             }
+
+            // debug
+            steps.sh 'git status'
         }, isSkippable: false, timeout: arguments.installDependencies)
     }
 
@@ -369,6 +372,9 @@ class NodeJSPipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.sh "npm run build"
+
+                // debug
+                steps.sh 'git status'
             }
         }
 
@@ -407,6 +413,9 @@ class NodeJSPipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.sh "npm run test"
+
+                // debug
+                steps.sh 'git status'
             }
         }
 
@@ -465,8 +474,15 @@ class NodeJSPipeline extends GenericPipeline {
         if (!arguments.operation) {
             // Set the publish operation for an npm pipeline
             arguments.operation = { String stageName ->
+
+                // debug
+                steps.sh 'git status'
+
                 // Login to the publish registry
                 loginToPublishRegistry()
+
+                // debug
+                steps.sh 'git status'
 
                 Boolean _isReleaseBranch = this.isReleaseBranch()
                 Boolean _isPerformingRelease = this.isPerformingRelease()
@@ -479,6 +495,9 @@ class NodeJSPipeline extends GenericPipeline {
                 String npmVersion = parseArtifactoryUploadTargetPath(npmPublishTargetVersion)
 
                 steps.echo "Publishing package v${npmVersion} as tag ${npmTag}"
+
+                // debug
+                steps.sh 'git status'
 
                 this.publishRegistry.publish(
                     tag     : npmTag,
