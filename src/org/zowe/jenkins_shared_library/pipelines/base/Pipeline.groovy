@@ -656,6 +656,9 @@ class Pipeline {
 
             // Gather the log folders here
             _sendEmailNotification()
+
+            // pause for debugging
+            steps.sleep time: 60, unit: 'MINUTES'
         }
     }
 
