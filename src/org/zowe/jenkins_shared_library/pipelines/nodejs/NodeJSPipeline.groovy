@@ -527,8 +527,7 @@ ${gitStatus}
 
                 this.publishRegistry.publish(
                     tag     : npmTag,
-                    // we don't need to update version if it's already there
-                    version : steps.env['PUBLISH_VERSION'] == this.version ? '' : steps.env['PUBLISH_VERSION']
+                    version : steps.env['PUBLISH_VERSION']
                 )
             }
         }

@@ -330,10 +330,13 @@ class Registry {
         String optNpmTag = (args.containsKey('tag') && args['tag']) ? " --tag ${args['tag']}" : ""
         String optNpmRegistry = this.registry ? " --registry ${this.registry}" : ""
 
-        log.fine("Publishing npm package to ${this.registry} with tag: ${args['tag']}, version: ${args['version']}")
-
         if (args.containsKey('version') && args.version) {
-            steps.sh "npm version ${args.version}"
+            try {
+                steps.sh "npm version ${args.version}"
+            } catch (err) {
+                steps.echo "${err}"
+                steps.sh "git tag v${args.version}"
+            }
         }
 
         steps.sh "npm publish${optNpmTag}${optNpmRegistry}"
