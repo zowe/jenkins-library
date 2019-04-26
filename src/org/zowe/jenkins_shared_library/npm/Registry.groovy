@@ -258,18 +258,23 @@ class Registry {
 
         // update auth in .npmrc
         if (tokenCredential) {
+            List<String> configEntries = ['set +x']
             this.steps.withCredentials([
                 this.steps.string(
                     credentialsId: tokenCredential,
                     variable: 'TOKEN'
                 )
             ]) {
-                this.steps.sh """
-npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
-npm config set ${registryWithoutProtocol}:_authToken \${TOKEN}
-npm config set ${registryWithoutProtocol}:email ${this.email}
-npm config set ${registryWithoutProtocol}:always-auth true
-"""
+                configEntries.push("npm config set _auth \${TOKEN}")
+                configEntries.push("npm config set email ${this.email}")
+                configEntries.push("npm config set always-auth true")
+                if (this.scope) {
+                    configEntries.push("npm config set @${this.scope}:registry ${this.registry}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:_authToken \${TOKEN}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:email ${this.email}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:always-auth true")
+                }
+                this.steps.sh configEntries.join("\n")
             }
         } else if (usernamePasswordCredential) {
             this.steps.withCredentials([
@@ -279,13 +284,21 @@ npm config set ${registryWithoutProtocol}:always-auth true
                     usernameVariable: 'USERNAME'
                 )
             ]) {
-                this.steps.sh """
-npm config set ${this.scope ? "@${this.scope}:" : ""}registry ${this.registry}
-npm config set ${registryWithoutProtocol}:username \${USERNAME}
-npm config set ${registryWithoutProtocol}:_password \${PASSWORD}
-npm config set ${registryWithoutProtocol}:email ${this.email}
-npm config set ${registryWithoutProtocol}:always-auth true
-"""
+                String u = this.steps.sh(script: "echo \"\${USERNAME}\"", returnStdout: true).trim()
+                String p = this.steps.sh(script: "echo \"\${PASSWORD}\"", returnStdout: true).trim()
+                String base64Password = p.bytes.encodeBase64().toString()
+                String base64UsernamePassword = "${u}:${p}".bytes.encodeBase64().toString()
+                configEntries.push("npm config set _auth \${base64UsernamePassword}")
+                configEntries.push("npm config set email ${this.email}")
+                configEntries.push("npm config set always-auth true")
+                if (this.scope) {
+                    configEntries.push("npm config set @${this.scope}:registry ${this.registry}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:username \${USERNAME}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:_password \${base64Password}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:email ${this.email}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:always-auth true")
+                }
+                this.steps.sh configEntries.join("\n")
             }
         }
 
