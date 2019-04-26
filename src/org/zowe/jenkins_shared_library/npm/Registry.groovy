@@ -334,7 +334,7 @@ class Registry {
         String currentCommit
 
         if (args.containsKey('version') && args.version) {
-            String currentCommit = steps.sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+            currentCommit = steps.sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
 
             try {
                 // npm version will
