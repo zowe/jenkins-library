@@ -862,14 +862,30 @@ class GenericPipeline extends Pipeline {
             Boolean _isPerformingRelease = this.isPerformingRelease()
             String _preReleaseString = this.getPreReleaseString()
 
-            if (_isPerformingRelease && !_isReleaseBranch) {
-                throw new PublishStageException("Cannot perform publish/release on non-release branch", args.name)
-            }
-            if (_isPerformingRelease && _isFormalReleaseBranch && !_isReleaseBranch) {
-                throw new PublishStageException("Cannot perform formal release on non-release branch", args.name)
-            }
-            if (_isPerformingRelease && _isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
-                throw new PublishStageException("Pre-release string is required to perform a non-formal-release", args.name)
+            if (_isPerformingRelease) {
+                // release related validations
+                if (!_isReleaseBranch) {
+                    throw new PublishStageException("Cannot perform publish/release on non-release branch", args.name)
+                }
+                if (_isFormalReleaseBranch && !_isReleaseBranch) {
+                    throw new PublishStageException("Cannot perform formal release on non-release branch", args.name)
+                }
+                if (_isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
+                    throw new PublishStageException("Pre-release string is required to perform a non-formal-release", args.name)
+                }
+                if (_isReleaseBranch && _isFormalReleaseBranch && _preReleaseString) {
+                    // performing pre-release on formal release branch require human intervene
+                    Map action = Utils.waitForInput(
+                        this.steps,
+                        [
+                            timeout: [time: 30, unit: 'MINUTES'],
+                            message: "You choose to release on a formal release branch with pre-release string, this may cause potential tag mismatch issues. Please confirm you want to proceed:"
+                        ]
+                    )
+                    if (!action['proceed']) {
+                        this.steps.error "Pipeline aborted by ${action['user']}"
+                    }
+                }
             }
 
             // execute operation Closure if provided
@@ -1005,28 +1021,9 @@ class GenericPipeline extends Pipeline {
                 throw preSetupException
             }
 
-            if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new ReleaseStageException("Build must be successful to release", args.name)
-            } else if (_control.publish?.status != StageStatus.SUCCESS) {
+            // no need for other checks because we require publish stage to be success
+            if (_control.publish?.status != StageStatus.SUCCESS) {
                 throw new ReleaseStageException("Publish must be successful to release", args.name)
-            } else if (_control.prePublishTests && _control.prePublishTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
-                throw new ReleaseStageException("All test stages before publish must be successful or skipped!", args.name)
-            } else if (_control.prePublishTests.size() == 0) {
-                throw new ReleaseStageException("At least one test stage must be defined", args.name)
-            }
-            Boolean _isReleaseBranch = this.isReleaseBranch()
-            Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
-            Boolean _isPerformingRelease = this.isPerformingRelease()
-            String _preReleaseString = this.getPreReleaseString()
-
-            if (_isPerformingRelease && !_isReleaseBranch) {
-                throw new ReleaseStageException("Cannot perform publish/release on non-release branch", args.name)
-            }
-            if (_isPerformingRelease && _isFormalReleaseBranch && !_isReleaseBranch) {
-                throw new ReleaseStageException("Cannot perform formal release on non-release branch", args.name)
-            }
-            if (_isPerformingRelease && _isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
-                throw new ReleaseStageException("Pre-release string is required to perform a non-formal-release", args.name)
             }
 
             // execute operation Closure if provided

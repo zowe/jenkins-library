@@ -241,4 +241,51 @@ class Utils {
 
         return logger
     }
+
+    /**
+     * [waitForInput description]
+     * @param  jenkinsSteps    jenkins steps object
+     * @param  args            arguments for the input:
+     *                         - timeout        map of timeout, example [time: 2, unit: 'MINUTES']
+     *                         - message        message of the input
+     *                         - proceedButton  proceed button text
+     * @return     [description]
+     */
+    static Map waitForInput(jenkinsSteps, Map args = [:]) {
+        Map result = [
+            timeout: false,
+            proceed: false,
+            user: null
+        ]
+        // define default values
+        if (!args.containsKey('timeout')) {
+            args['timeout'] = [time: 2, unit: 'MINUTES']
+        }
+        if (!args.containsKey('message')) {
+            args['message'] = 'Please confirm to proceed:'
+        }
+        if (!args.containsKey('proceedButton')) {
+            args['proceedButton'] = 'Proceed'
+        }
+        def varName = "INPUT_CONFIRM_${getTimestamp()}"
+
+        try {
+            timeout(args['timeout']) {
+                result['user'] = input(
+                    message             : args['message'],
+                    ok                  : args['proceedButton'],
+                    submitterParameter  : varName
+                )
+                result['proceed'] = true
+            }
+        } catch(err) { // timeout reached or input false
+            result['user'] = err.getCauses()[0].getUser().toString()
+            if ('SYSTEM' == result['user']) { // SYSTEM means timeout.
+                result['timeout'] = true
+                result['user'] = 'TIMEOUT'
+            }
+        }
+
+        return result
+    }
 }

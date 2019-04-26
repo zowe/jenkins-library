@@ -281,7 +281,7 @@ class NodeJSPipeline extends GenericPipeline {
      *     </dd>
      * </dl>
      */
-    void setupNodeJS(NodeJSSetupArguments arguments) {
+    void setupNodeJS(NodeJSSetupArguments arguments) throws NodeJSPipelineException {
         super.setupGeneric(arguments)
 
         // prepare default configurations
@@ -309,6 +309,11 @@ class NodeJSPipeline extends GenericPipeline {
             this.loginToInstallRegistries()
             // init package info from package.json
             this.packageInfo = publishRegistry.getPackageInfo()
+            if (!this.packageInfo['versionTrunks'] ||
+                this.packageInfo['versionTrunks']['prerelease'] ||
+                this.packageInfo['versionTrunks']['metadata']) {
+                throw new NodeJSPipelineException('Version defined in package.json shouldn\'t have pre-release string or metadata, pipeline will adjust based on branch and build parameter.')
+            }
             // version could be used to publish artifact
             this.setVersion(this.packageInfo['version'])
 
