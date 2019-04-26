@@ -993,7 +993,7 @@ class GenericPipeline extends Pipeline {
         // Force build to only happen on success, this cannot be overridden
         arguments.resultThreshold = ResultEnum.SUCCESS
 
-        GenericStageArguments args = arguments as GenericStageArguments
+        ReleaseStageArguments args = arguments as ReleaseStageArguments
 
         ReleaseStageException preSetupException
 
