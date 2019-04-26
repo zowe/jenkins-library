@@ -529,7 +529,7 @@ ${gitStatus}
                     github  : this.github,
                     tag     : npmTag,
                     // we don't need to update version if it's already there
-                    version : publishVersion == this.version ? '' : publishVersion
+                    version : steps.env['PUBLISH_VERSION'] == this.version ? '' : steps.env['PUBLISH_VERSION']
                 )
             }
         }
