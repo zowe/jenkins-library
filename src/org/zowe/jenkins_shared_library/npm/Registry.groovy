@@ -330,16 +330,34 @@ class Registry {
         String optNpmTag = (args.containsKey('tag') && args['tag']) ? " --tag ${args['tag']}" : ""
         String optNpmRegistry = this.registry ? " --registry ${this.registry}" : ""
 
+        // if we need to reset back
+        String currentCommit
+
         if (args.containsKey('version') && args.version) {
+            String currentCommit = steps.sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+
             try {
+                // npm version will
+                // - create a commit
+                // - create a tag on the new commit
                 steps.sh "npm version ${args.version}"
             } catch (err) {
-                steps.echo "${err}"
-                steps.sh "git tag v${args.version}"
+                // ignore error
             }
         }
 
         steps.sh "npm publish${optNpmTag}${optNpmRegistry}"
+
+        if (currentCommit) {
+            try {
+                steps.echo "Revert changes by npm version ..."
+                steps.sh "git reset --hard ${currentCommit}"
+                // remove the tag created local, we may re-tag if needed later
+                steps.sh "git tag -d v${args.version}"
+            } catch (err) {
+                // ignore error
+            }
+        }
     }
 
     /**

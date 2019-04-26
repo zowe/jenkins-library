@@ -527,7 +527,8 @@ ${gitStatus}
 
                 this.publishRegistry.publish(
                     tag     : npmTag,
-                    version : steps.env['PUBLISH_VERSION']
+                    // we don't need to update version if it's already there
+                    version : steps.env['PUBLISH_VERSION'] == this.version ? '' : steps.env['PUBLISH_VERSION']
                 )
             }
         }
@@ -545,22 +546,6 @@ ${gitStatus}
     @Override
     protected void publish(Map arguments = [:]) {
         publishNodeJS(arguments)
-    }
-
-    /**
-     * Tag branch when release.
-     *
-     * Note: npm publish will commit/tag the branch, we just need to push the changes
-     */
-    protected void tagBranch() {
-        // should be able to guess repository and branch name
-        this.github.initFromFolder()
-        if (!this.github.repository) {
-            throw new ScmException('Github repository is not defined and cannot be determined.')
-        }
-        def tag = 'v' + steps.env['PUBLISH_VERSION']
-        this.steps.echo "Pushing tag \"${tag}\" to \"${this.github.repository}:${this.github.branch}\"..."
-        this.github.command("git push origin \"${tag}\"")
     }
 
     /**
