@@ -1031,12 +1031,12 @@ class GenericPipeline extends Pipeline {
                 args.operation(stageName)
             } else {
                 // this is the default release behaviors
-                if (args.containsKey('tagBranch')) {
+                if (args.tagBranch) {
                     args.tagBranch()
                 } else {
                     this.tagBranch()
                 }
-                if (args.containsKey('bumpVersion')) {
+                if (args.bumpVersion) {
                     args.bumpVersion()
                 } else {
                     this.bumpVersion()

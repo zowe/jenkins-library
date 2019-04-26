@@ -21,4 +21,14 @@ class ReleaseStageArguments extends GenericStageArguments {
      * @default {@code "Package"}
      */
     String name = "Package"
+
+    /**
+     * Custom script of how to tag branch
+     */
+    Closure tagBranch
+
+    /**
+     * Custom script of how to bump version
+     */
+    Closure bumpVersion
 }
