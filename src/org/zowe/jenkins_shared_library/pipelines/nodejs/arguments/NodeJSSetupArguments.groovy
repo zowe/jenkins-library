@@ -35,6 +35,20 @@ class NodeJSSetupArguments extends GenericSetupArguments {
     StageTimeout audit = [time: 5, unit: TimeUnit.MINUTES]
 
     /**
+     * npm install registry configurations
+     *
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
+     */
+    List<Map> installRegistries
+
+    /**
+     * npm publish registry configurations
+     *
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
+     */
+    Map publishRegistry
+
+    /**
      * If we always use `npm install`.
      *
      * By default, with value false, the install dependencies stage will try to decide whether use `npm ci` or `npm install` based on existence of `package.json`.

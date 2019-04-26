@@ -26,4 +26,25 @@ class GenericSetupArguments extends SetupArguments {
      * @default 1 Minute
      */
     StageTimeout ciSkip = [time: 1, unit: TimeUnit.MINUTES]
+
+    /**
+     * Amount of time allowed for the init pipeline
+     *
+     * @default 1 Minute
+     */
+    StageTimeout initForGeneric = [time: 1, unit: TimeUnit.MINUTES]
+
+    /**
+     * Github configurations
+     *
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.scm.GitHub#init}.
+     */
+    Map github
+
+    /**
+     * Artifactory configurations
+     *
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory#init}.
+     */
+    Map artifactory
 }

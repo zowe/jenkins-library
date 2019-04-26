@@ -33,4 +33,16 @@ class SetupArguments {
      * @default 1 Minute
      */
     StageTimeout checkout = [time: 1, unit: TimeUnit.MINUTES]
+
+    /**
+     * Package name
+     *
+     * Example: org.zowe.my-project
+     */
+    String packageName
+
+    /**
+     * Package current version
+     */
+    String version
 }

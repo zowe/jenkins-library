@@ -133,7 +133,7 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )]) {
                 this.username = "\${USERNAME}"
-                this.steps.echo "Git username is set to: ${this.username}"
+                this.steps.echo "Git username (\${USERNAME}) is set to: ${this.username}"
                 // FIXME: encode username/passsword?
                 this.steps.sh "echo \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}\" > ~/.git-credentials"
             }
@@ -144,7 +144,7 @@ class GitHub {
             this.username = args['username']
         }
 
-        // configure git config
+        // run git config with configurations we have
         this.config()
     }
 
@@ -241,6 +241,7 @@ class GitHub {
             )
         }
 
+        // run git config with configurations we have
         this.config()
     }
 
@@ -248,10 +249,8 @@ class GitHub {
      * Setup git config based on properties
      */
     void config() {
-        def f = this.folder ?: './'
-
         // work in target folder
-        this.steps.dir(f) {
+        this.steps.dir(this.folder ?: './') {
             // is this a git folder?
             if (this.steps.fileExists('.git')) {
                 // git configs for the repository

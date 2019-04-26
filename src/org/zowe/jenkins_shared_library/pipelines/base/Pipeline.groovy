@@ -484,6 +484,14 @@ class Pipeline {
      * @param arguments The arguments for the added stages.
      */
     void setupBase(SetupArguments arguments) {
+        // init package name/version if provided
+        if (arguments.packageName) {
+            this.packageName = arguments.packageName
+        }
+        if (arguments.version) {
+            this.version = arguments.version
+        }
+
         // prepare default configurations
         this.defineDefaultBranches()
 

@@ -59,24 +59,30 @@ import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
  *         [name: "lts-stable", tag: "lts-stable", level: SemverLevel.PATCH]
  *     ])
  *
- *     pipeline.configureGitHub([
- *         email: 'robot-user@example.com',
- *         usernamePasswordCredential: 'robot-user'
- *     ])
- *
- *     pipeline.configurePublishRegistry([
- *         email: 'robot-user@example.com',
- *         usernamePasswordCredential: 'robot-user'
- *     ])
- *
- *     pipeline.configureInstallRegistries([
- *         [email: 'email@example.com', usernamePasswordCredential: 'credentials-id'],
- *         [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id']
- *         [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id', scope: '@myOrg']
- *     ])
- *
  *     // MUST BE CALLED FIRST
- *     pipeline.setup()
+ *     pipeline.setup(
+ *         // Define the git configuration
+ *         github: [
+ *             email: 'robot-user@example.com',
+ *             usernamePasswordCredential: 'robot-user'
+ *         ],
+ *         // Define the artifactory configuration
+ *         artifactory: [
+ *             url : 'https://your-artifactory-url',
+ *             usernamePasswordCredential : 'artifactory-credential-id',
+ *         ],
+ *         // Define install registries
+ *         installRegistries: [
+ *             [email: 'email@example.com', usernamePasswordCredential: 'credentials-id'],
+ *             [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id']
+ *             [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id', scope: '@myOrg']
+ *         ],
+ *         // Define publish registry
+ *         publishRegistry: [
+ *             email: 'robot-user@example.com',
+ *             usernamePasswordCredential: 'robot-user'
+ *         ]
+ *     )
  *
  *     // Create custom stages for your build like this
  *     pipeline.createStage(name: 'Some Stage", stage: {
@@ -206,32 +212,6 @@ class NodeJSPipeline extends GenericPipeline {
     }
 
     /**
-     * Initialize npm publish registry configurations
-     *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
-     *
-     * @param config            npm registry configuration map
-     */
-    void configurePublishRegistry(Map config) {
-        publishRegistry.init(config)
-    }
-
-    /**
-     * Initialize npm publish registry configurations
-     *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
-     *
-     * @param configs           npm registry configuration maps
-     */
-    void configureInstallRegistries(List<Map> configs) {
-        for (Map config : configs) {
-            Registry registry = new Registry(steps)
-            registry.init(config)
-            installRegistries.push(registry)
-        }
-    }
-
-    /**
      * Try to login to npm publish registry
      */
     void loginToPublishRegistry() {
@@ -309,6 +289,22 @@ class NodeJSPipeline extends GenericPipeline {
 
         // this stage should always happen for node.js project?
         createStage(name: 'Install Node Package Dependencies', stage: {
+            // init registries
+            if (arguments.publishRegistry) {
+                publishRegistry.init(arguments.publishRegistry)
+                if (!publishRegistry.registry) {
+                    // try to extract publish registry from package.json
+                    publishRegistry.registry = publishRegistry.getRegistryFromPackageJson()
+                }
+            }
+            if (arguments.installRegistries) {
+                for (Map config : arguments.installRegistries) {
+                    Registry registry = new Registry(steps)
+                    registry.init(config)
+                    installRegistries.push(registry)
+                }
+            }
+
             // try to login to npm install registries
             this.loginToInstallRegistries()
             // init package info from package.json

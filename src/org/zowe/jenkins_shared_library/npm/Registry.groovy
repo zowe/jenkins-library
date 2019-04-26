@@ -104,12 +104,6 @@ class Registry {
         }
         if (args['registry']) {
             this.registry = args['registry']
-        } else {
-            // try to detect from package.json if not defined
-            String registryInPackageJson = this.getRegistryFromPackageJson()
-            if (registryInPackageJson) {
-                this.registry = registryInPackageJson
-            }
         }
         // normalize registry url
         if (this.registry) {
@@ -326,10 +320,6 @@ npm config set ${registryWithoutProtocol}:always-auth true
         log.fine("Publishing npm package to ${this.registry} with tag: ${args['tag']}, version: ${args['version']}")
 
         if (args.containsKey('version')) {
-            if (args.containsKey('github')) {
-                // ensure git config is in place
-                args['github'].config()
-            }
             steps.sh "npm version ${args.version}"
         }
 

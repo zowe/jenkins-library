@@ -66,14 +66,19 @@ import org.zowe.jenkins_shared_library.Utils
  *       [name: "rc", isProtected: true, buildHistory: 20]
  *     ])
  *
- *     // Define the git configuration
- *     pipeline.configureGitHub ([
- *         email: 'git-user-email@example.com',
- *         credentialsId: 'git-user-credentials-id'
- *     ])
- *
  *     // MUST BE CALLED FIRST
- *     pipeline.setup()
+ *     pipeline.setup(
+ *         // Define the git configuration
+ *         github: [
+ *             email: 'git-user-email@example.com',
+ *             credentialsId: 'git-user-credentials-id'
+ *         ],
+ *         // Define the artifactory configuration
+ *         artifactory: [
+ *             url : 'https://your-artifactory-url',
+ *             usernamePasswordCredential : 'artifactory-credential-id',
+ *         ]
+ *     )
  *
  *     pipeline.build()   // Provide required parameters in your pipeline
  *     pipeline.test()    // Provide required parameters in your pipeline
@@ -204,28 +209,6 @@ class GenericPipeline extends Pipeline {
                 allowRelease       : true,
             ],
         ])
-    }
-
-    /**
-     * Initialize github configurations
-     *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.scm.GitHub#init}.
-     *
-     * @param config            github configuration map
-     */
-    void configureGitHub(Map config) {
-        github.init(config)
-    }
-
-    /**
-     * Initialize artifactory configurations
-     *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory#init}.
-     *
-     * @param config            artifactory configuration map
-     */
-    void configureArtifactory(Map config) {
-        artifactory.init(config)
     }
 
     /**
@@ -477,6 +460,17 @@ class GenericPipeline extends Pipeline {
                 setResult(ResultEnum.NOT_BUILT)
             }
         }, timeout: arguments.ciSkip)
+
+        createStage(name: 'Init Generic Pipeline', stage: {
+            if (arguments.github) {
+                this.steps.echo "Init github configurations ..."
+                this.github.init(arguments.github)
+            }
+            if (arguments.artifactory) {
+                this.steps.echo "Init artifactory configurations ..."
+                this.artifactory.init(arguments.artifactory)
+            }
+        }, timeout: arguments.initForGeneric)
     }
 
     /**
