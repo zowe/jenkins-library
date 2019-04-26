@@ -258,13 +258,13 @@ class Registry {
 
         // update auth in .npmrc
         if (tokenCredential) {
-            List<String> configEntries = ['set +x']
             this.steps.withCredentials([
                 this.steps.string(
                     credentialsId: tokenCredential,
                     variable: 'TOKEN'
                 )
             ]) {
+                List<String> configEntries = ['set +x']
                 configEntries.push("npm config set _auth \${TOKEN}")
                 configEntries.push("npm config set email ${this.email}")
                 configEntries.push("npm config set always-auth true")
@@ -288,6 +288,7 @@ class Registry {
                 String p = this.steps.sh(script: "echo \"\${PASSWORD}\"", returnStdout: true).trim()
                 String base64Password = p.bytes.encodeBase64().toString()
                 String base64UsernamePassword = "${u}:${p}".bytes.encodeBase64().toString()
+                List<String> configEntries = ['set +x']
                 configEntries.push("npm config set _auth \${base64UsernamePassword}")
                 configEntries.push("npm config set email ${this.email}")
                 configEntries.push("npm config set always-auth true")
