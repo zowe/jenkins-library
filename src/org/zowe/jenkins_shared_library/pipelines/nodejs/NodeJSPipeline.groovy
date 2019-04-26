@@ -560,7 +560,7 @@ ${gitStatus}
         if (!this.github.repository) {
             throw new ScmException('Github repository is not defined and cannot be determined.')
         }
-        def tag = steps.env['PUBLISH_VERSION']
+        def tag = 'v' + steps.env['PUBLISH_VERSION']
         this.steps.echo "Pushing tag \"${tag}\" to \"${this.github.repository}:${this.github.branch}\"..."
         this.github.command("git push origin \"${tag}\"")
     }
