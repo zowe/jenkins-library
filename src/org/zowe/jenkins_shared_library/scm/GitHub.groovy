@@ -132,8 +132,8 @@ class GitHub {
                 passwordVariable: 'PASSWORD',
                 usernameVariable: 'USERNAME'
             )]) {
-                this.username = "\${USERNAME}"
-                this.steps.echo "Git username (\${USERNAME}) is set to: ${this.username}"
+                // $USERNAME is only available in step.sh/echo, not "\${USERNAME}" directly
+                this.username = this.steps.sh(script: "echo \"\${USERNAME}\"", returnStdout: true).trim()
                 // FIXME: encode username/passsword?
                 this.steps.sh "echo \"https://\${USERNAME}:\${PASSWORD}@${GITHUB_DOMAIN}\" > ~/.git-credentials"
             }
