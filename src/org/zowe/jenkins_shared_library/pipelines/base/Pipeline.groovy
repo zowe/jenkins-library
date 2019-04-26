@@ -666,7 +666,7 @@ class Pipeline {
             _sendEmailNotification()
 
             // pause for debugging
-            steps.sleep time: 60, unit: 'MINUTES'
+            // steps.sleep time: 60, unit: 'MINUTES'
         }
     }
 
