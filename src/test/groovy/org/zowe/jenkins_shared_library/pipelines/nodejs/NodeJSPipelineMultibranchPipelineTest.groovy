@@ -75,13 +75,20 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         // console log
         assertThat('Build console log', buildLog, not(equalTo('')))
         [
+            // init github/artifactory
+            'Executing stage Init Generic Pipeline',
+            'Init github configurations ...',
+            'Init artifactory configurations ...',
+            // install stage
+            'Executing stage Install Node Package Dependencies',
+            'login to npm registry:'
+            '+ npm install --no-audit',
+            // audit stage
+            'Executing stage Audit',
+            '+ npm audit',
             // build stage
             'Executing stage Build: Source',
-            '+ npm install',
             '+ npm run build',
-            // custom stage is configured and started
-            'This step can be skipped by setting the `Skip Stage: CustomStage` option to true',
-            'This is a custom stage, skippable',
             // test stage
             'Executing stage Test: Unit',
             '+ npm run test:unit',
@@ -90,12 +97,11 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             '[htmlpublisher] Archiving HTML reports...',
             // publish stage
             'Executing stage Publish',
-            'Deploying artifact:',
-            'Deploying build info to:',
-            'Artifact uploading is successful.',
-            // Verify Artifact Uploaded stage
-            'Executing stage Verify Artifact Uploaded',
-            'Successfully found artifact uploaded:',
+            'Publishing package ',
+            '+ npm publish --tag snapshot --registry ',
+            'Revert changes by npm version ...',
+            // release stage
+            'Stage Skipped: "Releasing" Reason: Stage was not executed due to shouldExecute returning false',
             // complete stage
             'Pipeline Execution Complete',
             // sending email
@@ -106,61 +112,61 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         }
     }
 
-    // @Test
-    // void testCRelease() {
-    //     // try a release build
+    @Test
+    void testCRelease() {
+        // try a release build
 
-    //     List job = fullTestJobName.collect()
-    //     job.add(TEST_BRANCH)
-    //     // reset result
-    //     buildInformation = [:]
-    //     buildLog = ''
+        List job = fullTestJobName.collect()
+        job.add(TEST_BRANCH)
+        // reset result
+        buildInformation = [:]
+        buildLog = ''
 
-    //     // prepare test
-    //     String preReleaseString = "test.${Utils.getTimestamp()}"
-    //     // retrieve current version
-    //     String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
-    //     def currentPkg = HttpRequest.getJson(packageJsonUrl)
-    //     def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
-    //     logger.fine("Current package version is: ${currentVersion}")
+        // prepare test
+        String preReleaseString = "test.${Utils.getTimestamp()}"
+        // retrieve current version
+        String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
+        def currentPkg = HttpRequest.getJson(packageJsonUrl)
+        def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
+        logger.fine("Current package version is: ${currentVersion}")
 
-    //     // start the job, wait for it's done and get build result
-    //     logger.fine("Starting a release build with pre-release string ${preReleaseString} ...")
-    //     buildInformation = jenkins.startJobAndGetBuildInformation(job, [
-    //         'FETCH_PARAMETER_ONLY' : 'false',
-    //         'LIBRARY_BRANCH'       : System.getProperty('library.branch'),
-    //         'Perform Release'      : true,
-    //         'Pre-Release String'   : preReleaseString
-    //     ])
-    //     // load job console log
-    //     if (buildInformation && buildInformation['number']) {
-    //         buildLog = jenkins.getBuildLog(job, buildInformation['number'])
-    //     }
+        // start the job, wait for it's done and get build result
+        logger.fine("Starting a release build with pre-release string ${preReleaseString} ...")
+        buildInformation = jenkins.startJobAndGetBuildInformation(job, [
+            'FETCH_PARAMETER_ONLY' : 'false',
+            'LIBRARY_BRANCH'       : System.getProperty('library.branch'),
+            'Perform Release'      : true,
+            'Pre-Release String'   : preReleaseString
+        ])
+        // load job console log
+        if (buildInformation && buildInformation['number']) {
+            buildLog = jenkins.getBuildLog(job, buildInformation['number'])
+        }
 
-    //     // retrieve version after release
-    //     def newPkg = HttpRequest.getJson(packageJsonUrl)
-    //     def newVersion = Utils.parseSemanticVersion(newPkg['version'])
-    //     logger.fine("New package version is: ${newVersion}")
+        // retrieve version after release
+        def newPkg = HttpRequest.getJson(packageJsonUrl)
+        def newVersion = Utils.parseSemanticVersion(newPkg['version'])
+        logger.fine("New package version is: ${newVersion}")
 
-    //     // we created a tag
-    //     assertThat('Build console log', buildLog, containsString('[new tag]'))
+        // we created a tag
+        assertThat('Build console log', buildLog, containsString('[new tag]'))
 
-    //     // list tags
-    //     String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${TEST_OWNER}/${TEST_REPORSITORY}/tags"
-    //     def tags = HttpRequest.getJson(tagsUrl)
-    //     List<String> tagNames = []
-    //     tags.each {
-    //         tagNames.push(it['name'])
-    //     }
-    //     String expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"
-    //     logger.fine("All tags: ${tagNames}")
-    //     logger.fine("Expected tag: ${expectedTag}")
-    //     // check if we have the tag
-    //     assertThat('Tags', tagNames, hasItem(expectedTag))
+        // list tags
+        String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${TEST_OWNER}/${TEST_REPORSITORY}/tags"
+        def tags = HttpRequest.getJson(tagsUrl)
+        List<String> tagNames = []
+        tags.each {
+            tagNames.push(it['name'])
+        }
+        String expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"
+        logger.fine("All tags: ${tagNames}")
+        logger.fine("Expected tag: ${expectedTag}")
+        // check if we have the tag
+        assertThat('Tags', tagNames, hasItem(expectedTag))
 
-    //     // version is not bumped because default GenericPipeline.bumpVersion() is empty
-    //     assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
-    //     assertThat('minor version', newVersion['minor'], equalTo(currentVersion['minor']));
-    //     assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch']));
-    // }
+        // version is not bumped because default GenericPipeline.bumpVersion() is empty
+        assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
+        assertThat('minor version', newVersion['minor'], equalTo(currentVersion['minor']));
+        assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch']));
+    }
 }
