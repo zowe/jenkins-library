@@ -25,6 +25,7 @@ import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
 import org.zowe.jenkins_shared_library.pipelines.nodejs.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.nodejs.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
+import org.zowe.jenkins_shared_library.scm.ScmException
 
 /**
  * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline} class.
@@ -521,9 +522,8 @@ ${gitStatus}
                 if (_isReleaseBranch && _isPerformingRelease) {
                     npmTag = branchProps.getNpmTag()
                 }
-                String publishVersion = parseArtifactoryUploadTargetPath(npmPublishTargetVersion)
 
-                steps.echo "Publishing package v${publishVersion} as tag ${npmTag}"
+                steps.echo "Publishing package v${steps.env['PUBLISH_VERSION']} as tag ${npmTag}"
 
                 this.publishRegistry.publish(
                     github  : this.github,
@@ -547,6 +547,22 @@ ${gitStatus}
     @Override
     protected void publish(Map arguments = [:]) {
         publishNodeJS(arguments)
+    }
+
+    /**
+     * Tag branch when release.
+     *
+     * Note: npm publish will commit/tag the branch, we just need to push the changes
+     */
+    protected void tagBranch() {
+        // should be able to guess repository and branch name
+        this.github.initFromFolder()
+        if (!this.github.repository) {
+            throw new ScmException('Github repository is not defined and cannot be determined.')
+        }
+        def tag = steps.env['PUBLISH_VERSION']
+        this.steps.echo "Pushing tag \"${tag}\" to \"${this.github.repository}:${this.github.branch}\"..."
+        this.github.command('git push origin \"${tag}\"')
     }
 
     /**

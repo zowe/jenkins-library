@@ -121,6 +121,13 @@ class GenericPipeline extends Pipeline {
     final ChangeInformation changeInfo
 
     /**
+     * Publishing version pattern
+     *
+     * Example: 1.2.3-snapshot-23-20190101010101
+     */
+    String publishTargetVersion = '{version}{prerelease}{branchtag}{buildnumber}{timestamp}'
+
+    /**
      * Default artifactory upload path
      *
      * Allowed macros:
@@ -137,7 +144,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Default artifactory file name pattern
      */
-    String artifactoryUploadTargetFile = '{filename}-{version}{branchtag}{buildnumber}{timestamp}{fileext}'
+    String artifactoryUploadTargetFile = '{filename}-{publishversion}{fileext}'
 
     /**
      * GitHub instance
@@ -312,7 +319,7 @@ class GenericPipeline extends Pipeline {
         return Utils.sanitizeBranchName(result)
     }
 
-    protected Map fillArtifactoryUploadTargetPathDefaultMacros(Map macros = [:]) {
+    protected Map<String, String> getBuildStringMacros(Map<String, String> macros = [:]) {
         Boolean _isReleaseBranch = this.isReleaseBranch()
         Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
         Boolean _isPerformingRelease = this.isPerformingRelease()
@@ -328,7 +335,7 @@ class GenericPipeline extends Pipeline {
             macros['package'] = this.getPackageName().replace('.', '/')
         }
         if (!macros['package']) {
-            throw new PublishStageException('Cannot determin package name for artifact upload path', '-')
+            throw new PublishStageException('Cannot determin package name for build string', '-')
         }
         if (!macros.containsKey('subproject')) {
             macros['subproject'] = ''
@@ -337,28 +344,80 @@ class GenericPipeline extends Pipeline {
             macros['version'] = this.getVersion()
         }
         if (!macros['version']) {
-            throw new PublishStageException('Cannot determin version for artifact upload path', '-')
+            throw new PublishStageException('Cannot determin version for build string', '-')
         }
-        if (!macros.containsKey('branchtag')) {
-            if (_isReleaseBranch && _isPerformingRelease) {
-                macros['branchtag'] = _preReleaseString
-            } else {
+        if (_isReleaseBranch && _isPerformingRelease) {
+            if (!macros.containsKey('prerelease')) {
+                macros['prerelease'] = _preReleaseString
+            }
+            if (!macros.containsKey('branchtag')) {
+                macros['branchtag'] = ''
+            }
+            if (!macros.containsKey('timestamp')) {
+                macros['timestamp'] = ''
+            }
+            if (!macros.containsKey('buildnumber')) {
+                macros['buildnumber'] = ''
+            }
+        } else {
+            if (!macros.containsKey('prerelease')) {
+                macros['prerelease'] = ''
+            }
+            if (!macros.containsKey('branchtag')) {
                 macros['branchtag'] = this.getBranchTag()
             }
-        }
-        if (!macros.containsKey('timestamp')) {
-            if (_isReleaseBranch && _isPerformingRelease) {
-                macros['timestamp'] = ''
-            } else {
+            if (!macros.containsKey('timestamp')) {
                 macros['timestamp'] = Utils.getTimestamp()
             }
-        }
-        if (!macros.containsKey('buildnumber')) {
-            if (_isReleaseBranch && _isPerformingRelease) {
-                macros['buildnumber'] = ''
-            } else {
-                macros['buildnumber'] = (steps.env && steps.env.BUILD_NUMBER) ?: ''
+            if (!macros.containsKey('buildnumber')) {
+                macros['buildnumber'] = "${(steps.env && steps.env.BUILD_NUMBER) ?: ''}"
             }
+        }
+
+        // normalize some values
+        if (macros['subproject'] && !macros['subproject'].startsWith('/')) {
+            macros['subproject'] = '/' + macros['subproject']
+        }
+        if (macros['prerelease'] && !macros['prerelease'].startsWith('-')) {
+            macros['prerelease'] = '-' + macros['prerelease']
+        }
+        if (macros['branchtag'] && !macros['branchtag'].startsWith('-')) {
+            macros['branchtag'] = '-' + macros['branchtag']
+        }
+        if (macros['timestamp'] && !macros['timestamp'].startsWith('-')) {
+            macros['timestamp'] = '-' + macros['timestamp']
+        }
+        if (macros['buildnumber'] && !macros['buildnumber'].startsWith('-')) {
+            macros['buildnumber'] = '-' + macros['buildnumber']
+        }
+
+        if (!macros.containsKey('publishversion')) {
+            macros['publishversion'] = parseBuildStringMacros(this.publishTargetVersion, macros)
+        }
+
+        log.fine("getBuildStringMacros macros: ${macros}")
+
+        return macros
+    }
+
+    /**
+     * Extract macro of "filename" and "fileext" for artifactory upload file
+     * @param  file     original file name
+     * @return          macro map
+     */
+    protected Map<String, String> extractArtifactoryUploadTargetFileMacros(String file) {
+        Map<String, String> macros = ['filename': '', 'fileext': '']
+
+        String baseName = file.lastIndexOf('/').with {
+            it != -1 ? file[(it + 1)..-1] : file
+        }
+        Integer idx = baseName.lastIndexOf('.')
+        if (idx != -1) {
+            macros['filename'] = baseName[0..(idx - 1)]
+            macros['fileext'] = baseName[idx..-1]
+        } else {
+            macros['filename'] = baseName
+            macros['fileext'] = ''
         }
 
         return macros
@@ -371,24 +430,7 @@ class GenericPipeline extends Pipeline {
      * @param  macros     map of macros to replace
      * @return           return target path
      */
-    protected String parseArtifactoryUploadTargetPath(String target, Map macros = [:]) {
-        // provide default values for known macros
-        macros = this.fillArtifactoryUploadTargetPathDefaultMacros(macros)
-        if (macros['subproject'] && !macros['subproject'].startsWith('/')) {
-            macros['subproject'] = '/' + macros['subproject']
-        }
-        if (macros['branchtag'] && !macros['branchtag'].startsWith('-')) {
-            macros['branchtag'] = '-' + macros['branchtag']
-        }
-        if (macros['timestamp'] && !macros['timestamp'].startsWith('-')) {
-            macros['timestamp'] = '-' + macros['timestamp']
-        }
-        if (macros['buildnumber'] && !macros['buildnumber'].startsWith('-')) {
-            macros['buildnumber'] = '-' + macros['buildnumber']
-        }
-
-        log.fine("parseArtifactoryUploadTargetPath macros: ${macros}")
-
+    protected String parseBuildStringMacros(String target, Map<String, String> macros) {
         for (String m : macros) {
             target = target.replace("{${m.key}}", m.value)
         }
@@ -888,6 +930,10 @@ class GenericPipeline extends Pipeline {
                 }
             }
 
+            // store the publish version
+            Map<String, String> macros = getBuildStringMacros()
+            steps.env['PUBLISH_VERSION'] = macros['publishversion']
+
             // execute operation Closure if provided
             if (args.operation) {
                 args.operation(stageName)
@@ -914,12 +960,17 @@ class GenericPipeline extends Pipeline {
         }
 
         Map uploadSpec = steps.readJSON text: '{"files":[]}'
+        Map<String, String> baseMacros = getBuildStringMacros()
         artifacts.each { artifact ->
             def files = steps.findFiles glob: artifact
             files.each { file ->
+                String f = file.toString()
+                String targetFileFull = baseTargetPath + artifactoryUploadTargetFile
+                Map<String, String> fileMacros = extractArtifactoryUploadTargetFileMacros(f)
+                Map<String, String> macros = baseMacros.clone() + fileMacros
                 uploadSpec['files'].push([
-                    "pattern" : file.toString(),
-                    "target"  : parseArtifactoryUploadTargetPath(baseTargetPath + getArtifactoryUploadTargetFile(file.toString()))
+                    "pattern" : f,
+                    "target"  : parseBuildStringMacros(targetFileFull, macros)
                 ])
             }
         }
@@ -1047,6 +1098,9 @@ class GenericPipeline extends Pipeline {
                 } else {
                     this.steps.echo "No need to bump version."
                 }
+
+                // send out notice
+                this.sendReleaseNotice()
             }
         }
 
@@ -1068,10 +1122,7 @@ class GenericPipeline extends Pipeline {
         if (!this.github.repository) {
             throw new ScmException('Github repository is not defined and cannot be determined.')
         }
-        def tag = 'v' + this.getVersion()
-        if (_preReleaseString) {
-            tag += '-' + _preReleaseString
-        }
+        def tag = 'v' + steps.env['PUBLISH_VERSION']
         this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
 
         this.github.tag(tag: tag)
@@ -1084,6 +1135,24 @@ class GenericPipeline extends Pipeline {
      */
     protected void bumpVersion() {
         log.warning('This method should be overridden.')
+    }
+
+    /**
+     * Send out email notification
+     */
+    protected void sendReleaseNotice() {
+        String subject = 'NEW_RELEASE'
+        String bodyText = """<h3>${steps.env.JOB_NAME}</h3>
+<p>Branch: <b>${steps.env.BRANCH_NAME ?: '-'}</b></p>
+<p>Deployed Package: <b>${this.getPackageName()}</b></p>
+<p>Version: <b>v${steps.env['PUBLISH_VERSION']}</b></p>
+"""
+
+        this._email.send(
+            subjectTag: subject,
+            body: bodyText,
+            to: admins.getEmailList()
+        )
     }
 
     /**
