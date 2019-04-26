@@ -81,7 +81,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             'Init artifactory configurations ...',
             // install stage
             'Executing stage Install Node Package Dependencies',
-            'login to npm registry:'
+            'login to npm registry:',
             '+ npm install --no-audit',
             // audit stage
             'Executing stage Audit',
