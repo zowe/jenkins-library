@@ -58,7 +58,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         if (jenkins && testJobName &&
             buildInformation && buildInformation.containsKey('result') &&
             buildInformation['result'] == 'SUCCESS') {
-            // jenkins.deleteJob(fullTestJobName)
+            jenkins.deleteJob(fullTestJobName)
         }
     }
 
@@ -122,8 +122,6 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         buildInformation = [:]
         buildLog = ''
 
-        // prepare test
-        String preReleaseString = "test.${Utils.getTimestamp()}"
         // retrieve current version
         String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
         def currentPkg = HttpRequest.getJson(packageJsonUrl)
@@ -131,12 +129,12 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         logger.fine("Current package version is: ${currentVersion}")
 
         // start the job, wait for it's done and get build result
-        logger.fine("Starting a release build with pre-release string ${preReleaseString} ...")
+        logger.fine("Starting a release build without pre-release string ...")
         buildInformation = jenkins.startJobAndGetBuildInformation(job, [
             'FETCH_PARAMETER_ONLY' : 'false',
             'LIBRARY_BRANCH'       : System.getProperty('library.branch'),
             'Perform Release'      : true,
-            'Pre-Release String'   : preReleaseString
+            'Pre-Release String'   : ''
         ])
         // load job console log
         if (buildInformation && buildInformation['number']) {
@@ -158,7 +156,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         tags.each {
             tagNames.push(it['name'])
         }
-        String expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}-${preReleaseString}"
+        String expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}"
         logger.fine("All tags: ${tagNames}")
         logger.fine("Expected tag: ${expectedTag}")
         // check if we have the tag
