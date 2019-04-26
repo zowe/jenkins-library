@@ -562,7 +562,7 @@ ${gitStatus}
         }
         def tag = steps.env['PUBLISH_VERSION']
         this.steps.echo "Pushing tag \"${tag}\" to \"${this.github.repository}:${this.github.branch}\"..."
-        this.github.command('git push origin \"${tag}\"')
+        this.github.command("git push origin \"${tag}\"")
     }
 
     /**
