@@ -516,14 +516,15 @@ ${gitStatus}
                 if (_isReleaseBranch && _isPerformingRelease) {
                     npmTag = branchProps.getNpmTag()
                 }
-                String npmVersion = parseArtifactoryUploadTargetPath(npmPublishTargetVersion)
+                String publishVersion = parseArtifactoryUploadTargetPath(npmPublishTargetVersion)
 
-                steps.echo "Publishing package v${npmVersion} as tag ${npmTag}"
+                steps.echo "Publishing package v${publishVersion} as tag ${npmTag}"
 
                 this.publishRegistry.publish(
-                    tag     : npmTag,
                     github  : this.github,
-                    version : npmVersion
+                    tag     : npmTag,
+                    // we don't need to update version if it's already there
+                    version : publishVersion == this.version ? '' : publishVersion
                 )
             }
         }

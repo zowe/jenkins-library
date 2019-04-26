@@ -341,11 +341,7 @@ class GenericPipeline extends Pipeline {
         }
         if (!macros.containsKey('branchtag')) {
             if (_isReleaseBranch && _isPerformingRelease) {
-                if (_isFormalReleaseBranch) {
-                    macros['branchtag'] = ''
-                } else {
-                    macros['branchtag'] = _preReleaseString
-                }
+                macros['branchtag'] = _preReleaseString
             } else {
                 macros['branchtag'] = this.getBranchTag()
             }
