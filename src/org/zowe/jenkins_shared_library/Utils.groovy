@@ -270,8 +270,8 @@ class Utils {
         def varName = "INPUT_CONFIRM_${getTimestamp()}"
 
         try {
-            timeout(args['timeout']) {
-                result['user'] = input(
+            jenkinsSteps.timeout(args['timeout']) {
+                result['user'] = jenkinsSteps.input(
                     message             : args['message'],
                     ok                  : args['proceedButton'],
                     submitterParameter  : varName
