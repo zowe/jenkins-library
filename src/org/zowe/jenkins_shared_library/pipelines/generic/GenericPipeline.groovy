@@ -1036,10 +1036,16 @@ class GenericPipeline extends Pipeline {
                 } else {
                     this.tagBranch()
                 }
-                if (args.bumpVersion) {
-                    args.bumpVersion()
+
+                // only bump version on formal release without pre-release string
+                if (this.isFormalReleaseBranch() && this.getPreReleaseString() == '') {
+                    if (args.bumpVersion) {
+                        args.bumpVersion()
+                    } else {
+                        this.bumpVersion()
+                    }
                 } else {
-                    this.bumpVersion()
+                    this.steps.echo "No need to bump version."
                 }
             }
         }
