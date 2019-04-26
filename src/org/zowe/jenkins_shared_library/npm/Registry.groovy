@@ -286,20 +286,16 @@ class Registry {
             ]) {
                 String u = this.steps.sh(script: "echo \"\${USERNAME}\"", returnStdout: true).trim()
                 String p = this.steps.sh(script: "echo \"\${PASSWORD}\"", returnStdout: true).trim()
-                this.steps.echo "u = ${u}"
-                this.steps.echo "p = ${p}"
                 String base64Password = p.bytes.encodeBase64().toString()
-                this.steps.echo "base64Password = ${base64Password}"
                 String base64UsernamePassword = "${u}:${p}".bytes.encodeBase64().toString()
-                this.steps.echo "base64UsernamePassword = ${base64UsernamePassword}"
                 List<String> configEntries = ['set +x']
-                configEntries.push("npm config set _auth \${base64UsernamePassword}")
+                configEntries.push("npm config set _auth ${base64UsernamePassword}")
                 configEntries.push("npm config set email ${this.email}")
                 configEntries.push("npm config set always-auth true")
                 if (this.scope) {
                     configEntries.push("npm config set @${this.scope}:registry ${this.registry}")
-                    configEntries.push("npm config set ${registryWithoutProtocol}:username \${USERNAME}")
-                    configEntries.push("npm config set ${registryWithoutProtocol}:_password \${base64Password}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:username ${u}")
+                    configEntries.push("npm config set ${registryWithoutProtocol}:_password ${base64Password}")
                     configEntries.push("npm config set ${registryWithoutProtocol}:email ${this.email}")
                     configEntries.push("npm config set ${registryWithoutProtocol}:always-auth true")
                 }
