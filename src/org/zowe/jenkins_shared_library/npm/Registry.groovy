@@ -319,7 +319,6 @@ class Registry {
      * Use similar parameters like init() method and with these extra:
      *
      * @param tag          npm publish tag, default is empty which is (latest)
-     * @param github       GitHub instance must have been initialized with repository, credential, etc
      * @param version      package version to publish
      */
     void publish(Map args = [:]) {
@@ -333,7 +332,7 @@ class Registry {
 
         log.fine("Publishing npm package to ${this.registry} with tag: ${args['tag']}, version: ${args['version']}")
 
-        if (args.containsKey('version')) {
+        if (args.containsKey('version') && args.version) {
             steps.sh "npm version ${args.version}"
         }
 

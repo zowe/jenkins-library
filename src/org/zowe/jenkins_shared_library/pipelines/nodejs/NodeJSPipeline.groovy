@@ -526,7 +526,6 @@ ${gitStatus}
                 steps.echo "Publishing package v${steps.env['PUBLISH_VERSION']} as tag ${npmTag}"
 
                 this.publishRegistry.publish(
-                    github  : this.github,
                     tag     : npmTag,
                     // we don't need to update version if it's already there
                     version : steps.env['PUBLISH_VERSION'] == this.version ? '' : steps.env['PUBLISH_VERSION']

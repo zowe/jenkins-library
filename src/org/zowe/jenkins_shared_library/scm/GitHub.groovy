@@ -458,4 +458,36 @@ class GitHub {
 
         this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
     }
+
+    /**
+     * Validate if a tag exists in local
+     * @param tag     tag name to check
+     * @return        true/false
+     */
+    Boolean tagExistsLocal(String tag) {
+        def localTags = this.command("git tag --list").split("\n")
+        def foundTag = false
+
+        localTags.each{
+            if (it.trim() == tag) { foundTag = true }
+        }
+
+        return foundTag
+    }
+
+    /**
+     * Validate if a tag exists in local
+     * @param tag     tag name to check
+     * @return        true/false
+     */
+    Boolean tagExistsRemote(String tag) {
+        def remotedTags = this.command("git ls-remote --tags").split("\n")
+        def foundTag = false
+
+        remotedTags.each{
+            if (it.endsWith("refs/tags/${tag}")) { foundTag = true }
+        }
+
+        return foundTag
+    }
 }

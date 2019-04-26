@@ -96,13 +96,12 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('tag') {
         def tag = "${env.JOB_NAME}#${env.BUILD_NUMBER}".replaceAll("[^a-zA-Z0-9]", '-')
         github.tag(['tag': tag])
-        def remotedTags = github.command("git ls-remote --tags").split("\n")
-        def foundTag = false
-        remotedTags.each{
-            if (it.contains("refs/tags/${tag}")) { foundTag = true }
+
+        if (!github.tagExistsLocal(tag)) {
+            error 'Tag is not created on local.'
         }
-        if (!foundTag) {
-            error 'Failed to create tag'
+        if (!github.tagExistsRemote(tag)) {
+            error 'Tag is not created on remote.'
         }
 
         echo "[GITHUB_TEST] tag successfully"
