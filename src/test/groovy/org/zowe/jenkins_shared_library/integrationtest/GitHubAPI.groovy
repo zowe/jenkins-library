@@ -138,8 +138,10 @@ class GitHubAPI {
         sleep 5000
         // this content may need some time to refresh
         Map result = this.get(packageJsonCdnUrl)
+        // package.json should be a json content
+        result['body'] = new JsonSlurper().parseText(result['body'])
 
-        return result.body
+        return result['body']
     }
 
     /**
