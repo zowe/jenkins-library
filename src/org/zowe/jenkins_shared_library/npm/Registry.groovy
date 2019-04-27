@@ -155,6 +155,10 @@ class Registry {
 
     /**
      * Get current package information from package.json
+     *
+     * NOTE: this method has cache. If you need to reload package info from package.json, run method
+     * #clearPackageInfoCache()
+     *
      * @return             current package information including name, version, description, license, etc
      */
     Map getPackageInfo() {
@@ -205,6 +209,14 @@ class Registry {
 
         return info
     }
+
+    /**
+     * Reset package info cache
+     */
+    void clearPackageInfoCache() {
+        this._packageInfo = null
+    }
+
 
     /**
      * Login to NPM registry
@@ -313,8 +325,9 @@ class Registry {
             }
         }
 
-        // show npm configs
-        this.steps.sh 'npm config list'
+        // debug info: npm configs
+        String npmConfig = this.steps.sh(script: "'npm config list'", returnStdout: true).trim()
+        log.finer("NPM config list:\n${npmConfig}")
 
         // get login information
         def whoami = this.steps.sh(script: "npm whoami --registry ${this.registry}", returnStdout: true).trim()

@@ -78,6 +78,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             error "NPM version trunks are not correctly extracted from package.json."
         }
         lastVersionChecked = info['versionTrunks']
+        echo "Before test version: ${lastVersionChecked}"
 
         echo "[NPM_REGISTRY_TEST] check-info successfully"
     }
@@ -103,11 +104,13 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // reset local repository to remote
         github.reset()
         // reload package info
-        Map info = npmRegistry.getPackageInfo()
+        npmRegistry.resetPackageInfoCache()
+        Map info = npmRegistry.clearPackageInfoCache()
         if (!info.containsKey('versionTrunks')) {
             error "NPM version trunks are not correctly extracted from package.json."
         }
         newVersionChecked = info['versionTrunks']
+        echo "After test version: ${newVersionChecked}"
         if (newVersionChecked['major'] != lastVersionChecked['major'] ||
             newVersionChecked['minor'] != lastVersionChecked['minor'] ||
             newVersionChecked['patch'] != lastVersionChecked['patch'] + 1) {
