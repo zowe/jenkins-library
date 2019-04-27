@@ -129,7 +129,7 @@ class GitHubAPI {
             throw new GitHubAPIException('Branch name is required to read package.json.')
         }
 
-        String packageJsonUrl = "https://${GitHub.GITHUB_DOMAIN}/${this.repository}/${branch}/${packageJsonFile}"
+        String packageJsonUrl = "https://${GitHub.GITHUB_DOMAIN}/${this.repository}/blob/${branch}/${packageJsonFile}"
         String packageJsonCdnUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${this.repository}/${branch}/${packageJsonFile}"
 
         // these extra steps to make sure package.json in CDN is refreshed.
