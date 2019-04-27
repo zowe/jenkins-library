@@ -135,8 +135,8 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
             buildLog = jenkins.getBuildLog(job, buildInformation['number'])
         }
 
-        // give GITHUB_DOWNLOAD_DOMAIN a little time to refresh
-        sleep 5000
+        // will this call refresh the raw usercontent cache?
+        HttpRequest.getJson("https://${GitHub.GITHUB_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/blob/${TEST_BRANCH}/package.json")
         // retrieve version after release
         def newPkg = HttpRequest.getJson(packageJsonUrl)
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
