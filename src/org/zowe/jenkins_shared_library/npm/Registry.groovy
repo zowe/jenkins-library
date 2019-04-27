@@ -326,7 +326,7 @@ class Registry {
         }
 
         // debug info: npm configs
-        String npmConfig = this.steps.sh(script: "'npm config list'", returnStdout: true).trim()
+        String npmConfig = this.steps.sh(script: "npm config list", returnStdout: true).trim()
         log.finer("NPM config list:\n${npmConfig}")
 
         // get login information
