@@ -13,8 +13,6 @@ import org.hamcrest.collection.IsMapContaining
 import org.junit.*
 import org.junit.runners.MethodSorters
 import org.zowe.jenkins_shared_library.integrationtest.*
-import org.zowe.jenkins_shared_library.integrationtest.HttpRequest
-import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.Utils
 import static groovy.test.GroovyAssert.*
 import static org.hamcrest.CoreMatchers.*;
@@ -39,6 +37,8 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
     static final String TEST_BRANCH = 'master'
     // branch to run test
     static final String TEST_JENKINSFILE = 'Jenkinsfile'
+    // github api instance
+    protected githubApi
 
     @BeforeClass
     public static void setup() {
@@ -50,6 +50,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             'branch'           : TEST_BRANCH,
             'jenkinsfile-path' : TEST_JENKINSFILE
         ])
+        githubApi = new GitHubAPI("${TEST_OWNER}/${TEST_REPORSITORY}")
     }
 
     @AfterClass
@@ -123,8 +124,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         buildLog = ''
 
         // retrieve current version
-        String packageJsonUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/${TEST_BRANCH}/package.json"
-        def currentPkg = HttpRequest.getJson(packageJsonUrl)
+        def currentPkg = githubApi.readPackageJson()
         def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
         logger.fine("Current package version is: ${currentVersion}")
 
@@ -141,11 +141,8 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             buildLog = jenkins.getBuildLog(job, buildInformation['number'])
         }
 
-        // will this call refresh the raw usercontent cache?
-        sleep 10000
-        HttpRequest.getText("https://${GitHub.GITHUB_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/blob/${TEST_BRANCH}/package.json")
         // retrieve version after release
-        def newPkg = HttpRequest.getJson(packageJsonUrl)
+        def newPkg = githubApi.readPackageJson()
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
         logger.fine("New package version is: ${newVersion}")
 
@@ -153,12 +150,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         assertThat('Build console log', buildLog, containsString('[new tag]'))
 
         // list tags
-        String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${TEST_OWNER}/${TEST_REPORSITORY}/tags"
-        def tags = HttpRequest.getJson(tagsUrl)
-        List<String> tagNames = []
-        tags.each {
-            tagNames.push(it['name'])
-        }
+        List<String> tagNames = githubApi.getTags()
         String expectedTag = "v${currentVersion['major']}.${currentVersion['minor']}.${currentVersion['patch']}"
         logger.fine("All tags: ${tagNames}")
         logger.fine("Expected tag: ${expectedTag}")
