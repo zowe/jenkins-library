@@ -135,6 +135,8 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
             buildLog = jenkins.getBuildLog(job, buildInformation['number'])
         }
 
+        // give GITHUB_DOWNLOAD_DOMAIN a little time to refresh
+        sleep 5000
         // retrieve version after release
         def newPkg = HttpRequest.getJson(packageJsonUrl)
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
