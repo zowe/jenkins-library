@@ -104,8 +104,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // reset local repository to remote
         github.reset()
         // reload package info
-        npmRegistry.resetPackageInfoCache()
-        Map info = npmRegistry.clearPackageInfoCache()
+        npmRegistry.clearPackageInfoCache()
+        Map info = npmRegistry.getPackageInfo()
         if (!info.containsKey('versionTrunks')) {
             error "NPM version trunks are not correctly extracted from package.json."
         }
