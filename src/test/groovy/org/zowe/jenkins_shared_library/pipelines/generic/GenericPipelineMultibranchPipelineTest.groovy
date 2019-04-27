@@ -136,6 +136,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         }
 
         // will this call refresh the raw usercontent cache?
+        sleep 10000
         HttpRequest.getText("https://${GitHub.GITHUB_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/blob/${TEST_BRANCH}/package.json")
         // retrieve version after release
         def newPkg = HttpRequest.getJson(packageJsonUrl)
