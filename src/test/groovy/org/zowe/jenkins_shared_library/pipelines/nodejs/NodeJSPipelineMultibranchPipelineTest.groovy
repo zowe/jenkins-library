@@ -142,7 +142,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         }
 
         // will this call refresh the raw usercontent cache?
-        HttpRequest.getJson("https://${GitHub.GITHUB_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/blob/${TEST_BRANCH}/package.json")
+        HttpRequest.getText("https://${GitHub.GITHUB_DOMAIN}/${TEST_OWNER}/${TEST_REPORSITORY}/blob/${TEST_BRANCH}/package.json")
         // retrieve version after release
         def newPkg = HttpRequest.getJson(packageJsonUrl)
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
