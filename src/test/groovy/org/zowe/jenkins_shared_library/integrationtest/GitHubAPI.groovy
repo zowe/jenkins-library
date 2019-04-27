@@ -124,9 +124,13 @@ class GitHubAPI {
      * @param  branch      which branch
      * @return             content of package.json as a Map
      */
-    def readPackageJson(String branch) {
-        String packageJsonUrl = "https://${GitHub.GITHUB_DOMAIN}/${this.repository}/${branch}/package.json"
-        String packageJsonCdnUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${this.repository}/${branch}/package.json"
+    def readPackageJson(String branch, String packageJsonFile = 'package.json') {
+        if (!branch) {
+            throw new GitHubAPIException('Branch name is required to read package.json.')
+        }
+
+        String packageJsonUrl = "https://${GitHub.GITHUB_DOMAIN}/${this.repository}/${branch}/${packageJsonFile}"
+        String packageJsonCdnUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${this.repository}/${branch}/${packageJsonFile}"
 
         // these extra steps to make sure package.json in CDN is refreshed.
         sleep 10000

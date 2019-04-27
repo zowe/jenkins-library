@@ -124,7 +124,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         buildLog = ''
 
         // retrieve current version
-        def currentPkg = githubApi.readPackageJson()
+        def currentPkg = githubApi.readPackageJson(TEST_BRANCH)
         def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
         logger.fine("Current package version is: ${currentVersion}")
 
@@ -142,7 +142,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
         }
 
         // retrieve version after release
-        def newPkg = githubApi.readPackageJson()
+        def newPkg = githubApi.readPackageJson(TEST_BRANCH)
         def newVersion = Utils.parseSemanticVersion(newPkg['version'])
         logger.fine("New package version is: ${newVersion}")
 
