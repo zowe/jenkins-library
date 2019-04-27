@@ -47,4 +47,11 @@ class GenericSetupArguments extends SetupArguments {
      * Use configurations defined at {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory#init}.
      */
     Map artifactory
+
+    /**
+     * Extra init operations
+     *
+     * This closure will execute in 'Init Generic Pipeline' stage
+     */
+    Closure extraInit
 }

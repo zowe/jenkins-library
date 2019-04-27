@@ -508,6 +508,11 @@ class GenericPipeline extends Pipeline {
                 this.steps.echo "Init artifactory configurations ..."
                 this.artifactory.init(arguments.artifactory)
             }
+
+            if (arguments.extraInit) {
+                this.steps.echo "Run extra initialization ..."
+                arguments.extraInit()
+            }
         }, timeout: arguments.initForGeneric)
     }
 
