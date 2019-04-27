@@ -56,7 +56,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             'email'                      : env.NPM_EMAIL,
             'usernamePasswordCredential' : env.NPM_CREDENTIAL,
         ])
-        npmRegistry.getRegistryFromPackageJson()
+        npmRegistry.initFromPackageJson()
 
         echo "[NPM_REGISTRY_TEST] init successfully"
     }

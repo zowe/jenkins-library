@@ -70,6 +70,11 @@ class Registry {
     String packageJsonFile = PACKAGE_JSON
 
     /**
+     * Package information extracted from package.json
+     */
+    Map _packageInfo
+
+    /**
      * Constructs the class.
      *
      * <p>When invoking from a Jenkins pipeline script, the Pipeline must be passed
@@ -130,22 +135,22 @@ class Registry {
     }
 
     /**
-     * Detect npm registry from package.json
+     * Detect npm registry/scope from package.json
+     *
+     * Note: this is extracted from #init() because some registries (like install registries)
+     * shouldn't have this. Only publish registry makes sense from to get from package.json.
      *
      * @param  packageJsonFile    file name of package.json.
-     * @return                    the registry url if found
      */
-    String getRegistryFromPackageJson(Map args = [:]) {
-        String registry
+    void initFromPackageJson(Map args = [:]) {
+        Map info = this.getPackageInfo()
 
-        if (this.packageJsonFile && this.steps.fileExists(this.packageJsonFile)) {
-            def pkg = this.steps.readJSON(file: this.packageJsonFile)
-            if (pkg && pkg['publishConfig'] && pkg['publishConfig']['registry']) {
-                registry = pkg['publishConfig']['registry']
-            }
+        if (!this.registry && info.registry) {
+            this.registry = info.registry
         }
-
-        return registry
+        if (!this.scope && info.scope) {
+            this.scope = info.scope
+        }
     }
 
     /**
@@ -153,6 +158,10 @@ class Registry {
      * @return             current package information including name, version, description, license, etc
      */
     Map getPackageInfo() {
+        if (this._packageInfo) {
+            return this._packageInfo
+        }
+
         Map info = [:]
 
         if (this.packageJsonFile && this.steps.fileExists(this.packageJsonFile)) {
@@ -192,6 +201,7 @@ class Registry {
         }
 
         log.fine("Package information of ${this.packageJsonFile}: ${info}")
+        this._packageInfo = info
 
         return info
     }

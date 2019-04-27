@@ -51,7 +51,8 @@ class GenericSetupArguments extends SetupArguments {
     /**
      * Extra init operations
      *
-     * This closure will execute in 'Init Generic Pipeline' stage
+     * This closure will execute in 'Init Generic Pipeline' stage, and the pipeline object will be
+     * passed to Clusure as arguments.
      */
     Closure extraInit
 }

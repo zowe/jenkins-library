@@ -283,6 +283,40 @@ class NodeJSPipeline extends GenericPipeline {
      * </dl>
      */
     void setupNodeJS(NodeJSSetupArguments arguments) throws NodeJSPipelineException {
+        Closure initRegistry = { pipeline ->
+            // init registries
+            if (arguments.publishRegistry) {
+                pipeline.steps.echo 'Init publish registry ...'
+                pipeline.publishRegistry.init(arguments.publishRegistry)
+                // try to extract publish registry from package.json
+                pipeline.publishRegistry.initFromPackageJson()
+                pipeline.steps.echo "- ${pipeline.publishRegistry.scope ? '@' + pipeline.publishRegistry.scope + ':' : ''}${pipeline.publishRegistry.registry}"
+            }
+            if (arguments.installRegistries) {
+                pipeline.steps.echo 'Init install registries ...'
+                for (Map config : arguments.installRegistries) {
+                    Registry registry = new Registry(steps)
+                    registry.init(config)
+                    pipeline.steps.echo "- ${registry.scope ? '@' + registry.scope + ':' : ''}${registry.registry}"
+                    pipeline.installRegistries.push(registry)
+                }
+            }
+
+            // try to login to npm install registries
+            pipeline.loginToInstallRegistries()
+            // init package info from package.json
+            pipeline.packageInfo = pipeline.publishRegistry.getPackageInfo()
+            if (!pipeline.packageInfo['versionTrunks'] ||
+                pipeline.packageInfo['versionTrunks']['prerelease'] ||
+                pipeline.packageInfo['versionTrunks']['metadata']) {
+                throw new NodeJSPipelineException('Version defined in package.json shouldn\'t have pre-release string or metadata, pipeline will adjust based on branch and build parameter.')
+            }
+            // version could be used to publish artifact
+            pipeline.setVersion(pipeline.packageInfo['version'])
+            pipeline.steps.echo "Package information: ${pipeline.getPackageName()} v${pipeline.getVersion()}"
+        }
+        // should we overwrite this?
+        arguments.extraInit = initRegistry
         super.setupGeneric(arguments)
 
         // prepare default configurations
@@ -290,34 +324,6 @@ class NodeJSPipeline extends GenericPipeline {
 
         // this stage should always happen for node.js project?
         createStage(name: 'Install Node Package Dependencies', stage: {
-            // init registries
-            if (arguments.publishRegistry) {
-                publishRegistry.init(arguments.publishRegistry)
-                if (!publishRegistry.registry) {
-                    // try to extract publish registry from package.json
-                    publishRegistry.registry = publishRegistry.getRegistryFromPackageJson()
-                }
-            }
-            if (arguments.installRegistries) {
-                for (Map config : arguments.installRegistries) {
-                    Registry registry = new Registry(steps)
-                    registry.init(config)
-                    installRegistries.push(registry)
-                }
-            }
-
-            // try to login to npm install registries
-            this.loginToInstallRegistries()
-            // init package info from package.json
-            this.packageInfo = publishRegistry.getPackageInfo()
-            if (!this.packageInfo['versionTrunks'] ||
-                this.packageInfo['versionTrunks']['prerelease'] ||
-                this.packageInfo['versionTrunks']['metadata']) {
-                throw new NodeJSPipelineException('Version defined in package.json shouldn\'t have pre-release string or metadata, pipeline will adjust based on branch and build parameter.')
-            }
-            // version could be used to publish artifact
-            this.setVersion(this.packageInfo['version'])
-
             if (steps.fileExists('yarn.lock')) {
                 steps.sh "yarn install"
             } else {

@@ -511,7 +511,7 @@ class GenericPipeline extends Pipeline {
 
             if (arguments.extraInit) {
                 this.steps.echo "Run extra initialization ..."
-                arguments.extraInit()
+                arguments.extraInit(this)
             }
         }, timeout: arguments.initForGeneric)
     }
