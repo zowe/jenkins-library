@@ -38,7 +38,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
     // branch to run test
     static final String TEST_JENKINSFILE = 'Jenkinsfile'
     // github api instance
-    protected githubApi
+    protected static GitHubAPI githubApi
 
     @BeforeClass
     public static void setup() {
@@ -50,7 +50,7 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             'branch'           : TEST_BRANCH,
             'jenkinsfile-path' : TEST_JENKINSFILE
         ])
-        githubApi = new GitHubAPI("${TEST_OWNER}/${TEST_REPORSITORY}")
+        this.githubApi = new GitHubAPI("${TEST_OWNER}/${TEST_REPORSITORY}")
     }
 
     @AfterClass
