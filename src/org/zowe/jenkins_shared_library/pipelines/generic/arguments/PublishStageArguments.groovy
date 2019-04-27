@@ -31,4 +31,12 @@ class PublishStageArguments extends GenericStageArguments {
      * Publishing target path
      */
     String publishTargetPath
+
+    /**
+     * By default, if you release a pre-release version on formal release branch, the pipeline will
+     * show a confirmation information requiring human intervene.
+     *
+     * Set this to `true` to bypass the confirmation.
+     */
+    Boolean allowPublishPreReleaseFromFormalReleaseBranch = false
 }

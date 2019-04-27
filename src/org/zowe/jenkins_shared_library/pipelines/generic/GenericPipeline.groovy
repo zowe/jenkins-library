@@ -920,7 +920,8 @@ class GenericPipeline extends Pipeline {
                 if (_isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
                     throw new PublishStageException("Pre-release string is required to perform a non-formal-release", args.name)
                 }
-                if (_isReleaseBranch && _isFormalReleaseBranch && _preReleaseString) {
+                if (_isReleaseBranch && _isFormalReleaseBranch && _preReleaseString &&
+                    !args.allowPublishPreReleaseFromFormalReleaseBranch) {
                     // performing pre-release on formal release branch require human intervene
                     Map action = Utils.waitForInput(
                         this.steps,
