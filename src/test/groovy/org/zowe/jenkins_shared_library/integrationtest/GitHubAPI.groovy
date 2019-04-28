@@ -129,19 +129,18 @@ class GitHubAPI {
             throw new GitHubAPIException('Branch name is required to read package.json.')
         }
 
-        String packageJsonUrl = "https://${GitHub.GITHUB_DOMAIN}/${this.repository}/blob/${branch}/${packageJsonFile}"
-        String packageJsonCdnUrl = "https://${GitHub.GITHUB_DOWNLOAD_DOMAIN}/${this.repository}/${branch}/${packageJsonFile}"
+        String packageJsonUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${this.repository}/contents/package.json"
+        def slurper = new JsonSlurper()
 
-        // these extra steps to make sure package.json in CDN is refreshed.
-        sleep 10000
-        this.get(packageJsonUrl)
-        sleep 5000
-        // this content may need some time to refresh
-        Map result = this.get(packageJsonCdnUrl)
+        Map result = this.get(packageJsonUrl)
+        result['body'] = slurper.parseText(result['body'])
+        String encodedContent = result['body']['content']
+        // content is base64 encoded
+        String content = new String(encodedContent.decodeBase64())
         // package.json should be a json content
-        result['body'] = new JsonSlurper().parseText(result['body'])
+        content = slurper.parseText(content)
 
-        return result['body']
+        return content
     }
 
     /**
