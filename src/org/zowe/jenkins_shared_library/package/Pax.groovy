@@ -304,7 +304,7 @@ fi
         try {
             // run prepare-packaging hook if exists
             if (this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}")) {
-                this.steps.sh ". \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
+                this.steps.sh "\"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
             }
             this.steps.sh "echo \"${func} packaging contents:\" && find ${this.localWorkspace}/${PATH_ASCII} -print"
             // tar ascii folder if exists
