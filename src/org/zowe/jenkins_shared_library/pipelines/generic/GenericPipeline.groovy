@@ -514,6 +514,23 @@ class GenericPipeline extends Pipeline {
                 arguments.extraInit(this)
             }
         }, timeout: arguments.initForGeneric)
+
+        createStage(
+            name: 'SonarQube Scan',
+            stage: {
+                def scannerHome = this.steps.tool 'sonar-scanner-3.2.0';
+                this.steps.withSonarQubeEnv('sonar-default-server') {
+                    this.steps.sh "${scannerHome}/bin/sonar-scanner"
+                }
+            },
+            timeout: arguments.sonarQubeScan,
+            shouldExecute: {
+                boolean shouldExecute = !arguments.disableSonarQubeScan
+                def configExists = steps.fileExists('sonar-project.properties')
+                steps.echo configExists ? 'Found sonar-project.properties' : 'Not found sonar-project.properties'
+                return shouldExecute && configExists
+            }
+        )
     }
 
     /**
