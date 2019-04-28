@@ -139,7 +139,7 @@ class GenericPipeline extends Pipeline {
      * - timestamp: timestamp in yyyyMMddHHmmss format
      * - buildnumber: current build number
      */
-    String artifactoryUploadTargetPath = '{repository}/{package}{subproject}/{version}{branchtag}/'
+    String artifactoryUploadTargetPath = '{repository}/{package}{subproject}/{version}{branchtag-uc}/'
 
     /**
      * Default artifactory file name pattern
@@ -396,6 +396,8 @@ class GenericPipeline extends Pipeline {
         if (!macros.containsKey('publishversion')) {
             macros['publishversion'] = parseBuildStringMacros(this.publishTargetVersion, macros)
         }
+
+        macros['branchtag-uc'] = macros['branchtag'] ? macros['branchtag'].toUpperCase() : ''
 
         log.fine("getBuildStringMacros macros: ${macros}")
 
