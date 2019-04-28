@@ -366,6 +366,23 @@ ${gitStatus}
         }, isSkippable: false, timeout: arguments.installDependencies)
 
         // this stage should always happen for node.js project?
+        createStage(
+            name: 'Lint',
+            stage: {
+                this.steps.sh 'npm run lint'
+            },
+            timeout: arguments.lint,
+            shouldExecute: {
+                boolean shouldExecute = !arguments.disableLint
+
+                def lintDefined = this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('lint')
+                steps.echo 'lint is defined in package.json'
+
+                return shouldExecute && lintDefined
+            }
+        )
+
+        // this stage should always happen for node.js project?
         createStage(name: 'Audit', stage: {
             // we should have login to npm install registries
             try {

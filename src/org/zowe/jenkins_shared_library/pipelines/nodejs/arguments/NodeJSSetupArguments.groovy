@@ -35,6 +35,13 @@ class NodeJSSetupArguments extends GenericSetupArguments {
     StageTimeout audit = [time: 5, unit: TimeUnit.MINUTES]
 
     /**
+     * Amount of time allowed to lint.
+     *
+     * @default 5 Minutes
+     */
+    StageTimeout lint = [time: 2, unit: TimeUnit.MINUTES]
+
+    /**
      * npm install registry configurations
      *
      * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
@@ -68,4 +75,9 @@ class NodeJSSetupArguments extends GenericSetupArguments {
      * If continue the pipeline if npm audit failed.
      */
     Boolean ignoreAuditFailure = false
+
+    /**
+     * If we disable the default lint stage
+     */
+    Boolean disableLint = false
 }
