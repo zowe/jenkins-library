@@ -774,9 +774,8 @@ class GenericPipeline extends Pipeline {
             // can be sent.
             if (preSetupException) {
                 throw preSetupException
-            // project may not have build stage
-            // } else if (_control.build?.status != StageStatus.SUCCESS) {
-            //     throw new TestStageException("Tests cannot be run before the build has completed", args.name)
+            } else if (_control.build?.status != StageStatus.SUCCESS) {
+                throw new TestStageException("Tests cannot be run before the build has completed", args.name)
             }
 
             steps.echo "Processing Arguments"
