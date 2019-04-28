@@ -369,7 +369,9 @@ ${gitStatus}
         createStage(
             name: 'Lint',
             stage: {
-                this.steps.sh 'npm run lint'
+                steps.ansiColor('xterm') {
+                    steps.sh 'npm run lint'
+                }
             },
             timeout: arguments.lint,
             shouldExecute: {
@@ -386,7 +388,9 @@ ${gitStatus}
         createStage(name: 'Audit', stage: {
             // we should have login to npm install registries
             try {
-                steps.sh "npm audit"
+                steps.ansiColor('xterm') {
+                    steps.sh "npm audit"
+                }
             } catch (e) {
                 if (arguments.ignoreAuditFailure) {
                     steps.echo "WARNING: npm audit failed with error \"${e}\" but is ignored."
@@ -436,7 +440,9 @@ ${gitStatus}
     void buildNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.sh "npm run build"
+                steps.ansiColor('xterm') {
+                    steps.sh "npm run build"
+                }
             }
         }
 
@@ -474,7 +480,9 @@ ${gitStatus}
     void testNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.sh "npm run test"
+                steps.ansiColor('xterm') {
+                    steps.sh "npm run test"
+                }
             }
         }
 
