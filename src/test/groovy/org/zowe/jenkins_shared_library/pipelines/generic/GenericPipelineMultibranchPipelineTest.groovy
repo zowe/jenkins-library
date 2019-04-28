@@ -154,7 +154,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
         // version is not bumped because default GenericPipeline.bumpVersion() is empty
         assertThat('major version', newVersion['major'], equalTo(currentVersion['major']));
         assertThat('minor version', newVersion['minor'], equalTo(currentVersion['minor']));
-        // generic pipeline doesn't define how to bump version, so patch level shouldn't change
-        assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch']));
+        // generic pipeline doesn't define how to bump version, but the test should define how to bump
+        assertThat('patch version', newVersion['patch'], equalTo(currentVersion['patch'] + 1));
     }
 }
