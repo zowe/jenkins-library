@@ -907,7 +907,7 @@ class GenericPipeline extends Pipeline {
                 shouldExecute = arguments.shouldExecute()
             }
 
-            return shouldExecute && _isProtectedBranch
+            return shouldExecute
         }
 
         args.stage = { String stageName ->
@@ -1082,13 +1082,13 @@ class GenericPipeline extends Pipeline {
 
         // Execute the stage if this is a protected branch and the original should execute function are both true
         args.shouldExecute = {
-            boolean shouldExecute = this.isPerformingRelease()
+            boolean shouldExecute = this.isPerformingRelease() && this.isReleaseBranch()
 
             if (arguments.shouldExecute) {
                 shouldExecute = arguments.shouldExecute()
             }
 
-            return shouldExecute && _isProtectedBranch
+            return shouldExecute
         }
 
         args.stage = { String stageName ->
