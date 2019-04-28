@@ -378,7 +378,7 @@ ${gitStatus}
                 boolean shouldExecute = !arguments.disableLint
 
                 def lintDefined = this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('lint')
-                steps.echo 'lint is defined in package.json'
+                steps.echo lintDefined ? 'lint is defined in package.json' : 'lint is NOT defined in package.json'
 
                 return shouldExecute && lintDefined
             }
