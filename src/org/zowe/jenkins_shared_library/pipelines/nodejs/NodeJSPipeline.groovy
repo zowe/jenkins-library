@@ -388,10 +388,11 @@ ${gitStatus}
         createStage(
             name: 'Audit',
             stage: {
+                def oldRegistry = steps.sh(script: 'npm config get registry', returnStdout: true).trim()
                 // we should have login to npm install registries
                 try {
                     steps.ansiColor('xterm') {
-                        // cannot do audit on artifactory private registry, so we delete registry config
+                        // cannot audit on artifactory private registry, so we delete registry config
                         steps.sh "npm config delete registry && npm audit"
                     }
                 } catch (e) {
@@ -400,6 +401,9 @@ ${gitStatus}
                     } else {
                         throw e
                     }
+                } finally {
+                    // set back old registry
+                    steps.sh "npm config set registry ${oldRegistry}"
                 }
             },
             isSkippable: true,
