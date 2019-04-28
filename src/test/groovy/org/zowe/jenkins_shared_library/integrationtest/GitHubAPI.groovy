@@ -135,10 +135,11 @@ class GitHubAPI {
         String encodedContent = result['body']['content']
         // content is base64 encoded
         String content = new String(encodedContent.decodeBase64())
+        logger.finer("package.json content: ${content}")
         // package.json should be a json content
-        content = (new JsonSlurper()).parseText(content)
+        def contentJson = (new JsonSlurper()).parseText(content)
 
-        return content
+        return contentJson
     }
 
     /**
