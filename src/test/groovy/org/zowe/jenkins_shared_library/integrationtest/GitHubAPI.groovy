@@ -130,15 +130,13 @@ class GitHubAPI {
         }
 
         String packageJsonUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${this.repository}/contents/package.json"
-        def slurper = new JsonSlurper()
 
         Map result = this.get(packageJsonUrl)
-        result['body'] = slurper.parseText(result['body'])
         String encodedContent = result['body']['content']
         // content is base64 encoded
         String content = new String(encodedContent.decodeBase64())
         // package.json should be a json content
-        content = slurper.parseText(content)
+        content = (new JsonSlurper()).parseText(content)
 
         return content
     }
