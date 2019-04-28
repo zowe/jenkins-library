@@ -525,7 +525,7 @@ ${gitStatus}
 
                 NodeJSBranch branchProps = branches.getByPattern(changeInfo.branchName)
                 String npmTag = Constants.DEFAULT_NPM_NON_RELEASE_TAG
-                if (_isReleaseBranch && _isPerformingRelease) {
+                if (branchProps && _isReleaseBranch && _isPerformingRelease) {
                     npmTag = branchProps.getNpmTag()
                 }
 

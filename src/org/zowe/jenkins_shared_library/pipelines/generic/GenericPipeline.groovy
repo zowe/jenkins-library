@@ -236,7 +236,7 @@ class GenericPipeline extends Pipeline {
 
         def result = false
         def branchProps = branches.getByPattern(branch)
-        if (branchProps.getAllowRelease()) {
+        if (branchProps && branchProps.getAllowRelease()) {
             result = true
         }
 
@@ -261,7 +261,7 @@ class GenericPipeline extends Pipeline {
 
         def result = false
         def branchProps = branches.getByPattern(branch)
-        if (branchProps.getAllowFormalRelease()) {
+        if (branchProps && branchProps.getAllowFormalRelease()) {
             result = true
         }
 
@@ -307,11 +307,13 @@ class GenericPipeline extends Pipeline {
 
         if (branch) {
             def branchProps = branches.getByPattern(branch)
-            def tag = branchProps.getReleaseTag()
-            if (tag) { // has release tag defined
-                def replaced = branch.replaceAll(branchProps.name, tag)
-                if (branch != replaced) { // really replaced
-                    result = replaced
+            if (branchProps) {
+                def tag = branchProps.getReleaseTag()
+                if (tag) { // has release tag defined
+                    def replaced = branch.replaceAll(branchProps.name, tag)
+                    if (branch != replaced) { // really replaced
+                        result = replaced
+                    }
                 }
             }
         }
