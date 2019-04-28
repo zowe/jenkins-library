@@ -295,6 +295,8 @@ class Registry {
                     configEntries.push("npm config set ${registryWithoutProtocol}:_authToken \${TOKEN}")
                     configEntries.push("npm config set ${registryWithoutProtocol}:email ${this.email}")
                     configEntries.push("npm config set ${registryWithoutProtocol}:always-auth true")
+                } else {
+                    configEntries.push("npm config set registry ${this.registry}")
                 }
                 this.steps.sh configEntries.join("\n")
             }
@@ -320,6 +322,8 @@ class Registry {
                     configEntries.push("npm config set ${registryWithoutProtocol}:_password ${base64Password}")
                     configEntries.push("npm config set ${registryWithoutProtocol}:email ${this.email}")
                     configEntries.push("npm config set ${registryWithoutProtocol}:always-auth true")
+                } else {
+                    configEntries.push("npm config set registry ${this.registry}")
                 }
                 this.steps.sh configEntries.join("\n")
             }
