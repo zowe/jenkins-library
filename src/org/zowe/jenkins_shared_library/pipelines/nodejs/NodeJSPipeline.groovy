@@ -385,20 +385,31 @@ ${gitStatus}
         )
 
         // this stage should always happen for node.js project?
-        createStage(name: 'Audit', stage: {
-            // we should have login to npm install registries
-            try {
-                steps.ansiColor('xterm') {
-                    steps.sh "npm audit"
+        createStage(
+            name: 'Audit',
+            stage: {
+                // we should have login to npm install registries
+                try {
+                    steps.ansiColor('xterm') {
+                        // cannot do audit on artifactory private registry, so we delete registry config
+                        steps.sh "npm config delete registry && npm audit"
+                    }
+                } catch (e) {
+                    if (arguments.ignoreAuditFailure) {
+                        steps.echo "WARNING: npm audit failed with error \"${e}\" but is ignored."
+                    } else {
+                        throw e
+                    }
                 }
-            } catch (e) {
-                if (arguments.ignoreAuditFailure) {
-                    steps.echo "WARNING: npm audit failed with error \"${e}\" but is ignored."
-                } else {
-                    throw e
-                }
+            },
+            isSkippable: true,
+            timeout: arguments.audit,
+            shouldExecute: {
+                boolean shouldExecute = !arguments.disableAudit
+
+                return shouldExecute
             }
-        }, isSkippable: false, timeout: arguments.audit)
+        )
     }
 
     /**

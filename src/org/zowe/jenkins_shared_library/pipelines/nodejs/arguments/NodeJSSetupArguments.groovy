@@ -80,4 +80,9 @@ class NodeJSSetupArguments extends GenericSetupArguments {
      * If we disable the default lint stage
      */
     Boolean disableLint = false
+
+    /**
+     * If we disable the default audit stage
+     */
+    Boolean disableAudit = false
 }
