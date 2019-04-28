@@ -57,6 +57,7 @@ echo "[${hookPrepareWorkspace}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 
 echo "[${hookPrepareWorkspace}] ended."
 """
+        sh "chmod +x \"${localWorkspace}/${hookPrepareWorkspace}\""
 
         // write pre hook
         writeFile file: "${localWorkspace}/${hookPrePackaging}", text: """
