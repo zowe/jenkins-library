@@ -148,11 +148,6 @@ class NodeJSPipeline extends GenericPipeline {
     List<Registry> installRegistries = []
 
     /**
-     * Default artifactory file name pattern
-     */
-    String npmPublishTargetVersion = '{version}{branchtag}{buildnumber}{timestamp}'
-
-    /**
      * Constructs the class.
      *
      * <p>When invoking from a Jenkins pipeline script, the NodeJSPipeline must be passed

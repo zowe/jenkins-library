@@ -984,18 +984,22 @@ class GenericPipeline extends Pipeline {
             baseTargetPath += '/'
         }
 
+        log.fine("Uploading artifacts ${artifacts} to ${baseTargetPath}")
         Map uploadSpec = steps.readJSON text: '{"files":[]}'
         Map<String, String> baseMacros = getBuildStringMacros()
         artifacts.each { artifact ->
+            log.fine("- pattern ${artifact}")
             def files = steps.findFiles glob: artifact
             files.each { file ->
                 String f = file.toString()
                 String targetFileFull = baseTargetPath + artifactoryUploadTargetFile
                 Map<String, String> fileMacros = extractArtifactoryUploadTargetFileMacros(f)
                 Map<String, String> macros = baseMacros.clone() + fileMacros
+                String t = parseBuildStringMacros(targetFileFull, macros)
+                log.fine("- + found ${f} -> ${t}")
                 uploadSpec['files'].push([
                     "pattern" : f,
-                    "target"  : parseBuildStringMacros(targetFileFull, macros)
+                    "target"  : t
                 ])
             }
         }
