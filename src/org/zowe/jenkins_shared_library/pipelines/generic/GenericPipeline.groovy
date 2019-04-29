@@ -937,9 +937,6 @@ class GenericPipeline extends Pipeline {
         if (!args.localWorkspace) {
             preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
         }
-        if (!args.remoteWorkspace) {
-            preSetupException = new PackagingStageException("arguments.remoteWorkspace is not defined for packagingGeneric", args.name)
-        }
 
         args.name = "Packaging: ${args.name}"
 
@@ -970,6 +967,9 @@ class GenericPipeline extends Pipeline {
             if (!this.pax.getSshCredential()) {
                 throw new PackagingStageException("PAX server configuration sshCredential is missing", args.name)
             }
+            if (!this.pax.getRemoteWorkspace()) {
+                throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", args.name)
+            }
 
             // execute operation Closure if provided
             if (args.operation) {
@@ -978,7 +978,6 @@ class GenericPipeline extends Pipeline {
                 steps.echo "Creating pax file \"${args.name}\" from workspace..."
                 def result = this.pax.pack(
                     localWorkspace  : args.localWorkspace,
-                    remoteWorkspace : args.remoteWorkspace,
                     job             : "pax-packaging-${args.name}",
                     filename        : "${args.name}.pax",
                     paxOptions      : args.paxOptions ?: '',
