@@ -10,11 +10,21 @@
 
 package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
+import java.util.concurrent.TimeUnit
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
+
 /**
  * Represents the arguments available to the
  * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#packagingGeneric(java.util.Map)} method.
  */
 class PackagingStageArguments extends GenericStageArguments {
+    /**
+     * Amount of time allowed for the SonarQube scan
+     *
+     * @default 30 Minutes
+     */
+    StageTimeout timeout = [time: 30, unit: TimeUnit.MINUTES]
+
     /**
      * The name of the package step.
      *

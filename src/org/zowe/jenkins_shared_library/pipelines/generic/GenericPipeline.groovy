@@ -855,6 +855,9 @@ class GenericPipeline extends Pipeline {
         if (args.stage) {
             preSetupException = new SonarScanStageException("arguments.stage is an invalid option for sonarScanGeneric", args.name)
         }
+        if (!args.scannerServer) {
+            preSetupException = new PackagingStageException("arguments.scannerServer is not defined for sonarScanGeneric", args.name)
+        }
 
         args.name = "SonarQube Scan${arguments.name ? ": ${arguments.name}" : ""}"
 
@@ -883,6 +886,10 @@ class GenericPipeline extends Pipeline {
             if (args.operation) {
                 args.operation(stageName)
             } else {
+                // scannerTool is required for default operation
+                if (!args.scannerTool) {
+                    throw new PackagingStageException("arguments.scannerTool is not defined for sonarScanGeneric", args.name)
+                }
                 def scannerHome = this.steps.tool args.scannerTool
                 this.steps.withSonarQubeEnv(args.scannerServer) {
                     this.steps.sh "${scannerHome}/bin/sonar-scanner"

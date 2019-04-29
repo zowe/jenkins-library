@@ -10,11 +10,21 @@
 
 package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
+import java.util.concurrent.TimeUnit
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
+
 /**
  * Represents the arguments available to the
  * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#sonarScanGeneric(java.util.Map)} method.
  */
 class SonarScanStageArguments extends GenericStageArguments {
+    /**
+     * Amount of time allowed for the SonarQube scan
+     *
+     * @default 5 Minute
+     */
+    StageTimeout timeout = [time: 5, unit: TimeUnit.MINUTES]
+
     /**
      * The name of the SonarQube Scan step.
      *
@@ -25,10 +35,10 @@ class SonarScanStageArguments extends GenericStageArguments {
     /**
      * SonarQube scanner tool name defined in Jenkins
      */
-    String scannerTool = 'sonar-scanner-3.2.0'
+    String scannerTool
 
     /**
      * SonarQube scanner server name defined in Jenkins
      */
-    String scannerServer = 'sonar-default-server'
+    String scannerServer
 }

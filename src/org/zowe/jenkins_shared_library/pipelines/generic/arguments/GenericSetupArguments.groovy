@@ -35,13 +35,6 @@ class GenericSetupArguments extends SetupArguments {
     StageTimeout initForGeneric = [time: 1, unit: TimeUnit.MINUTES]
 
     /**
-     * Amount of time allowed for the SonarQube scan
-     *
-     * @default 5 Minute
-     */
-    StageTimeout sonarQubeScan = [time: 5, unit: TimeUnit.MINUTES]
-
-    /**
      * Github configurations
      *
      * Use configurations defined at {@link org.zowe.jenkins_shared_library.scm.GitHub#init}.
