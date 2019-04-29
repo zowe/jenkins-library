@@ -1,5 +1,6 @@
 jenkins_shared_library
 jenkins_shared_library.artifact
+jenkins_shared_library.behavior
 jenkins_shared_library.email
 jenkins_shared_library.exceptions
 jenkins_shared_library.npm
@@ -13,9 +14,7 @@ jenkins_shared_library.pipelines.base.interfaces
 jenkins_shared_library.pipelines.base.models
 jenkins_shared_library.pipelines.generic
 jenkins_shared_library.pipelines.generic.arguments
-jenkins_shared_library.pipelines.generic.enums
 jenkins_shared_library.pipelines.generic.exceptions
-jenkins_shared_library.pipelines.generic.exceptions.git
 jenkins_shared_library.pipelines.generic.models
 jenkins_shared_library.pipelines.nodejs
 jenkins_shared_library.pipelines.nodejs.arguments
