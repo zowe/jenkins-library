@@ -114,17 +114,6 @@ import org.zowe.jenkins_shared_library.scm.ScmException
 @Log
 class NodeJSPipeline extends GenericPipeline {
     /**
-     * This is the id of the approver saved when the pipeline auto approves the deploy.
-     */
-    static final String AUTO_APPROVE_ID = "[PIPELINE_AUTO_APPROVE]"
-
-    /**
-     * This is the id of the approver saved when the pipeline auto approves the deploy because
-     * of a timeout.
-     */
-    static final String TIMEOUT_APPROVE_ID = "[TIMEOUT_APPROVED]"
-
-    /**
      * A map of branches.
      *
      * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
@@ -360,55 +349,52 @@ ${gitStatus}
             }
         }, isSkippable: false, timeout: arguments.installDependencies)
 
-        // this stage should always happen for node.js project?
-        createStage(
-            name: 'Lint',
-            stage: {
-                steps.ansiColor('xterm') {
-                    steps.sh 'npm run lint'
-                }
-            },
-            timeout: arguments.lint,
-            shouldExecute: {
-                boolean shouldExecute = !arguments.disableLint
-
-                def lintDefined = this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('lint')
-                steps.echo lintDefined ? 'lint is defined in package.json' : 'lint is NOT defined in package.json'
-
-                return shouldExecute && lintDefined
-            }
-        )
-
-        // this stage should always happen for node.js project?
-        createStage(
-            name: 'Audit',
-            stage: {
-                def oldRegistry = steps.sh(script: 'npm config get registry', returnStdout: true).trim()
-                // we should have login to npm install registries
-                try {
+        if (!arguments.disableLint) {
+            createStage(
+                name: 'Lint',
+                stage: {
                     steps.ansiColor('xterm') {
-                        // cannot audit on artifactory private registry, so we delete registry config
-                        steps.sh "npm config delete registry && npm audit"
+                        steps.sh 'npm run lint'
                     }
-                } catch (e) {
-                    if (arguments.ignoreAuditFailure) {
-                        steps.echo "WARNING: npm audit failed with error \"${e}\" but is ignored."
-                    } else {
-                        throw e
-                    }
-                } finally {
-                    // set back old registry
-                    steps.sh "npm config set registry ${oldRegistry}"
-                }
-            },
-            isSkippable: true,
-            timeout: arguments.audit,
-            shouldExecute: {
-                boolean shouldExecute = !arguments.disableAudit
+                },
+                timeout: arguments.lint,
+                shouldExecute: {
+                    boolean shouldExecute = true
 
-                return shouldExecute
-            }
-        )
+                    def lintDefined = this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('lint')
+                    steps.echo lintDefined ? 'lint is defined in package.json' : 'lint is NOT defined in package.json'
+
+                    return shouldExecute && lintDefined
+                }
+            )
+        }
+
+        if (!arguments.disableAudit) {
+            createStage(
+                name: 'Audit',
+                stage: {
+                    def oldRegistry = steps.sh(script: 'npm config get registry', returnStdout: true).trim()
+                    // we should have login to npm install registries
+                    try {
+                        steps.ansiColor('xterm') {
+                            // cannot audit on artifactory private registry, so we delete registry config
+                            steps.sh "npm config delete registry && npm audit"
+                        }
+                    } catch (e) {
+                        if (arguments.ignoreAuditFailure) {
+                            steps.echo "WARNING: npm audit failed with error \"${e}\" but is ignored."
+                        } else {
+                            throw e
+                        }
+                    } finally {
+                        // set back old registry
+                        steps.sh "npm config set registry ${oldRegistry}"
+                    }
+                },
+                isSkippable: true,
+                timeout: arguments.audit
+            )
+        }
     }
 
     /**

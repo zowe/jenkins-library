@@ -14,6 +14,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic
 import groovy.util.logging.Log
 import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
+import org.zowe.jenkins_shared_library.package.Pax
 import org.zowe.jenkins_shared_library.pipelines.base.Branches
 import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
@@ -157,6 +158,11 @@ class GenericPipeline extends Pipeline {
     JFrogArtifactory artifactory
 
     /**
+     * PAX packaging instance
+     */
+    Pax pax
+
+    /**
      * More control variables for the pipeline.
      */
     protected GenericPipelineControl _control = new GenericPipelineControl()
@@ -179,6 +185,7 @@ class GenericPipeline extends Pipeline {
         changeInfo = new ChangeInformation(steps)
         github = new GitHub(steps)
         artifactory = new JFrogArtifactory(steps)
+        pax = new Pax(steps)
     }
 
     /**
@@ -512,29 +519,16 @@ class GenericPipeline extends Pipeline {
                 this.steps.echo "Init artifactory configurations ..."
                 this.artifactory.init(arguments.artifactory)
             }
+            if (arguments.pax) {
+                this.steps.echo "Init pax packaging server configurations ..."
+                this.pax.init(arguments.pax)
+            }
 
             if (arguments.extraInit) {
                 this.steps.echo "Run extra initialization ..."
                 arguments.extraInit(this)
             }
         }, timeout: arguments.initForGeneric)
-
-        createStage(
-            name: 'SonarQube Scan',
-            stage: {
-                def scannerHome = this.steps.tool 'sonar-scanner-3.2.0';
-                this.steps.withSonarQubeEnv('sonar-default-server') {
-                    this.steps.sh "${scannerHome}/bin/sonar-scanner"
-                }
-            },
-            timeout: arguments.sonarQubeScan,
-            shouldExecute: {
-                boolean shouldExecute = !arguments.disableSonarQubeScan
-                def configExists = steps.fileExists('sonar-project.properties')
-                steps.echo configExists ? 'Found sonar-project.properties' : 'Not found sonar-project.properties'
-                return shouldExecute && configExists
-            }
-        )
     }
 
     /**
@@ -843,6 +837,168 @@ class GenericPipeline extends Pipeline {
      */
     protected void test(Map arguments = [:]) {
         testGeneric(arguments)
+    }
+
+    void sonarScanGeneric(Map arguments = [:]) {
+        if (!arguments) {
+            // can be empty
+            arguments = [:]
+        }
+
+        // Force build to only happen on success, this cannot be overridden
+        arguments.resultThreshold = ResultEnum.SUCCESS
+
+        SonarScanStageArguments args = arguments as SonarScanStageArguments
+
+        SonarScanStageException preSetupException
+
+        if (args.stage) {
+            preSetupException = new SonarScanStageException("arguments.stage is an invalid option for sonarScanGeneric", args.name)
+        }
+
+        args.name = "SonarQube Scan${arguments.name ? ": ${arguments.name}" : ""}"
+
+        // Execute the stage if this is a protected branch and the original should execute function are both true
+        args.shouldExecute = {
+            boolean shouldExecute = true
+
+            if (arguments.shouldExecute) {
+                shouldExecute = arguments.shouldExecute()
+            }
+
+            def configExists = steps.fileExists('sonar-project.properties')
+            steps.echo configExists ? 'Found sonar-project.properties' : 'Not found sonar-project.properties'
+
+            return shouldExecute && configExists
+        }
+
+        args.stage = { String stageName ->
+            // If there were any exceptions during the setup, throw them here so proper email notifications
+            // can be sent.
+            if (preSetupException) {
+                throw preSetupException
+            }
+
+            // execute operation Closure if provided
+            if (args.operation) {
+                args.operation(stageName)
+            } else {
+                def scannerHome = this.steps.tool args.scannerTool
+                this.steps.withSonarQubeEnv(args.scannerServer) {
+                    this.steps.sh "${scannerHome}/bin/sonar-scanner"
+                }
+            }
+        }
+
+        // Create the stage and ensure that the first one is the stage of reference
+        Stage sonarScan = createStage(args)
+        if (!_control.sonarScan) {
+            _control.sonarScan = sonarScan
+        }
+    }
+
+    /**
+     * Pseudo SonarQube Scan method, should be overridden by inherited classes
+     * @param arguments The arguments for the sonarScan step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    protected void sonarScan(Map arguments) {
+        sonarScanGeneric(arguments)
+    }
+
+    void packagingGeneric(Map arguments = [:]) {
+        if (!arguments) {
+            // can be empty
+            arguments = [:]
+        }
+
+        // Force build to only happen on success, this cannot be overridden
+        arguments.resultThreshold = ResultEnum.SUCCESS
+
+        PackagingStageArguments args = arguments as PackagingStageArguments
+
+        PackagingStageException preSetupException
+
+        if (args.stage) {
+            preSetupException = new PackagingStageException("arguments.stage is an invalid option for packagingGeneric", args.name)
+        }
+        if (!args.name) {
+            preSetupException = new PackagingStageException("arguments.name is not defined for packagingGeneric", args.name)
+        }
+        // normalize package name
+        args.name = Utils.sanitizeBranchName(args.name)
+        if (!args.localWorkspace) {
+            preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
+        }
+        if (!args.remoteWorkspace) {
+            preSetupException = new PackagingStageException("arguments.remoteWorkspace is not defined for packagingGeneric", args.name)
+        }
+
+        args.name = "Packaging: ${args.name}"
+
+        // Execute the stage if this is a protected branch and the original should execute function are both true
+        args.shouldExecute = {
+            boolean shouldExecute = true
+
+            if (arguments.shouldExecute) {
+                shouldExecute = arguments.shouldExecute()
+            }
+
+            def workspaceExists = steps.fileExists(args.localWorkspace)
+            steps.echo workspaceExists ? "Found local packaging workspace ${args.localWorkspace}" : "Not found local packaging workspace ${args.localWorkspace}"
+
+            return shouldExecute && workspaceExists
+        }
+
+        args.stage = { String stageName ->
+            // If there were any exceptions during the setup, throw them here so proper email notifications
+            // can be sent.
+            if (preSetupException) {
+                throw preSetupException
+            }
+
+            if (!this.pax.getSshHost()) {
+                throw new PackagingStageException("PAX server configuration sshHost is missing", args.name)
+            }
+            if (!this.pax.getSshCredential()) {
+                throw new PackagingStageException("PAX server configuration sshCredential is missing", args.name)
+            }
+
+            // execute operation Closure if provided
+            if (args.operation) {
+                args.operation(stageName)
+            } else {
+                steps.echo "Creating pax file \"${args.name}\" from workspace..."
+                def result = this.pax.pack(
+                    localWorkspace  : args.localWorkspace,
+                    remoteWorkspace : args.remoteWorkspace,
+                    job             : "pax-packaging-${args.name}",
+                    filename        : "${args.name}.pax",
+                    paxOptions      : args.paxOptions ?: '',
+                )
+                if (steps.fileExists("${args.localWorkspace}/${args.name}.pax")) {
+                    steps.echo "Packaging result ${args.name}.pax is in place."
+                } else {
+                    steps.sh "ls -la ${args.localWorkspace}"
+                    steps.error "Failed to find packaging result ${args.name}.pax"
+                }
+            }
+        }
+
+        // Create the stage and ensure that the first one is the stage of reference
+        Stage packaging = createStage(args)
+        if (!_control.packaging) {
+            _control.packaging = packaging
+        }
+    }
+
+    /**
+     * Pseudo packaging method, should be overridden by inherited classes
+     * @param arguments The arguments for the packaging step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    protected void packaging(Map arguments) {
+        packagingGeneric(arguments)
     }
 
     /**

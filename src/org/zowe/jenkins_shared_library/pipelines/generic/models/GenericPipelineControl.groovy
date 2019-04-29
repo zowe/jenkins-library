@@ -30,6 +30,16 @@ class GenericPipelineControl extends PipelineControl {
     List<Stage> prePublishTests = []
 
     /**
+     * SonarQube scan stage
+     */
+    Stage sonarScan
+
+    /**
+     * Package stage
+     */
+    Stage packaging
+
+    /**
      * Publish stage.
      *
      * <p>This stage requires the build to be successful and for tests to be stable (if they were executed)</p>

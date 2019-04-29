@@ -56,15 +56,17 @@ class GenericSetupArguments extends SetupArguments {
     Map artifactory
 
     /**
+     * PAX server configurations
+     *
+     * Use configurations defined at {@link org.zowe.jenkins_shared_library.package.Pax#init}.
+     */
+    Map pax
+
+    /**
      * Extra init operations
      *
      * This closure will execute in 'Init Generic Pipeline' stage, and the pipeline object will be
      * passed to Clusure as arguments.
      */
     Closure extraInit
-
-    /**
-     * If disable SonarQube Code Scan
-     */
-    Boolean disableSonarQubeScan = false
 }
