@@ -930,10 +930,15 @@ class GenericPipeline extends Pipeline {
             preSetupException = new PackagingStageException("arguments.stage is an invalid option for packagingGeneric", args.name)
         }
         if (!args.name) {
+            // try a default value from package info
+            def info = this.getPackageInfo()
+            if (info && info['name']) {
+                args.name = info['name']
+            }
+        }
+        if (!args.name) {
             preSetupException = new PackagingStageException("arguments.name is not defined for packagingGeneric", args.name)
         }
-        // normalize package name
-        def paxPackageName = Utils.sanitizeBranchName(args.name)
         if (!args.localWorkspace) {
             preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
         }
@@ -975,6 +980,8 @@ class GenericPipeline extends Pipeline {
             if (args.operation) {
                 args.operation(stageName)
             } else {
+                // normalize package name
+                def paxPackageName = Utils.sanitizeBranchName(args.name)
                 steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
                 def result = this.pax.pack(
                     localWorkspace  : args.localWorkspace,
