@@ -187,7 +187,7 @@ class GradlePipeline extends GenericPipeline {
     Map extractPackageInfo() {
         Map info = [:]
 
-        def properties = pipeline.steps.sh(script: './gradlew properties -q', returnStdout: true).trim()
+        def properties = this.steps.sh(script: './gradlew properties -q', returnStdout: true).trim()
         properties.split("\n").each { line ->
             def matches = line =~ /^([a-zA-Z0-9]+):\s+(.+)$/
             if (matches.matches() && matches[0] && matches[0].size() == 3) {
