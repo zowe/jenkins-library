@@ -127,11 +127,6 @@ class NodeJSPipeline extends GenericPipeline {
     Registry publishRegistry
 
     /**
-     * Package information extracted from package.json
-     */
-    Map packageInfo
-
-    /**
      * Artifactory instances for npm install registries
      */
     List<Registry> installRegistries = []

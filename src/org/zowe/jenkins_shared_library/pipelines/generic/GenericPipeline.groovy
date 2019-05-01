@@ -122,6 +122,11 @@ class GenericPipeline extends Pipeline {
     final ChangeInformation changeInfo
 
     /**
+     * Package information extracted from project
+     */
+    Map packageInfo
+
+    /**
      * Publishing version pattern
      *
      * Example: 1.2.3-snapshot-23-20190101010101
