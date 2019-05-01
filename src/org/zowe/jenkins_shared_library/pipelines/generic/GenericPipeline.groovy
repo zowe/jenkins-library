@@ -802,6 +802,7 @@ class GenericPipeline extends Pipeline {
             }
 
             // Collect junit report
+            log.finer "junit arguments: ${args.junit}"
             steps.junit args.junit
 
             // Collect cobertura coverage if specified

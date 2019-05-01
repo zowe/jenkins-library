@@ -308,6 +308,8 @@ class GradlePipeline extends GenericPipeline {
      *     installable artifact. This artifact is archived to the build for later access.</li>
      * </ul></p>
      *
+     * Gradle Java plugin: {@link https://docs.gradle.org/current/userguide/java_plugin.html}, diagram shows the relationships between these tasks.
+     *
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
      */
@@ -315,7 +317,8 @@ class GradlePipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.ansiColor('xterm') {
-                    steps.sh "./gradlew build"
+                    // assemble doesn't include running test
+                    steps.sh "./gradlew assemble"
                 }
             }
         }
@@ -347,7 +350,6 @@ class GradlePipeline extends GenericPipeline {
      * </ul>
      * </p>
      *
-     *
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
@@ -355,7 +357,8 @@ class GradlePipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.ansiColor('xterm') {
-                    steps.sh "./gradlew test"
+                    // check is the next further step than test
+                    steps.sh "./gradlew check"
                 }
             }
         }
@@ -371,6 +374,28 @@ class GradlePipeline extends GenericPipeline {
     @Override
     protected void test(Map arguments = [:]) {
         testGradle(arguments)
+    }
+
+    void packagingGradle(Map arguments = [:]) {
+        if (!arguments.operation) {
+            arguments.operation = {
+                steps.ansiColor('xterm') {
+                    // jar task actually has been executed becuase it's pre-task for assemble
+                    steps.sh "./gradlew jar"
+                }
+            }
+        }
+
+        super.packagingGeneric(arguments)
+    }
+
+    /**
+     * Pseudo packaging method, should be overridden by inherited classes
+     * @param arguments The arguments for the packaging step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    protected void packaging(Map arguments) {
+        packagingGradle(arguments)
     }
 
     /**
