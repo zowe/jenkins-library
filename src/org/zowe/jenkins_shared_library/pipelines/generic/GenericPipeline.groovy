@@ -431,6 +431,20 @@ class GenericPipeline extends Pipeline {
             macros['fileext'] = ''
         }
 
+        // Does file name looks like my-project-1.2.3-snapshot? If so, we remove the version information.
+        def matches = macros['filename'] =~ /^(.+)-([0-9]+\.[0-9]+\.[0-9]+)(-[0-9a-zA-Z-+\.]+)?$/
+        if (matches.matches() && matches[0] && matches[0].size() == 4) {
+            String info = this.getPackageInfo()
+            if (info['versionTrunks']) {
+                String semver = "${info['versionTrunks']['major']}.${info['versionTrunks']['minor']}.${info['versionTrunks']['patch']}"
+                if (matches[0][2] == semver) {
+                    // the artifact file name has version infromation
+                    log.finer "Version in artifact \"${macros['filename']}\" name is extracted as \"${matches[0][1]}\"."
+                    macros['filename'] = matches[0][1]
+                }
+            }
+        }
+
         return macros
     }
 
