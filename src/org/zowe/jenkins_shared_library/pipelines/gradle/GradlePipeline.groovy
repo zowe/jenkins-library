@@ -355,7 +355,7 @@ class GradlePipeline extends GenericPipeline {
         if (!arguments.operation) {
             arguments.operation = {
                 steps.ansiColor('xterm') {
-                    steps.sh "./gradlew coverage"
+                    steps.sh "./gradlew test"
                 }
             }
         }
