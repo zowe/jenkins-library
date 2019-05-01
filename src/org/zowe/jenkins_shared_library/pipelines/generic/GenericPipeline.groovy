@@ -439,9 +439,8 @@ class GenericPipeline extends Pipeline {
         // Does file name looks like my-project-1.2.3-snapshot? If so, we remove the version information.
         def matches = macros['filename'] =~ /^(.+)-([0-9]+\.[0-9]+\.[0-9]+)(-[0-9a-zA-Z-+\.]+)?$/
         if (matches.matches() && matches[0] && matches[0].size() == 4) {
-            String info = this.getPackageInfo()
-            if (info['versionTrunks']) {
-                String semver = "${info['versionTrunks']['major']}.${info['versionTrunks']['minor']}.${info['versionTrunks']['patch']}"
+            if (this.packageInfo && this.packageInfo['versionTrunks']) {
+                String semver = "${this.packageInfo['versionTrunks']['major']}.${this.packageInfo['versionTrunks']['minor']}.${this.packageInfo['versionTrunks']['patch']}"
                 if (matches[0][2] == semver) {
                     // the artifact file name has version infromation
                     log.finer "Version in artifact \"${macros['filename']}\" name is extracted as \"${matches[0][1]}\"."
@@ -951,9 +950,8 @@ class GenericPipeline extends Pipeline {
         }
         if (!args.name) {
             // try a default value from package info
-            def info = this.getPackageInfo()
-            if (info && info['name']) {
-                args.name = info['name']
+            if (this.packageInfo && this.packageInfo['name']) {
+                args.name = this.packageInfo['name']
             }
         }
         if (!args.name) {
