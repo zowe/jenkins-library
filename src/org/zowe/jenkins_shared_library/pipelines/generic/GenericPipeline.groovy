@@ -1086,18 +1086,6 @@ class GenericPipeline extends Pipeline {
             preSetupException = new PublishStageException("arguments.stage is an invalid option for publishGeneric", args.name)
         }
 
-        // Execute the stage if this is a protected branch and the original should execute function
-        // are both true
-        args.shouldExecute = {
-            boolean shouldExecute = true
-
-            if (arguments.shouldExecute) {
-                shouldExecute = arguments.shouldExecute()
-            }
-
-            return shouldExecute
-        }
-
         args.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
@@ -1272,17 +1260,6 @@ class GenericPipeline extends Pipeline {
         }
 
         arguments.name = "Releasing${arguments.name ? ": ${arguments.name}" : ""}"
-
-        // Execute the stage if this is a protected branch and the original should execute function are both true
-        arguments.shouldExecute = {
-            boolean shouldExecute = true
-
-            if (arguments.shouldExecute) {
-                shouldExecute = arguments.shouldExecute()
-            }
-
-            return shouldExecute
-        }
 
         arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
