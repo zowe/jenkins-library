@@ -188,6 +188,7 @@ class GradlePipeline extends GenericPipeline {
     Map extractPackageInfo() {
         Map info = [:]
 
+        // load properties
         def properties = this.steps.sh(script: './gradlew properties -q', returnStdout: true).trim()
         properties.split("\n").each { line ->
             def matches = line =~ /^([a-zA-Z0-9]+):\s+(.+)$/
@@ -205,6 +206,16 @@ class GradlePipeline extends GenericPipeline {
                 } else if (key == 'description' && val != 'null') {
                     info[key] = val
                 }
+            }
+        }
+
+        // load tasks
+        info['scripts'] = []
+        def tasks = this.steps.sh(script: './gradlew tasks -q', returnStdout: true).trim()
+        tasks.split("\n").each { line ->
+            def matches = line =~ /^([a-zA-Z0-9]+) - (.+)$/
+            if (matches.matches() && matches[0] && matches[0].size() == 3) {
+                info['scripts'].push(matches[0][1])
             }
         }
 
@@ -358,7 +369,13 @@ class GradlePipeline extends GenericPipeline {
             arguments.operation = {
                 steps.ansiColor('xterm') {
                     // check is the next further step than test
-                    steps.sh "./gradlew check"
+                    if (this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('coverage')) {
+                        steps.echo 'gradle coverage task is defined.'
+                        steps.sh "./gradlew coverage"
+                    } else {
+                        steps.echo 'gradle coverage task is not defined, will run check instead.'
+                        steps.sh "./gradlew check"
+                    }
                 }
             }
         }
@@ -406,6 +423,77 @@ class GradlePipeline extends GenericPipeline {
     @Override
     protected void publish(Map arguments = [:]) {
         publishGeneric(arguments)
+    }
+
+    void releaseGradle(Map arguments = [:]) {
+        GradleReleaseArguments args = arguments as GradleReleaseArguments
+
+        // we must have version trunks to calculate how to release
+        if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
+            throw new GradlePipelineException('Cannot find current project version.')
+        }
+        if (args.artifactoryReleaseUsernameVar && !args.artifactoryReleasePasswordVar) {
+            throw new GradlePipelineException('artifactoryReleaseUsernameVar is defined, but artifactoryReleasePasswordVar is missing.')
+        }
+        if (args.artifactoryReleaseUsernameVar && args.artifactoryReleasePasswordVar &&
+            (!this.artifactory || !this.artifactory.usernamePasswordCredential)) {
+            throw new GradlePipelineException('Artifactory credential is not defined.')
+        }
+
+        if (!args.operation) {
+            args.operation = {
+                // https://github.com/researchgate/gradle-release
+                // Gradle release can push a version bump commit, also tag branch
+                // Example release command:
+                //   gradle release \
+                //     -Prelease.useAutomaticVersion=true \
+                //     -Prelease.releaseVersion=1.0.0 \
+                //     -Prelease.newVersion=1.1.0-SNAPSHOT \
+                //     -Pdeploy.username=$USERNAME \
+                //     -Pdeploy.password=$PASSWORD
+                steps.ansiColor('xterm') {
+                    String releaseCommand = "./gradlew release -Prelease.useAutomaticVersion=true"
+                    if (this.packageInfo && this.packageInfo['versionTrunks']) {
+                        releaseCommand += " -Prelease.releaseVersion"
+                        releaseCommand += "=${this.packageInfo['versionTrunks']['major']}"
+                        releaseCommand += ".${this.packageInfo['versionTrunks']['minor']}"
+                        releaseCommand += ".${this.packageInfo['versionTrunks']['patch']}"
+                        // this gonna be a patch level release
+                        releaseCommand += " -Prelease.newVersion"
+                        releaseCommand += "=${this.packageInfo['versionTrunks']['major']}"
+                        releaseCommand += ".${this.packageInfo['versionTrunks']['minor']}"
+                        releaseCommand += ".${this.packageInfo['versionTrunks']['patch'] + 1}"
+                    }
+                    if (args.artifactoryReleaseUsernameVar && args.artifactoryReleasePasswordVar) {
+                        releaseCommand += " -P${args.artifactoryReleaseUsernameVar}=\$USERNAME"
+                        releaseCommand += " -P${args.artifactoryReleasePasswordVar}=\$PASSWORD"
+                        steps.withCredentials([
+                            steps.usernamePassword(
+                                credentialsId: this.artifactory.usernamePasswordCredential,
+                                passwordVariable: 'PASSWORD',
+                                usernameVariable: 'USERNAME'
+                            )
+                        ]) {
+                            steps.sh releaseCommand
+                        }
+                    } else {
+                        // the artifactory doesn't have username/password
+                        steps.sh releaseCommand
+                    }
+                }
+            }
+        }
+
+        super.releaseGeneric(args as Map)
+    }
+
+    /**
+     * Pseudo release method, should be overridden by inherited classes
+     * @param arguments The arguments for the release step. {@code arguments.operation} must be
+     *                        provided.
+     */
+    protected void release(Map arguments) {
+        releaseGradle(arguments)
     }
 
     /**

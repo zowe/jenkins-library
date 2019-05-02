@@ -80,27 +80,23 @@ class GradlePipelineMultibranchPipelineTest extends IntegrationTest {
             'Executing stage Init Generic Pipeline',
             'Init github configurations ...',
             'Init artifactory configurations ...',
-            // install stage
-            'Executing stage Install Node Package Dependencies',
-            'login to npm registry:',
-            '+ npm install --no-audit',
-            // audit stage
-            'Executing stage Audit',
-            '+ npm audit',
+            '+ ./bootstrap_gradlew.sh',
+            '+ ./gradlew properties -q',
+            'Package information: org.zowe.jenkins-library-test.gradle v',
             // build stage
             'Executing stage Build: Source',
-            '+ npm run build',
+            '+ ./gradlew assemble',
             // test stage
             'Executing stage Test: Unit',
-            '+ npm run test:unit',
+            '+ ./gradlew check',
             'Recording test results', // junit
-            '[Cobertura] Publishing Cobertura coverage report...', // cobertura
             '[htmlpublisher] Archiving HTML reports...',
+            // package stage
+            'Not found local packaging workspace pax-workspace',
             // publish stage
             'Executing stage Publish',
-            'Publishing package ',
-            '+ npm publish --tag snapshot --registry ',
-            'Revert changes by npm version ...',
+            'Deploying artifact: ',
+            'Artifact uploading is successful.',
             // release stage
             'Stage Skipped: "Releasing" Reason: Stage was not executed due to shouldExecute returning false',
             // complete stage
