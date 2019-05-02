@@ -1273,9 +1273,12 @@ class GenericPipeline extends Pipeline {
 
         arguments.name = "Releasing${arguments.name ? ": ${arguments.name}" : ""}"
 
+        Boolean _isReleaseBranch = this.isReleaseBranch()
+        Boolean _isPerformingRelease = this.isPerformingRelease()
+
         // Execute the stage if this is a protected branch and the original should execute function are both true
         arguments.shouldExecute = {
-            boolean shouldExecute = this.isPerformingRelease() && this.isReleaseBranch()
+            boolean shouldExecute = _isPerformingRelease && _isReleaseBranch
 
             if (arguments.shouldExecute) {
                 shouldExecute = arguments.shouldExecute()
