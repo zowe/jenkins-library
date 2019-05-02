@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.gradle.arguments
 
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
-import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.ReleaseStageArguments
 
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
  * {@link org.zowe.jenkins_shared_library.pipelines.Gradle.GradlePipeline#release(org.zowe.jenkins_shared_library.pipelines.Gradle.arguments.GradleReleaseArguments)}
  * method.
  */
-class GradleReleaseArguments extends GenericSetupArguments {
+class GradleReleaseArguments extends ReleaseStageArguments {
 
     /**
      * Artifactory username project variable defined in gradle settings
