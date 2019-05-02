@@ -1259,11 +1259,12 @@ class GenericPipeline extends Pipeline {
             arguments = [:]
         }
 
-        // Force build to only happen on success, this cannot be overridden
-        arguments.resultThreshold = ResultEnum.SUCCESS
-
         ReleaseStageArguments args = arguments as ReleaseStageArguments
 
+        this.releaseGeneric(args)
+    }
+
+    void releaseGeneric(ReleaseStageArguments arguments) {
         ReleaseStageException preSetupException
 
         if (args.stage) {

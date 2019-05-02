@@ -489,7 +489,7 @@ class GradlePipeline extends GenericPipeline {
             }
         }
 
-        super.releaseGeneric(args as Map)
+        super.releaseGeneric(args)
     }
 
     /**
