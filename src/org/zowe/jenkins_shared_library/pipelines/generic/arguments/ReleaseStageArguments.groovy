@@ -17,10 +17,8 @@ package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 class ReleaseStageArguments extends GenericStageArguments {
     /**
      * The name of the Releasing step.
-     *
-     * @default {@code "Package"}
      */
-    String name = "Package"
+    String name = ""
 
     /**
      * Custom script of how to tag branch
