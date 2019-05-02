@@ -965,16 +965,6 @@ class GenericPipeline extends Pipeline {
                 throw preSetupException
             }
 
-            if (!this.pax.getSshHost()) {
-                throw new PackagingStageException("PAX server configuration sshHost is missing", args.sshHost)
-            }
-            if (!this.pax.getSshCredential()) {
-                throw new PackagingStageException("PAX server configuration sshCredential is missing", args.sshCredential)
-            }
-            if (!this.pax.getRemoteWorkspace()) {
-                throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", args.remoteWorkspace)
-            }
-
             // execute operation Closure if provided
             if (args.operation) {
                 args.operation(stageName)
@@ -982,6 +972,16 @@ class GenericPipeline extends Pipeline {
                 def workspaceExists = steps.fileExists(args.localWorkspace)
                 if (workspaceExists) {
                     steps.echo "Found local packaging workspace ${args.localWorkspace}"
+
+                    if (!this.pax.getSshHost()) {
+                        throw new PackagingStageException("PAX server configuration sshHost is missing", args.sshHost)
+                    }
+                    if (!this.pax.getSshCredential()) {
+                        throw new PackagingStageException("PAX server configuration sshCredential is missing", args.sshCredential)
+                    }
+                    if (!this.pax.getRemoteWorkspace()) {
+                        throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", args.remoteWorkspace)
+                    }
 
                     // normalize package name
                     def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
