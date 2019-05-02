@@ -432,7 +432,7 @@ class GradlePipeline extends GenericPipeline {
             args.operation = {
                 // validate package info and other parameters
                 // we must have release plugin
-                if (!this.packageInfo || !this.packageInfo['scripts'] || !this.packageInfo['release']) {
+                if (!this.packageInfo || !this.packageInfo['scripts'] || !this.packageInfo['scripts'].contains('release')) {
                     throw new GradlePipelineException('Gradle release plugin is required to perform a release.')
                 }
                 // we must have version trunks to calculate how to release

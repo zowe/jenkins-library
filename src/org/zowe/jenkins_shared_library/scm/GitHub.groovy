@@ -305,7 +305,7 @@ class GitHub {
         // using https repository, indicate git push to check ~/.git-credentials
         this.command('git config credential.helper store')
 
-        this.command("git add . && git commit -m '${message}'")
+        this.command("git add . && git commit -s -m '${message}'")
     }
 
     /**

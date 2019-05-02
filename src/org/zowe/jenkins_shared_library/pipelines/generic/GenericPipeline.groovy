@@ -880,20 +880,6 @@ class GenericPipeline extends Pipeline {
 
         args.name = "SonarQube Scan${arguments.name ? ": ${arguments.name}" : ""}"
 
-        // Execute the stage if this is a protected branch and the original should execute function are both true
-        args.shouldExecute = {
-            boolean shouldExecute = true
-
-            if (arguments.shouldExecute) {
-                shouldExecute = arguments.shouldExecute()
-            }
-
-            def configExists = steps.fileExists('sonar-project.properties')
-            steps.echo configExists ? 'Found sonar-project.properties' : 'Not found sonar-project.properties'
-
-            return shouldExecute && configExists
-        }
-
         args.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
@@ -909,9 +895,16 @@ class GenericPipeline extends Pipeline {
                 if (!args.scannerTool) {
                     throw new PackagingStageException("arguments.scannerTool is not defined for sonarScanGeneric", args.name)
                 }
-                def scannerHome = this.steps.tool args.scannerTool
-                this.steps.withSonarQubeEnv(args.scannerServer) {
-                    this.steps.sh "${scannerHome}/bin/sonar-scanner"
+
+                def configExists = steps.fileExists('sonar-project.properties')
+                if (configExists) {
+                    steps.echo 'Found sonar-project.properties, will perform SonarQube scanning ...'
+                    def scannerHome = this.steps.tool args.scannerTool
+                    this.steps.withSonarQubeEnv(args.scannerServer) {
+                        this.steps.sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                } else {
+                    steps.echo 'Not found sonar-project.properties, no SonarQube scan performed.'
                 }
             }
         }
@@ -961,21 +954,9 @@ class GenericPipeline extends Pipeline {
             preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
         }
 
+        def originalPackageName = args.name
+        // now args.name is used as stage name
         args.name = "Packaging: ${args.name}"
-
-        // Execute the stage if this is a protected branch and the original should execute function are both true
-        args.shouldExecute = {
-            boolean shouldExecute = true
-
-            if (arguments.shouldExecute) {
-                shouldExecute = arguments.shouldExecute()
-            }
-
-            def workspaceExists = steps.fileExists(args.localWorkspace)
-            steps.echo workspaceExists ? "Found local packaging workspace ${args.localWorkspace}" : "Not found local packaging workspace ${args.localWorkspace}"
-
-            return shouldExecute && workspaceExists
-        }
 
         args.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
@@ -998,20 +979,27 @@ class GenericPipeline extends Pipeline {
             if (args.operation) {
                 args.operation(stageName)
             } else {
-                // normalize package name
-                def paxPackageName = Utils.sanitizeBranchName(args.name)
-                steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
-                def result = this.pax.pack(
-                    localWorkspace  : args.localWorkspace,
-                    job             : "pax-packaging-${paxPackageName}",
-                    filename        : "${paxPackageName}.pax",
-                    paxOptions      : args.paxOptions ?: '',
-                )
-                if (steps.fileExists("${args.localWorkspace}/${paxPackageName}.pax")) {
-                    steps.echo "Packaging result ${paxPackageName}.pax is in place."
+                def workspaceExists = steps.fileExists(args.localWorkspace)
+                if (workspaceExists) {
+                    steps.echo "Found local packaging workspace ${args.localWorkspace}"
+
+                    // normalize package name
+                    def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
+                    steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
+                    def result = this.pax.pack(
+                        localWorkspace  : args.localWorkspace,
+                        job             : "pax-packaging-${paxPackageName}",
+                        filename        : "${paxPackageName}.pax",
+                        paxOptions      : args.paxOptions ?: '',
+                    )
+                    if (steps.fileExists("${args.localWorkspace}/${paxPackageName}.pax")) {
+                        steps.echo "Packaging result ${paxPackageName}.pax is in place."
+                    } else {
+                        steps.sh "ls -la ${args.localWorkspace}"
+                        steps.error "Failed to find packaging result ${paxPackageName}.pax"
+                    }
                 } else {
-                    steps.sh "ls -la ${args.localWorkspace}"
-                    steps.error "Failed to find packaging result ${paxPackageName}.pax"
+                    steps.echo "Not found local packaging workspace ${args.localWorkspace}"
                 }
             }
         }
