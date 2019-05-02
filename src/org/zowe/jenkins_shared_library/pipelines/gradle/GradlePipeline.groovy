@@ -428,20 +428,25 @@ class GradlePipeline extends GenericPipeline {
     void releaseGradle(Map arguments = [:]) {
         GradleReleaseArguments args = arguments as GradleReleaseArguments
 
-        // we must have version trunks to calculate how to release
-        if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
-            throw new GradlePipelineException('Cannot find current project version.')
-        }
-        if (args.artifactoryReleaseUsernameVar && !args.artifactoryReleasePasswordVar) {
-            throw new GradlePipelineException('artifactoryReleaseUsernameVar is defined, but artifactoryReleasePasswordVar is missing.')
-        }
-        if (args.artifactoryReleaseUsernameVar && args.artifactoryReleasePasswordVar &&
-            (!this.artifactory || !this.artifactory.usernamePasswordCredential)) {
-            throw new GradlePipelineException('Artifactory credential is not defined.')
-        }
-
         if (!args.operation) {
             args.operation = {
+                // validate package info and other parameters
+                // we must have release plugin
+                if (!this.packageInfo || !this.packageInfo['scripts'] || !this.packageInfo['release']) {
+                    throw new GradlePipelineException('Gradle release plugin is required to perform a release.')
+                }
+                // we must have version trunks to calculate how to release
+                if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
+                    throw new GradlePipelineException('Cannot find current project version.')
+                }
+                if (args.artifactoryReleaseUsernameVar && !args.artifactoryReleasePasswordVar) {
+                    throw new GradlePipelineException('artifactoryReleaseUsernameVar is defined, but artifactoryReleasePasswordVar is missing.')
+                }
+                if (args.artifactoryReleaseUsernameVar && args.artifactoryReleasePasswordVar &&
+                    (!this.artifactory || !this.artifactory.usernamePasswordCredential)) {
+                    throw new GradlePipelineException('Artifactory credential is not defined.')
+                }
+
                 // https://github.com/researchgate/gradle-release
                 // Gradle release can push a version bump commit, also tag branch
                 // Example release command:
