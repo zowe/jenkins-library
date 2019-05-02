@@ -1267,14 +1267,14 @@ class GenericPipeline extends Pipeline {
     void releaseGeneric(ReleaseStageArguments arguments) {
         ReleaseStageException preSetupException
 
-        if (args.stage) {
-            preSetupException = new ReleaseStageException("arguments.stage is an invalid option for releaseGeneric", args.name)
+        if (arguments.stage) {
+            preSetupException = new ReleaseStageException("arguments.stage is an invalid option for releaseGeneric", arguments.name)
         }
 
-        args.name = "Releasing${arguments.name ? ": ${arguments.name}" : ""}"
+        arguments.name = "Releasing${arguments.name ? ": ${arguments.name}" : ""}"
 
         // Execute the stage if this is a protected branch and the original should execute function are both true
-        args.shouldExecute = {
+        arguments.shouldExecute = {
             boolean shouldExecute = this.isPerformingRelease() && this.isReleaseBranch()
 
             if (arguments.shouldExecute) {
@@ -1284,7 +1284,7 @@ class GenericPipeline extends Pipeline {
             return shouldExecute
         }
 
-        args.stage = { String stageName ->
+        arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
@@ -1293,24 +1293,24 @@ class GenericPipeline extends Pipeline {
 
             // no need for other checks because we require publish stage to be success
             if (_control.publish?.status != StageStatus.SUCCESS) {
-                throw new ReleaseStageException("Publish must be successful to release", args.name)
+                throw new ReleaseStageException("Publish must be successful to release", arguments.name)
             }
 
             // execute operation Closure if provided
-            if (args.operation) {
-                args.operation(stageName)
+            if (arguments.operation) {
+                arguments.operation(stageName)
             } else {
                 // this is the default release behaviors
-                if (args.tagBranch) {
-                    args.tagBranch()
+                if (arguments.tagBranch) {
+                    arguments.tagBranch()
                 } else {
                     this.tagBranch()
                 }
 
                 // only bump version on formal release without pre-release string
                 if (this.isFormalReleaseBranch() && this.getPreReleaseString() == '') {
-                    if (args.bumpVersion) {
-                        args.bumpVersion()
+                    if (arguments.bumpVersion) {
+                        arguments.bumpVersion()
                     } else {
                         this.bumpVersion()
                     }
@@ -1324,7 +1324,7 @@ class GenericPipeline extends Pipeline {
         }
 
         // Create the stage and ensure that the first one is the stage of reference
-        Stage release = createStage(args)
+        Stage release = createStage(arguments)
         if (!_control.release) {
             _control.release = release
         }
