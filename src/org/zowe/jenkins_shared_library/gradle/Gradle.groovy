@@ -232,10 +232,12 @@ class Gradle {
                 throw new GradleException("New version \"${version}\" is not accepted.")
             }
 
-            steps.sh "sed -e 's#^version=.*\\\$#version=${newSemVer}#' ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
+            steps.sh "sed -e \"s#^version=.*\\\$#version=${newSemVer}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
             // compare if we successfully bumped the version
             String beforeConvert = steps.readFile "${this.versionDefinitionFile}"
             String afterConvert = steps.readFile ".${this.versionDefinitionFile}.tmp"
+            log.finer("Before convert:\n${beforeConvert}")
+            log.finer("After convert:\n${afterConvert}")
             if (beforeConvert == afterConvert) {
                 throw new GradleException('Version bump is not successfully.')
             }
