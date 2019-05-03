@@ -428,7 +428,7 @@ class Registry {
             }
             // amend the commit to add signoff
             def commitMessage = this.steps.sh(script: "git log -1 --pretty=%s", returnStdout: true).trim()
-            this.steps.sh "git reset HEAD~1 && git commit -s -m \"${commitMessage}\""
+            this.steps.sh "git reset HEAD~1 && git add . && git commit -s -m \"${commitMessage}\""
         }
 
         // push version changes
