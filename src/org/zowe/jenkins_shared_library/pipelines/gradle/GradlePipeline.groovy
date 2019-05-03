@@ -232,12 +232,6 @@ class GradlePipeline extends GenericPipeline {
      */
     void setupGradle(GradleSetupArguments arguments) throws GradlePipelineException {
         Closure initGradle = { pipeline ->
-            // bootstrap gradle
-            if (pipeline.steps.fileExists('bootstrap_gradlew.sh')) {
-                // we need to bootstrap gradle
-                pipeline.steps.sh './bootstrap_gradlew.sh'
-            }
-
             // init gradle settings
             pipeline.steps.echo 'Init Gradle project ...'
             pipeline.gradle.init()

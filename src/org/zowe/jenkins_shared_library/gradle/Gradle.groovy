@@ -66,6 +66,19 @@ class Gradle {
         if (!this.versionDefinitionFile) {
             this.versionDefinitionFile = GRADLE_PROPERTIES
         }
+
+        // bootstrap
+        this.bootstrap()
+    }
+
+    /**
+     * Bootstrap gradle
+     */
+    void bootstrap() {
+        if (steps.fileExists('bootstrap_gradlew.sh')) {
+            // we need to bootstrap gradle
+            steps.sh './bootstrap_gradlew.sh'
+        }
     }
 
     /**
