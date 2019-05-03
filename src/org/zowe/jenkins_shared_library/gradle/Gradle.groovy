@@ -156,7 +156,7 @@ class Gradle {
     }
 
     /**
-     * Declare a new version of npm package
+     * Declare a new version of gradle project
      *
      * @param github         GitHub instance must have been initialized with repository, credential, etc
      * @param branch         which branch to release
@@ -248,5 +248,20 @@ class Gradle {
         // set values back
         args['github'].setBranch(oldBranch)
         args['github'].setFolder(oldFolder)
+    }
+
+    /**
+     * Declare a new version of gradle project
+     *
+     * @param github         GitHub instance must have been initialized with repository, credential, etc
+     * @param branch         which branch to release
+     * @param version        what kind of version bump we should make
+     */
+    void version(GitHub github, String branch, String version = 'PATCH') {
+        this.version([
+            'github'  : github,
+            'branch'  : branch,
+            'version' : version,
+        ])
     }
 }

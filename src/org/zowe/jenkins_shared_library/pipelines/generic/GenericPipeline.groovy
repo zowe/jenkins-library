@@ -1249,6 +1249,21 @@ class GenericPipeline extends Pipeline {
 
         arguments.name = "Releasing${arguments.name ? ": ${arguments.name}" : ""}"
 
+        // extra shouldExecute check if we are doing release
+        def shouldExecuteClone
+        if (arguments.shouldExecute) {
+            shouldExecuteClone = arguments.shouldExecute.clone()
+        }
+        arguments.shouldExecute = {
+            boolean shouldExecute = this.isPerformingRelease() && this.isReleaseBranch()
+
+            if (shouldExecuteClone && shouldExecute) {
+                shouldExecute = shouldExecuteClone()
+            }
+
+            return shouldExecute
+        }
+
         arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
