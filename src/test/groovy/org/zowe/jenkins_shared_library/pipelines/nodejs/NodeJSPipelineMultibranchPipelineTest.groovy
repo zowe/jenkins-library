@@ -96,8 +96,6 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             'Recording test results', // junit
             '[Cobertura] Publishing Cobertura coverage report...', // cobertura
             '[htmlpublisher] Archiving HTML reports...',
-            // package stage
-            'Not found local packaging workspace pax-workspace',
             // publish stage
             'Executing stage Publish',
             'Publishing package ',
