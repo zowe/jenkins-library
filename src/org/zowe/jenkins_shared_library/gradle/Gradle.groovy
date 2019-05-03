@@ -203,13 +203,13 @@ class Gradle {
             'branch'   : args['branch'],
             'folder'   : tempFolder
         ])
+        if (!args['github'].isClean()) {
+            throw new GradleException('Git working directory not clean.')
+        }
 
         // run npm version
         this.steps.echo "Making a \"${version}\" version bump ..."
         this.steps.dir(tempFolder) {
-            if (!args['github'].isClean()) {
-                throw new GradleException('Git working directory not clean.')
-            }
             if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
                 throw new GradleException('Version is not successfully extracted from project.')
             }

@@ -80,6 +80,7 @@ class GradlePipelineMultibranchPipelineTest extends IntegrationTest {
             'Executing stage Init Generic Pipeline',
             'Init github configurations ...',
             'Init artifactory configurations ...',
+            'Init Gradle project ...',
             '+ ./bootstrap_gradlew.sh',
             '+ ./gradlew properties -q',
             'Package information: org.zowe.jenkins-library-test.gradle v',
