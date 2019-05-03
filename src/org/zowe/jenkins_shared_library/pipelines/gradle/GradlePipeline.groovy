@@ -238,7 +238,6 @@ class GradlePipeline extends GenericPipeline {
 
             // extract project information from gradle
             pipeline.packageInfo = pipeline.gradle.getPackageInfo()
-            log.fine("Package info of gradle project: ${pipeline.packageInfo}")
             if (!pipeline.packageInfo['versionTrunks'] ||
                 pipeline.packageInfo['versionTrunks']['prerelease'] ||
                 pipeline.packageInfo['versionTrunks']['metadata']) {
