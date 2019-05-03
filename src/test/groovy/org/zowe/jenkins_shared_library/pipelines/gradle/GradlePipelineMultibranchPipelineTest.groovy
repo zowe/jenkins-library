@@ -59,7 +59,7 @@ class GradlePipelineMultibranchPipelineTest extends IntegrationTest {
         if (jenkins && testJobName &&
             buildInformation && buildInformation.containsKey('result') &&
             buildInformation['result'] == 'SUCCESS') {
-            // jenkins.deleteJob(fullTestJobName)
+            jenkins.deleteJob(fullTestJobName)
         }
     }
 
@@ -93,7 +93,8 @@ class GradlePipelineMultibranchPipelineTest extends IntegrationTest {
             'Recording test results', // junit
             '[htmlpublisher] Archiving HTML reports...',
             // package stage
-            'Not found local packaging workspace pax-workspace',
+            'Executing stage Packaging: jenkins-library-fvt-gradle',
+            '+ ./gradlew jar',
             // publish stage
             'Executing stage Publish',
             'Deploying artifact: ',

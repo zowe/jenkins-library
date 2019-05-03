@@ -368,7 +368,7 @@ class JenkinsAPI {
 
             // wait until repository scan finished
             Awaitility.await('repository scanning')
-                .until(getChildrenJobsCallable(parentFolder), contains('master'))
+                .until(getChildrenJobsCallable(parentFolder), hasItem(equalTo('master')))
         }
 
         return true
@@ -380,7 +380,7 @@ class JenkinsAPI {
      * @param  name   paths to find the parent job. For example: ['in-my-folder', 'parent-job']
      * @return        a list of children jobs
      */
-    List getChildrenJobs(List<String> name) {
+    List<String> getChildrenJobs(List<String> name) {
         logger.finer("Listing children of job ${name} ...")
 
         Map result = get(getJobUrl(name, '/api/json'))
@@ -391,6 +391,8 @@ class JenkinsAPI {
                 jobs.add(job['name'])
             }
         }
+
+        logger.finer("Children jobs of ${name}: ${jobs}")
 
         return jobs;
     }
