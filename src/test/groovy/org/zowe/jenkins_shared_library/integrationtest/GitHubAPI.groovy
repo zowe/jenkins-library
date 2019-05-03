@@ -120,26 +120,66 @@ class GitHubAPI {
     }
 
     /**
-     * Load content of package.json
+     * Load content of file
      * @param  branch      which branch
-     * @return             content of package.json as a Map
+     * @param  file        path to the file
+     * @return             content of file
      */
-    def readPackageJson(String branch, String packageJsonFile = 'package.json') {
+    def readFile(String branch, String file) {
         if (!branch) {
-            throw new GitHubAPIException('Branch name is required to read package.json.')
+            throw new GitHubAPIException('Branch name is required to read file from github.')
         }
 
-        String packageJsonUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${this.repository}/contents/package.json"
+        String url = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${this.repository}/contents/${file}"
 
-        Map result = this.get(packageJsonUrl)
+        Map result = this.get(url)
         String encodedContent = result['body']['content']
         // content is base64 encoded
         String content = new String(encodedContent.decodeBase64())
-        logger.finer("package.json content: ${content}")
+        logger.finer("${file} content:\n${content}")
+
+        return content
+    }
+
+    /**
+     * Load version information from package.json
+     * @param  branch               which branch
+     * @param  packageJsonFile      path to package.json
+     * @return                      version string
+     */
+    def getVersionFromPackageJson(String branch, String packageJsonFile = 'package.json') {
+        String content = this.readFile(branch, packageJsonFile)
         // package.json should be a json content
         def contentJson = (new JsonSlurper()).parseText(content)
+        if (!contentJson || !contentJson['version']) {
+            throw new Exception("Failed to find version from ${packageJsonFile}")
+        }
+        def version = Utils.parseSemanticVersion(contentJson['version'])
 
-        return contentJson
+        return version
+    }
+
+    /**
+     * Load version information from gradle.properties
+     * @param  branch               which branch
+     * @param  gradlePropertiesFile      path to gradle.properties
+     * @return                      content of gradle.properties as a Map
+     */
+    def getVersionFromGradleProperties(String branch, String gradlePropertiesFile = 'gradle.properties') {
+        String content = this.readFile(branch, gradlePropertiesFile)
+
+        String version = ''
+        content.split("\n").each{ line ->
+            def matches = line =~ /^\s*version\s*=(.+)$/
+            if (matches.matches() && matches[0] && matches[0].size() == 2) {
+                version = matches[0][1].trim()
+            }
+        }
+        if (!version) {
+            throw new Exception("Failed to find version from ${gradlePropertiesFile}")
+        }
+
+        return Utils.parseSemanticVersion(version)
     }
 
     /**

@@ -121,8 +121,7 @@ class GradlePipelineMultibranchPipelineTest extends IntegrationTest {
         buildLog = ''
 
         // retrieve current version
-        def currentPkg = githubApi.readPackageJson(TEST_BRANCH)
-        def currentVersion = Utils.parseSemanticVersion(currentPkg['version'])
+        def currentVersion = githubApi.getVersionFromGradleProperties(TEST_BRANCH)
         logger.fine("Current package version is: ${currentVersion}")
 
         // start the job, wait for it's done and get build result
@@ -139,8 +138,7 @@ class GradlePipelineMultibranchPipelineTest extends IntegrationTest {
         }
 
         // retrieve version after release
-        def newPkg = githubApi.readPackageJson(TEST_BRANCH)
-        def newVersion = Utils.parseSemanticVersion(newPkg['version'])
+        def newVersion = githubApi.getVersionFromGradleProperties(TEST_BRANCH)
         logger.fine("New package version is: ${newVersion}")
 
         // we created a tag
