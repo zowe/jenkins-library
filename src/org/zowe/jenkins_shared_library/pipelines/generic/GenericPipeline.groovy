@@ -1366,7 +1366,7 @@ class GenericPipeline extends Pipeline {
      * @param arguments The arguments for the release step. {@code arguments.operation} must be
      *                        provided.
      */
-    protected void release(Map arguments) {
+    protected void release(Map arguments = [:]) {
         releaseGeneric(arguments)
     }
 
