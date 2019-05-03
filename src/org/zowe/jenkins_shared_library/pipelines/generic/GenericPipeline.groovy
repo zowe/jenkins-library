@@ -1127,7 +1127,7 @@ class GenericPipeline extends Pipeline {
             if (_isPerformingRelease) {
                 String tag = 'v' + steps.env['PUBLISH_VERSION']
                 if (this.github.tagExistsRemote(tag)) {
-                    throw new PublishStageException("Github tag \"${tag}\" already exists, publish abandoned.")
+                    throw new PublishStageException("Github tag \"${tag}\" already exists, publish abandoned.", args.name)
                 }
             }
 
