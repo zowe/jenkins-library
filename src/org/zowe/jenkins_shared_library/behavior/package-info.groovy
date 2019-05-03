@@ -10,5 +10,7 @@
 
 /**
  * Packages provide classes demostrate strange behaviors on Jenkins library classes.
+ *
+ * This package is for debugging purpose.
  */
 package org.zowe.jenkins_shared_library.behavior
