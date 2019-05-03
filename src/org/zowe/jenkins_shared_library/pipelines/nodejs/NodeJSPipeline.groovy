@@ -582,7 +582,7 @@ ${gitStatus}
             branch = this.github.branch
         }
         if (!branch) {
-            throw new NodeJSPipelineException('Unable to determine branch name to for tagging.')
+            throw new NodeJSPipelineException('Unable to determine branch name to for version bump.')
         }
         publishRegistry.version(this.github, branch, 'patch')
     }

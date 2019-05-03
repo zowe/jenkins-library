@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library.pipelines.gradle
 import groovy.util.logging.Log
 import java.util.concurrent.TimeUnit
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
-import org.zowe.jenkins_shared_library.npm.Registry
+import org.zowe.jenkins_shared_library.gradle.Gradle
 import org.zowe.jenkins_shared_library.pipelines.base.Branches
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
@@ -114,6 +114,8 @@ import org.zowe.jenkins_shared_library.Utils
  */
 @Log
 class GradlePipeline extends GenericPipeline {
+    public static final String GRADLE_PROPERTIES = 'gradle.properties'
+
     /**
      * A map of branches.
      *
@@ -126,6 +128,11 @@ class GradlePipeline extends GenericPipeline {
      * Package information extracted from package.json
      */
     Map packageInfo
+
+    /**
+     * Gradle instance
+     */
+    Gradle gradle
 
     /**
      * Constructs the class.
@@ -142,6 +149,8 @@ class GradlePipeline extends GenericPipeline {
      */
     GradlePipeline(steps) {
         super(steps)
+
+        this.gradle = new Gradle(steps)
     }
 
     /**
@@ -183,43 +192,6 @@ class GradlePipeline extends GenericPipeline {
                 npmTag             : '$1-dev',
             ],
         ])
-    }
-
-    Map extractPackageInfo() {
-        Map info = [:]
-
-        // load properties
-        def properties = this.steps.sh(script: './gradlew properties -q', returnStdout: true).trim()
-        properties.split("\n").each { line ->
-            def matches = line =~ /^([a-zA-Z0-9]+):\s+(.+)$/
-            if (matches.matches() && matches[0] && matches[0].size() == 3) {
-                def key = matches[0][1]
-                def val = matches[0][2]
-
-                if (key == 'name') {
-                    info[key] = val
-                } else if (key == 'version') {
-                    info[key] = val
-                    info['versionTrunks'] = Utils.parseSemanticVersion(val)
-                } else if (key == 'group') {
-                    this.packageName = val
-                } else if (key == 'description' && val != 'null') {
-                    info[key] = val
-                }
-            }
-        }
-
-        // load tasks
-        info['scripts'] = []
-        def tasks = this.steps.sh(script: './gradlew tasks -q', returnStdout: true).trim()
-        tasks.split("\n").each { line ->
-            def matches = line =~ /^([a-zA-Z0-9]+) - (.+)$/
-            if (matches.matches() && matches[0] && matches[0].size() == 3) {
-                info['scripts'].push(matches[0][1])
-            }
-        }
-
-        return info
     }
 
     /**
@@ -266,8 +238,12 @@ class GradlePipeline extends GenericPipeline {
                 pipeline.steps.sh './bootstrap_gradlew.sh'
             }
 
+            // init gradle settings
+            pipeline.steps.echo 'Init Gradle project ...'
+            pipeline.gradle.init()
+
             // extract project information from gradle
-            pipeline.packageInfo = pipeline.extractPackageInfo()
+            pipeline.packageInfo = pipeline.gradle.getPackageInfo()
             log.fine("Package info of gradle project: ${pipeline.packageInfo}")
             if (!pipeline.packageInfo['versionTrunks'] ||
                 pipeline.packageInfo['versionTrunks']['prerelease'] ||
@@ -411,101 +387,27 @@ class GradlePipeline extends GenericPipeline {
      * @param arguments The arguments for the packaging step. {@code arguments.operation} must be
      *                        provided.
      */
+    @Override
     protected void packaging(Map arguments) {
         packagingGradle(arguments)
     }
 
     /**
-     * Pseudo publish method, should be overridden by inherited classes
-     * @param arguments The arguments for the publish step. {@code arguments.operation} must be
-     *                        provided.
+     * This method should be overridden to properly bump version in different kind of project.
+     *
+     * For example, npm package should use `npm version patch` to bump, and gradle project should ...
      */
     @Override
-    protected void publish(Map arguments = [:]) {
-        publishGeneric(arguments)
-    }
-
-    void releaseGradle(Map arguments = [:]) {
-        GradleReleaseArguments args = arguments as GradleReleaseArguments
-
-        if (!args.operation) {
-            args.operation = {
-                // validate package info and other parameters
-                // we must have release plugin
-                if (!this.packageInfo || !this.packageInfo['scripts'] || !this.packageInfo['scripts'].contains('release')) {
-                    throw new GradlePipelineException('Gradle release plugin is required to perform a release.')
-                }
-                // we must have version trunks to calculate how to release
-                if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
-                    throw new GradlePipelineException('Cannot find current project version.')
-                }
-                if (args.artifactoryReleaseUsernameVar && !args.artifactoryReleasePasswordVar) {
-                    throw new GradlePipelineException('artifactoryReleaseUsernameVar is defined, but artifactoryReleasePasswordVar is missing.')
-                }
-                if (args.artifactoryReleaseUsernameVar && args.artifactoryReleasePasswordVar &&
-                    (!this.artifactory || !this.artifactory.usernamePasswordCredential)) {
-                    throw new GradlePipelineException('Artifactory credential is not defined.')
-                }
-
-                // https://github.com/researchgate/gradle-release
-                // Gradle release can push a version bump commit, also tag branch
-                // Example release command:
-                //   gradle release \
-                //     -Prelease.useAutomaticVersion=true \
-                //     -Prelease.releaseVersion=1.0.0 \
-                //     -Prelease.newVersion=1.1.0-SNAPSHOT \
-                //     -Pdeploy.username=$USERNAME \
-                //     -Pdeploy.password=$PASSWORD
-                steps.ansiColor('xterm') {
-                    String releaseCommand = "./gradlew release -Prelease.useAutomaticVersion=true"
-                    if (this.packageInfo && this.packageInfo['versionTrunks']) {
-                        releaseCommand += " -Prelease.releaseVersion"
-                        releaseCommand += "=${this.packageInfo['versionTrunks']['major']}"
-                        releaseCommand += ".${this.packageInfo['versionTrunks']['minor']}"
-                        releaseCommand += ".${this.packageInfo['versionTrunks']['patch']}"
-                        // this gonna be a patch level release
-                        releaseCommand += " -Prelease.newVersion"
-                        releaseCommand += "=${this.packageInfo['versionTrunks']['major']}"
-                        releaseCommand += ".${this.packageInfo['versionTrunks']['minor']}"
-                        releaseCommand += ".${this.packageInfo['versionTrunks']['patch'] + 1}"
-                    }
-                    if (args.artifactoryReleaseUsernameVar && args.artifactoryReleasePasswordVar) {
-                        releaseCommand += " -P${args.artifactoryReleaseUsernameVar}=\$USERNAME"
-                        releaseCommand += " -P${args.artifactoryReleasePasswordVar}=\$PASSWORD"
-                        steps.withCredentials([
-                            steps.usernamePassword(
-                                credentialsId: this.artifactory.usernamePasswordCredential,
-                                passwordVariable: 'PASSWORD',
-                                usernameVariable: 'USERNAME'
-                            )
-                        ]) {
-                            steps.sh releaseCommand
-                        }
-                    } else {
-                        // the artifactory doesn't have username/password
-                        steps.sh releaseCommand
-                    }
-                }
-            }
+    protected void bumpVersion() {
+        def branch = this.github.branch
+        if (!branch) {
+            // try to detect branch name
+            this.github.initFromFolder()
+            branch = this.github.branch
         }
-
-        super.releaseGeneric(args)
-    }
-
-    /**
-     * Pseudo release method, should be overridden by inherited classes
-     * @param arguments The arguments for the release step. {@code arguments.operation} must be
-     *                        provided.
-     */
-    protected void release(Map arguments) {
-        releaseGradle(arguments)
-    }
-
-    /**
-     * Signal that no more stages will be added and begin pipeline execution.
-     */
-    @Override
-    void end(Map options = [:]) {
-        super.endGeneric(options)
+        if (!branch) {
+            throw new GradlePipelineException('Unable to determine branch name to for version bump.')
+        }
+        this.gradle.version(this.github, branch, 'patch')
     }
 }

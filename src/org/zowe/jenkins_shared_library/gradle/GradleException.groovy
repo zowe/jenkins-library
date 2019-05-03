@@ -8,18 +8,18 @@
  * Copyright IBM Corporation 2019
  */
 
-package org.zowe.jenkins_shared_library.artifact
+package org.zowe.jenkins_shared_library.gradle
 
 /**
- * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.artifact} classes
+ * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.gradle} classes
  */
-class ArtifactException extends Exception {
+class GradleException extends Exception {
     /**
      * Construct the exception.
      *
      * @param message    The exception message.
      */
-    ArtifactException(String message = '') {
+    GradleException(String message = '') {
         super(message)
     }
 }
