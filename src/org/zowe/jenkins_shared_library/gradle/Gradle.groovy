@@ -243,7 +243,7 @@ class Gradle {
             }
 
             // replace version
-            steps.sh 'mv .${this.versionDefinitionFile}.tmp ${this.versionDefinitionFile}'
+            steps.sh "mv .${this.versionDefinitionFile}.tmp ${this.versionDefinitionFile}"
         }
 
         // commit
