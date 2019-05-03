@@ -114,7 +114,7 @@ class Gradle {
                     info[key] = val
                     info['versionTrunks'] = Utils.parseSemanticVersion(val)
                 } else if (key == 'group') {
-                    this.packageName = val
+                    info[key] = val
                 } else if (key == 'description' && val != 'null') {
                     info[key] = val
                 }

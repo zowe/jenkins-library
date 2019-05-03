@@ -243,6 +243,9 @@ class GradlePipeline extends GenericPipeline {
                 pipeline.packageInfo['versionTrunks']['metadata']) {
                 throw new GradlePipelineException('Version defined in gradle properties shouldn\'t have pre-release string or metadata, pipeline will adjust based on branch and build parameter.')
             }
+            if (pipeline.packageInfo['group']) {
+                pipeline.setPackageName(pipeline.packageInfo['group'])
+            }
             // version could be used to publish artifact
             pipeline.setVersion(pipeline.packageInfo['version'])
             pipeline.steps.echo "Package information: ${pipeline.getPackageName()} v${pipeline.getVersion()}"
