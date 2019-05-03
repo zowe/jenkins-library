@@ -169,6 +169,25 @@ class Gradle {
     }
 
     /**
+     * Update version in versionDefinitionFile
+     * @param version          new version string
+     */
+    void _updateVersion(String version) {
+        steps.sh "sed -e \"s#^version=.*\\\$#version=${version}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
+        // compare if we successfully bumped the version
+        String beforeConvert = steps.readFile "${this.versionDefinitionFile}"
+        String afterConvert = steps.readFile ".${this.versionDefinitionFile}.tmp"
+        log.finer("Before convert:\n${beforeConvert}")
+        log.finer("After convert:\n${afterConvert}")
+        if (beforeConvert == afterConvert) {
+            throw new GradleException('Version bump is not successfully.')
+        }
+
+        // replace version
+        steps.sh "mv .${this.versionDefinitionFile}.tmp ${this.versionDefinitionFile}"
+    }
+
+    /**
      * Declare a new version of gradle project
      *
      * @param github         GitHub instance must have been initialized with repository, credential, etc
@@ -189,7 +208,6 @@ class Gradle {
             throw new InvalidArgumentException('branch')
         }
         String version = args.containsKey('version') ? args['version'] : 'PATCH'
-        version = version.toLowerCase()
         String newSemVer = ''
 
         // get temp folder for cloning
@@ -213,37 +231,9 @@ class Gradle {
             if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
                 throw new GradleException('Version is not successfully extracted from project.')
             }
+            newSemVer = Utils.interpretSemanticVersionBump(this.packageInfo['versionTrunks'], version)
 
-            if (version == 'patch') {
-                newSemVer = "${this.packageInfo['versionTrunks']['major']}" +
-                             ".${this.packageInfo['versionTrunks']['minor']}" +
-                             ".${this.packageInfo['versionTrunks']['patch'] + 1}"
-            } else if (version == 'minor') {
-                newSemVer = "${this.packageInfo['versionTrunks']['major']}" +
-                             ".${this.packageInfo['versionTrunks']['minor'] + 1}" +
-                             ".${this.packageInfo['versionTrunks']['patch']}"
-            } else if (version == 'major') {
-                newSemVer = "${this.packageInfo['versionTrunks']['major'] + 1}" +
-                             ".${this.packageInfo['versionTrunks']['minor']}" +
-                             ".${this.packageInfo['versionTrunks']['patch']}"
-            } else if (version =~ /[0-9]+\.[0-9]+\.[0-9]+/) {
-                newSemVer = version
-            } else {
-                throw new GradleException("New version \"${version}\" is not accepted.")
-            }
-
-            steps.sh "sed -e \"s#^version=.*\\\$#version=${newSemVer}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
-            // compare if we successfully bumped the version
-            String beforeConvert = steps.readFile "${this.versionDefinitionFile}"
-            String afterConvert = steps.readFile ".${this.versionDefinitionFile}.tmp"
-            log.finer("Before convert:\n${beforeConvert}")
-            log.finer("After convert:\n${afterConvert}")
-            if (beforeConvert == afterConvert) {
-                throw new GradleException('Version bump is not successfully.')
-            }
-
-            // replace version
-            steps.sh "mv .${this.versionDefinitionFile}.tmp ${this.versionDefinitionFile}"
+            this._updateVersion(newSemVer)
         }
 
         // commit

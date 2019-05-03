@@ -364,10 +364,8 @@ class Registry {
             currentCommit = steps.sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
 
             try {
-                // npm version will
-                // - create a commit
-                // - create a tag on the new commit
-                steps.sh "npm version ${args.version}"
+                // npm version without tag & commit
+                steps.sh "npm version --no-git-tag-version ${args.version}"
             } catch (err) {
                 // ignore error
             }
@@ -379,8 +377,6 @@ class Registry {
             try {
                 steps.echo "Revert changes by npm version ..."
                 steps.sh "git reset --hard ${currentCommit}"
-                // remove the tag created local, we may re-tag if needed later
-                steps.sh "git tag -d v${args.version}"
             } catch (err) {
                 // ignore error
             }

@@ -82,6 +82,41 @@ class Utils {
     }
 
     /**
+     * Convert a version bump
+     *
+     * This should have same logic as `npm version`.
+     *
+     * @param  versionTrunks    version trunks map, returned from parseSemanticVersion
+     * @param  bump             new expected version, for example, patch
+     * @return                  interpreted semantic version, for exmaple, 1.2.4
+     */
+    static String interpretSemanticVersionBump(Map versionTrunks, String bump) {
+        bump = bump.toLowerCase()
+
+        String semver = ''
+
+        if (bump == 'patch') {
+            semver = "${versionTrunks['major']}" +
+                         ".${versionTrunks['minor']}" +
+                         ".${versionTrunks['patch'] + 1}"
+        } else if (bump == 'minor') {
+            semver = "${versionTrunks['major']}" +
+                         ".${versionTrunks['minor'] + 1}" +
+                         ".${versionTrunks['patch']}"
+        } else if (bump == 'major') {
+            semver = "${versionTrunks['major'] + 1}" +
+                         ".${versionTrunks['minor']}" +
+                         ".${versionTrunks['patch']}"
+        } else if (bump =~ /[0-9]+\.[0-9]+\.[0-9]+/) {
+            semver = bump
+        } else {
+            throw new InvalidArgumentException('bump', "Version \"${bump}\" is not accepted.")
+        }
+
+        return semver
+    }
+
+    /**
      * Get current timestamp in a format of YYYYMMDDHHMMSSMMM.
      *
      * The result only includes numbers.
