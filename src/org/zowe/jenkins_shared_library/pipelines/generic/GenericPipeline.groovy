@@ -1321,8 +1321,8 @@ class GenericPipeline extends Pipeline {
         if (!this.github.repository) {
             throw new ScmException('Github repository is not defined and cannot be determined.')
         }
-        def tag = 'v' + steps.env['PUBLISH_VERSION']
-        if (this.github.tagExistsRemotetag()) {
+        String tag = 'v' + steps.env['PUBLISH_VERSION']
+        if (this.github.tagExistsRemotetag(tag)) {
             throw new ScmException("Github tag \"${tag}\" already exists.")
         }
         this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
