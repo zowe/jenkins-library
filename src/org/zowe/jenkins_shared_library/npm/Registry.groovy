@@ -427,7 +427,7 @@ class Registry {
                 throw new NpmException("Bump version failed: ${res}")
             }
             // amend the commit to add signoff
-            this.steps.sh 'git rebase HEAD~1 --signoff'
+            this.steps.sh 'git commit --amend --signoff'
         }
 
         // push version changes
