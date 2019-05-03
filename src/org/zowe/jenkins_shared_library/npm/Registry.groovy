@@ -426,6 +426,8 @@ class Registry {
             } else if (!(res ==~ /^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
                 throw new NpmException("Bump version failed: ${res}")
             }
+            // amend the commit to add signoff
+            this.steps.sh 'git rebase HEAD~1 --signoff'
         }
 
         // push version changes
