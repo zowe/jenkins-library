@@ -1124,6 +1124,13 @@ class GenericPipeline extends Pipeline {
             Map<String, String> macros = getBuildStringMacros()
             steps.env['PUBLISH_VERSION'] = macros['publishversion']
 
+            if (_isPerformingRelease) {
+                String tag = 'v' + steps.env['PUBLISH_VERSION']
+                if (this.github.tagExistsRemote(tag)) {
+                    throw new PublishStageException("Github tag \"${tag}\" already exists, publish abandoned.")
+                }
+            }
+
             // execute operation Closure if provided
             if (args.operation) {
                 args.operation(stageName)
@@ -1322,9 +1329,6 @@ class GenericPipeline extends Pipeline {
             throw new ScmException('Github repository is not defined and cannot be determined.')
         }
         String tag = 'v' + steps.env['PUBLISH_VERSION']
-        if (this.github.tagExistsRemote(tag)) {
-            throw new ScmException("Github tag \"${tag}\" already exists.")
-        }
         this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
 
         this.github.tag(tag: tag)
