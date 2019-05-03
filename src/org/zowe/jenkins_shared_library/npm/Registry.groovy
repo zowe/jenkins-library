@@ -427,7 +427,8 @@ class Registry {
                 throw new NpmException("Bump version failed: ${res}")
             }
             // amend the commit to add signoff
-            this.steps.sh 'git commit --amend --signoff'
+            def commitMessage = this.steps.sh(script: "git log -1 --pretty=%s", returnStdout: true).trim()
+            this.steps.sh "git reset HEAD~1 && git commit -s -m \"${commitMessage}\""
         }
 
         // push version changes
