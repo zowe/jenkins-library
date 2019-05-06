@@ -48,6 +48,9 @@ opts.push(parameters(customParameters))
 properties(opts)
 
 node ('ibm-jenkins-slave-nvm-jnlp') {
+  currentBuild.result = 'SUCCESS'
+
+  try {
     stage('checkout') {
         // checkout source code
         checkout scm
@@ -71,25 +74,23 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                 passwordVariable: 'PASSWORD',
                 usernameVariable: 'USERNAME'
             )]) {
-                sh """
-./gradlew test \
-  -PlogLevel=${params.TEST_LOG_LEVEL} \
-  -Pjenkins.baseuri='${env.JENKINS_URL}' \
-  -Pjenkins.user='${USERNAME}' \
-  -Pjenkins.password='${PASSWORD}' \
-  -Plibrary.branch='${branch}' \
-  -Pgithub.username='${GITHUB_USERNAME}' \
-  -Pgithub.email='${GITHUB_EMAIL}' \
-  -Pgithub.credential='${GITHUB_CREDENTIAL}' \
-  -Pnpm.username='${NPM_USERNAME}' \
-  -Pnpm.email='${NPM_EMAIL}' \
-  -Pnpm.credential='${NPM_CREDENTIAL}' \
-  -Partifactory.url='${ARTIFACTORY_URL}' \
-  -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}' \
-  -Ppax.server.host='${PAX_SERVER_HOST}' \
-  -Ppax.server.port='${PAX_SERVER_PORT}' \
-  -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'
-"""
+                sh "./gradlew test" +
+                   " -PlogLevel=${params.TEST_LOG_LEVEL}" +
+                   " -Pjenkins.baseuri='${env.JENKINS_URL}'" +
+                   " -Pjenkins.user='${USERNAME}'" +
+                   " -Pjenkins.password='${PASSWORD}'" +
+                   " -Plibrary.branch='${branch}'" +
+                   " -Pgithub.username='${GITHUB_USERNAME}'" +
+                   " -Pgithub.email='${GITHUB_EMAIL}'" +
+                   " -Pgithub.credential='${GITHUB_CREDENTIAL}'" +
+                   " -Pnpm.username='${NPM_USERNAME}'" +
+                   " -Pnpm.email='${NPM_EMAIL}'" +
+                   " -Pnpm.credential='${NPM_CREDENTIAL}'" +
+                   " -Partifactory.url='${ARTIFACTORY_URL}'" +
+                   " -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}'" +
+                   " -Ppax.server.host='${PAX_SERVER_HOST}'" +
+                   " -Ppax.server.port='${PAX_SERVER_PORT}'" +
+                   " -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'"
             }
         } catch (e) {
             throw e
@@ -121,22 +122,19 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // env.BRANCH_NAME
         dir('build/docs/groovydoc') {
             // init git folder
-            sh """
-git init
-git remote add origin https://github.com/zowe/jenkins-library
-git fetch origin
-git reset origin/gh-pages
-"""
+            sh "git init\n" +
+               "git remote add origin https://github.com/zowe/jenkins-library\n" +
+               "git fetch origin\n" +
+               "git reset origin/gh-pages\n"
             // check if there are changes on docs
             def docsUpdated = sh(script: "git status --porcelain", returnStdout: true).trim()
             if (docsUpdated) {
                 echo "These documentation are changed:\n${docsUpdated}"
                 // commit changes
-                sh """git config user.email "${GITHUB_EMAIL}"
-git config user.name "${GITHUB_USERNAME}"
-git add .
-git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
-"""
+                sh "git config user.email \"${GITHUB_EMAIL}\"\n" +
+                   "git config user.name \"${GITHUB_USERNAME}\"\n" +
+                   "git add .\n" +
+                   "git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"\n"
                 // push changes
                 withCredentials([
                     usernamePassword(
@@ -151,4 +149,20 @@ git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
             }
         }
     }
+
+  } catch (err) {
+    currentBuild.result = 'FAILURE'
+
+    // catch all failures to send out notification
+    emailext body: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed.\n\nError: ${err}\n\nCheck detail: ${env.BUILD_URL}" ,
+        subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed",
+        recipientProviders: [
+          [$class: 'RequesterRecipientProvider'],
+          [$class: 'CulpritsRecipientProvider'],
+          [$class: 'DevelopersRecipientProvider'],
+          [$class: 'UpstreamComitterRecipientProvider']
+        ]
+
+    throw err
+  }
 }
