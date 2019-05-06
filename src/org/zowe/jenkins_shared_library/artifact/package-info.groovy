@@ -9,6 +9,6 @@
  */
 
 /**
- * Packages that give basic utility methods to work with artifacts.
+ * Package that give basic utility methods to work with artifacts.
  */
 package org.zowe.jenkins_shared_library.artifactory

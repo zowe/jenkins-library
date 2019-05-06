@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -15,10 +15,29 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.Utils
 
+/**
+ * Methods to handle gradle project.
+ *
+ * @Example
+ * <pre>
+ *     def gradle = new Gradle(this)
+ *     def info = gradle.getPackageInfo()
+ *     // show current package version
+ *     echo info['version']
+ *     // we need a GitHub instance to bump version
+ *     def github = new org.zowe.jenkins_shared_library.scm.GitHub(this)
+ *     // bump patch version on master branch
+ *     gradle.version(
+ *         github  :     github,
+ *         branch  :     'master',
+ *         version :     'patch'
+ *     )
+ * </pre>
+ */
 @Log
 class Gradle {
     /**
-     * Default file name of gradle.properties
+     * Default file name of {@code gradle.properties}.
      */
     public static final String GRADLE_PROPERTIES = 'gradle.properties'
 
@@ -28,12 +47,12 @@ class Gradle {
     def steps
 
     /**
-     * Package information extracted from package.json
+     * Package information extracted from gradle settings.
      */
     Map _packageInfo
 
     /**
-     * package.json file name, default is PACKAGE_JSON
+     * File name which defined package version. Default is {@link #GRADLE_PROPERTIES}.
      */
     String versionDefinitionFile = GRADLE_PROPERTIES
 
@@ -45,7 +64,7 @@ class Gradle {
      *
      * @Example
      * <pre>
-     * def npm = new Gradle(this)
+     * def gradle = new Gradle(this)
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
@@ -56,8 +75,11 @@ class Gradle {
     }
 
     /**
-     * Initialize gradle project properties
-     * @param   versionDefinitionFile             file where defines `version` of the project
+     * Initialize gradle project properties.
+     *
+     * @Note The below parameters are supported keys of the {@code args} Map.
+     *
+     * @param   versionDefinitionFile             file where defines {@code version} of the project.
      */
     void init(Map args = [:]) {
         if (args['versionDefinitionFile']) {
@@ -72,7 +94,10 @@ class Gradle {
     }
 
     /**
-     * Bootstrap gradle
+     * Bootstrap gradle.
+     *
+     * <p>Usually the bootstrap is for downloading {@code gradle/wrapper/gradle-wrapper.jar} to
+     * local, so we don't need to upload the {@code gradle-wrapper.jar} into GitHub repository.</p>
      */
     void bootstrap() {
         if (steps.fileExists('bootstrap_gradlew.sh')) {
@@ -82,10 +107,19 @@ class Gradle {
     }
 
     /**
-     * Get current package information from package.json
+     * Get current package information from gradle settings.
      *
-     * NOTE: this method has cache. If you need to reload package info from package.json, run method
-     * #clearPackageInfoCache()
+     * @Note This method has cache. If you need to reload package info from gradle settings, run method
+     * {@link #clearPackageInfoCache()} to reset the cache.
+     *
+     * <p><strong>Expected keys in the result Map:</strong><ul>
+     * <li>{@code name} - name of the package. For example, {@code "explorer-jobs"}.</li>
+     * <li>{@code version} - version of the package. For example, {@code "1.2.3"}.</li>
+     * <li>{@code versionTrunks} - Map version trunks returned from {@link jenkins_shared_library.Utils#parseSemanticVersion(java.lang.String)}.</li>
+     * <li>{@code group} - group name of the package if defined. For example, {@code "org.zowe.explorer.jobs"}.</li>
+     * <li>{@code description} - description of the package if defined. For example, {@code "An API to handle z/OS jobs."}.</li>
+     * <li>{@code scripts} - List of tasks of the package defined. For example, {@code ["build", "buildDir", "class", "assemble", "release", ...]}.</li>
+     * </ul></p>
      *
      * @return             current package information including name, version, description, license, etc
      */
@@ -145,9 +179,11 @@ class Gradle {
     }
 
     /**
-     * This checks if version entry is defined in gradle.properties.
+     * This checks if version entry is defined in {@link #versionDefinitionFile}.
      *
-     * This is pre-req to perform a gradle release (bump version)
+     * @Note This is pre-req to perform a gradle release (bump version).
+     *
+     * @Note this method doesn't throw exception if the version is not defined in {@link #versionDefinitionFile}.
      *
      * @return            true/false
      */
@@ -169,8 +205,9 @@ class Gradle {
     }
 
     /**
-     * Update version in versionDefinitionFile
-     * @param version          new version string
+     * Update version in {@link #versionDefinitionFile}.
+     *
+     * @param version          new semantic version string. For example, {@code "1.2.3"}.
      */
     void _updateVersion(String version) {
         steps.sh "sed -e \"s#^version=.*\\\$#version=${version}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
@@ -188,10 +225,30 @@ class Gradle {
     }
 
     /**
-     * Declare a new version of gradle project
+     * Declare a new version of gradle project.
+     *
+     * @Note This task will bump the package version on gradle settings, commit the change, and push
+     * to GitHub. The commit is signed-off.
+     *
+     * @Example
+     * <pre>
+     *     def github = new org.zowe.jenkins_shared_library.scm.GitHub(this)
+     *     // bump patch version on master branch
+     *     gradle.version(
+     *         github  :     github,
+     *         branch  :     'master',
+     *         version :     'patch'
+     *     )
+     *     // After this, you should be able to see your repository master branch has a commit of
+     *     // version bump.
+     * </pre>
+     *
+     * @see {@link jenkins_shared_library.scm.GitHub}
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param github         GitHub instance must have been initialized with repository, credential, etc
-     * @param branch         which branch to release
+     * @param branch         which branch to perform the release
      * @param version        what kind of version bump we should make
      */
     void version(Map args = [:]) throws InvalidArgumentException, GradleException {
@@ -258,9 +315,7 @@ class Gradle {
     /**
      * Declare a new version of gradle project
      *
-     * @param github         GitHub instance must have been initialized with repository, credential, etc
-     * @param branch         which branch to release
-     * @param version        what kind of version bump we should make
+     * @see #version(Map)
      */
     void version(GitHub github, String branch, String version = 'PATCH') {
         this.version([

@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -10,6 +10,20 @@
 
 package org.zowe.jenkins_shared_library.email
 
+/**
+ * Class to send email notifications.
+ *
+ * @Example
+ * <pre>
+ *     def m = new Email(this)
+ *     m.send(
+ *         subjectTag   : 'FAILURE',
+ *         to:          : 'also-to-me@gmail.com',
+ *         body         : '&lt;p&gt;Test failed!&lt;/p&gt;',
+ *         addProviders : true
+ *     )
+ * </pre>
+ */
 class Email {
     /**
      * Reference to the groovy pipeline variable.
@@ -36,7 +50,7 @@ class Email {
     /**
      * Send an email.
      *
-     * <p>The email will contain {@code [args.tag]} as the first string content followed by the
+     * <p>The email will contain {@code [args.subjectTag]} as the first string content followed by the
      * job name and build number</p>
      *
      * @param args Arguments available to the email command.

@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -15,6 +15,31 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
 
+/**
+ * Methods to work with GitHub.
+ *
+ * @Example
+ * <pre>
+ *     def github = new GitHub(this)
+ *     // init github configurations
+ *     github.init(
+ *         repository                 : 'zowe/explorer-jes',
+ *         branch                     : 'master',
+ *         usernamePasswordCredential : 'my-github-credential',
+ *         email                      : 'my-github-user@gmail.com'
+ *     )
+ *     // do some modifications
+ *     // ...
+ *     // commit changes
+ *     github.commit('My work is done')
+ *     // push to remote
+ *     github.push()
+ *     // check if the branch is synced
+ *     if (!github.isSynced()) {
+ *         echo "Branch is not synced with remote."
+ *     }
+ * </pre>
+ */
 @Log
 class GitHub {
     /**
@@ -23,27 +48,27 @@ class GitHub {
     def steps
 
     /**
-     * github domain name
+     * GitHub domain name. Default value is {@code "github.com"}.
      */
     public static final String GITHUB_DOMAIN = 'github.com'
 
     /**
-     * github domain name for downloading user content
+     * GitHub domain name for downloading user content. Default value is {@code "raw.githubusercontent.com"}.
      */
     public static final String GITHUB_DOWNLOAD_DOMAIN = 'raw.githubusercontent.com'
 
     /**
-     * github domain name for api calls
+     * GitHub domain name for api calls. Default value is {@code "api.github.com"}.
      */
     public static final String GITHUB_API_DOMAIN = 'api.github.com'
 
     /**
-     * Default branch name
+     * Default branch name. Default value is {@code "master"}.
      */
     public static final String DEFAULT_BRANCH = 'master'
 
     /**
-     * Default remote name
+     * Default remote name. Default value is {@code "origin"}.
      */
     public static final String DEFAULT_REMOTE = 'origin'
 
@@ -63,9 +88,13 @@ class GitHub {
     String usernamePasswordCredential
 
     /**
-     * Github repository in format of:
-     * - org/repo-name
-     * - user/repo-name
+     * Github repository in format of {@code owner/repo}. The owner can be organization or GitHub user.
+     *
+     * @Example
+     * <ul>
+     * <li>- org/repo-name</li>
+     * <li>- user/repo-name</li>
+     * </ul>
      */
     String repository
 
@@ -75,7 +104,7 @@ class GitHub {
     String branch
 
     /**
-     * Folder where the repository is cloned to
+     * Folder where the repository is cloned to.
      */
     String folder
 
@@ -87,7 +116,7 @@ class GitHub {
      *
      * @Example
      * <pre>
-     * def npm = new Registry(this)
+     * def github = new GitHub(this)
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
@@ -98,12 +127,16 @@ class GitHub {
 
     /**
      * Initialize github properties
+     *
+     * @Note The below parameters are supported keys of the {@code args} Map.
+     *
      * @param   repository                  repository name
-     * @param   branch                      branch name to clone/push
+     * @param   branch                      branch name to work with (like clone, push, etc). Optional,
+     *                                      default value is {@link #DEFAULT_BRANCH}.
      * @param   folder                      target folder
      * @param   usernamePasswordCredential  github username/password credential
-     * @param   username                    github user.name config. Optional, can be extracted from credential
-     * @param   email                       github user.email config
+     * @param   username                    github {@code user.name} config. Optional, can be extracted from credential
+     * @param   email                       github {@code user.email} config
      */
     void init(Map args = [:]) {
         if (args['repository']) {
@@ -149,7 +182,9 @@ class GitHub {
     }
 
     /**
-     * We can guess repository/branch information from an existing git folder
+     * We can guess repository/branch information from an existing git folder.
+     *
+     * @Note This method may update {@code #repository} and/or {@code #branch} fields.
      *
      * @param folder          which folder to test
      */
@@ -201,9 +236,19 @@ class GitHub {
     }
 
     /**
-     * Clone a repository
+     * Clone a repository.
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Ideally this method should be called {@code clone}, which is conflicted with {@code java.lang.Object#clone()}.
+     *
+     * @Example
+     * <pre>
+     *     github.cloneRepository(
+     *         branch :       'my-branch',
+     *         folder :       '.tmp-my-branch'
+     *     )
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param  branch        branch to checkout
      * @param  folder        which folder to save the cloned files
@@ -246,7 +291,7 @@ class GitHub {
     }
 
     /**
-     * Setup git config based on properties
+     * Setup git config of username/email based on properties.
      */
     void config() {
         // work in target folder
@@ -267,7 +312,14 @@ class GitHub {
     }
 
     /**
-     * Issue git command and get stdout return
+     * Issue git command and get stdout return.
+     *
+     * @Example
+     * <pre>
+     *     String result = github.command('git rev-parse HEAD')
+     *     // result should be a string with latest commit hash
+     * </pre>
+     *
      * @param  command     git command
      * @return             stdout log
      */
@@ -280,7 +332,19 @@ class GitHub {
     }
 
     /**
-     * Commit changes
+     * Commit all the changes.
+     *
+     * @Note This method will include all local changes, even though they are not staged.
+     *
+     * @Note The commit made by this method has sign-off of the git user.
+     *
+     * @Example
+     * <pre>
+     *     github.commit('my changes to handle some errors')
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
      * @param  message     git commit message
      */
     void commit(Map args = [:]) throws InvalidArgumentException {
@@ -309,25 +373,34 @@ class GitHub {
     }
 
     /**
-     * Commit changes
-     * @param  message     git commit message
+     * Commit all the changes.
+     *
+     * @see {@link #commit(Map)}
      */
     void commit(String message) {
         this.commit(['message': message])
     }
 
     /**
-     * Get last commit information
+     * Get last commit information.
      *
-     * @param fields    what information of the commit should be returned. Available fields are:
-     *                  - hash
-     *                  - shortHash
-     *                  - author
-     *                  - email
-     *                  - timestamp
-     *                  - date
-     *                  - subject
-     *                  - body
+     * @Example
+     * <pre>
+     *     def info = github.getLastCommit(['hash', 'subject'])
+     *     echo "Current commit hash    : ${info['hash']}"
+     *     echo "Current commit subject : ${info['subject']}"
+     * </pre>
+     *
+     * @param fields    List of what information of the commit should be returned. Available fields are:<ul>
+     *                  <li>- hash</li>
+     *                  <li>- shortHash</li>
+     *                  <li>- author</li>
+     *                  <li>- email</li>
+     *                  <li>- timestamp</li>
+     *                  <li>- date</li>
+     *                  <li>- subject</li>
+     *                  <li>- body</li>
+     *                  </ul>
      * @return          last commit information map with fields asked for
      */
     Map getLastCommit(List fields = ['hash']) {
@@ -353,7 +426,9 @@ class GitHub {
     }
 
     /**
-     * Push all local changes
+     * Push all local commits to remote.
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
      */
     void push(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
@@ -365,7 +440,17 @@ class GitHub {
     }
 
     /**
-     * Check if current working tree is clean or not
+     * Check if current working tree is clean or not.
+     *
+     * @Example
+     * <pre>
+     *     if (!github.isClean()) {
+     *         echo "There are changes not committed."
+     *     }
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
+     *
      * @return         boolean to tell if it's clean or not
      */
     Boolean isClean(Map args = [:]) {
@@ -387,7 +472,19 @@ class GitHub {
     }
 
     /**
-     * Check if current branch is synced with remote
+     * Check if current branch is synced with remote.
+     *
+     * @Example
+     * <pre>
+     *     if (!github.isSynced()) {
+     *         echo "Branch is not synced with remote."
+     *     }
+     * </pre>
+     *
+     * @Note This method won't throw exceptions if it's not synced.
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
+     *
      * @return         boolean to tell if it's synced or not
      */
     Boolean isSynced(Map args = [:]) {
@@ -417,9 +514,11 @@ class GitHub {
     }
 
     /**
-     * Reset current branch to origin
+     * Reset current branch to remote. This is get rid of all local modifications.
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note This method will also do a fetch before reset.
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
      */
     void reset(Map args = [:]) {
         // init with arguments
@@ -432,11 +531,11 @@ class GitHub {
     }
 
     /**
-     * Tag the branch.
+     * Tag the branch and push to remote.
      *
-     * Note: currently only support lightweighted tag.
+     * @Note Currently only support lightweighted tag.
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param  tag           tag name to be created
      */
@@ -460,7 +559,15 @@ class GitHub {
     }
 
     /**
-     * Validate if a tag exists in local
+     * Validate if a tag exists in local.
+     *
+     * @Example
+     * <pre>
+     *     if (github.tagExistsLocal('v1.2.3')) {
+     *         echo "Tag v1.2.3 already exists in local."
+     *     }
+     * </pre>
+     *
      * @param tag     tag name to check
      * @return        true/false
      */
@@ -476,7 +583,15 @@ class GitHub {
     }
 
     /**
-     * Validate if a tag exists in local
+     * Validate if a tag exists in remote.
+     *
+     * @Example
+     * <pre>
+     *     if (github.tagExistsRemote('v1.2.3')) {
+     *         echo "Tag v1.2.3 already exists in remote."
+     *     }
+     * </pre>
+     *
      * @param tag     tag name to check
      * @return        true/false
      */

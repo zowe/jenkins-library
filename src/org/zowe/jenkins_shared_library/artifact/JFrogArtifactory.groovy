@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -16,7 +16,20 @@ import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
 
 /**
- * Operating artifacts with jFrog Artifatory CLI commands or API
+ * Operating artifacts with jFrog Artifatory CLI commands or API.
+ *
+ * @Example
+ * <pre>
+ *     def jfrog = new JFrogArtifactory(this)
+ *     jfrog.init(
+ *         url: 'https://gizaartifactory.jfrog.io/gizaartifactory',
+ *         usernamePasswordCredential: 'my-artifactory-credential'
+ *     )
+ *     jfrog.upload(
+ *         pattern : 'build/result/of/my-project.zip',
+ *         target  : 'lib-snapshot-local/org/zowe/my-project/0.1.2/my-project-0.1.2-snapshot.zip'
+ *     )
+ * </pre>
  */
 class JFrogArtifactory implements ArtifactInterface {
     /**
@@ -25,26 +38,29 @@ class JFrogArtifactory implements ArtifactInterface {
     def steps
 
     /**
-     * CLI config name
+     * CLI config name. Default value is {@code rt-server-1}.
      */
     static final CLI_CONFIG_NAME = 'rt-server-1'
 
     /**
-     * Repository name for snapshots
+     * Repository name for snapshots. Default value is {@code libs-snapshot-local}.
      */
     static final REPOSITORY_SNAPSHOT = 'libs-snapshot-local'
 
     /**
-     * Repository name for releases
+     * Repository name for releases. Default value is {@code libs-release-local}.
      */
     static final REPOSITORY_RELEASE = 'libs-release-local'
 
     /**
-     * Artifactory URL
+     * Artifactory URL.
+     *
+     * @Example {@code https://gizaartifactory.jfrog.io/gizaartifactory}
      */
     String url
+
     /**
-     * Artifactory username/password credential
+     * Artifactory username/password credential id defined on Jenkins.
      */
     String usernamePasswordCredential
 
@@ -66,8 +82,11 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
-     * Initialize npm registry properties
-     * @param   url                          the artifactory URL
+     * Initialize npm registry properties.
+     *
+     * @Note The below parameters are supported keys of the {@code args} Map.
+     *
+     * @param   url                          the artifactory URL. For example {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}.
      * @param   usernamePasswordCredential   Artifactory username/password credential ID
      */
     void init(Map args = [:]) {
@@ -98,15 +117,22 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Get detail information of an artifact
      *
-     * NOTE: this is implemented with jFrog CLI.
+     * @Note This method is implemented with jFrog CLI.
      *
-     * NOTE: if found more than one artifacts, only the first one will be returned.
+     * <p><strong>Example output:</strong><ul>
+     * <li>{@code path} - {@code "libs-snapshot-local/com/project/zowe/0.9.0-SNAPSHOT/zowe-0.9.0-20180918.163158-38.pax"}</li>
+     * <li>{@code build.name} - {@code "zowe-install-packaging :: master"}</li>
+     * <li>{@code build.number} - {@code "38"}</li>
+     * <li>{@code build.timestamp} - {@code "1537287202277"}</li>
+     * </ul></p>
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
-     * @param   pattern            path pattern to find the artifact
-     * @param   build-name         limit the search within this build name
-     * @param   build-number       limit the search within this build number
+     * @param   pattern            path pattern to find the artifact. For example: {@code "lib-snapshot-local/path/to/artifacts/*.zip"}
+     * @param   build-name         limit the search within this build name. Optional.
+     * @param   build-number       limit the search within this build number. Optional.
+     * @return                     a Map with the artifact information. Must include {@code path} key.
+     * @throws ArtifactException   Cannot find or find more than one artifacts.
      */
     Map getArtifact(Map args = [:]) throws InvalidArgumentException, ArtifactException {
         // init with arguments
@@ -142,22 +168,22 @@ class JFrogArtifactory implements ArtifactInterface {
             returnStdout: true
         ).trim()
         // this.steps.echo "Raw search result:\n${resultText}"
-        /**
-         * Example result:
+        /*
+        Example result:
          *
-         * [
-         *   {
-         *     "path": "libs-snapshot-local/com/project/zowe/0.9.0-SNAPSHOT/zowe-0.9.0-20180918.163158-38.pax",
-         *     "props": {
-         *       "build.name": "zowe-install-packaging :: master",
-         *       "build.number": "38",
-         *       "build.parentName": "zlux",
-         *       "build.parentNumber": "570",
-         *       "build.timestamp": "1537287202277"
-         *     }
-         *   }
-         * ]
-         */
+        [
+          {
+            "path": "libs-snapshot-local/com/project/zowe/0.9.0-SNAPSHOT/zowe-0.9.0-20180918.163158-38.pax",
+            "props": {
+              "build.name": "zowe-install-packaging :: master",
+              "build.number": "38",
+              "build.parentName": "zlux",
+              "build.parentNumber": "570",
+              "build.timestamp": "1537287202277"
+            }
+          }
+        ]
+        */
         def resultJson = this.steps.readJSON text: resultText
 
         // validate result size
@@ -199,15 +225,9 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
-     * Get detail information of an artifact
+     * Get detail information of an artifact.
      *
-     * NOTE: this is implemented with jFrog CLI
-     *
-     * Use similar parameters like init() method and with these extra:
-     *
-     * @param   pattern            path pattern to find the artifact
-     * @param   build-name         limit the search within this build name
-     * @param   build-number       limit the search within this build number
+     * @see {@link #getArtifact(Map)}
      */
     Map getArtifact(String pattern, String buildName = '', String buildNumber = '') {
         return getArtifact([
@@ -220,10 +240,27 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Download artifacts
      *
-     * NOTE: this is implemented with jFrog CLI. The reason is sortBy in download spec is not
+     * @Note This method is implemented with jFrog CLI. The reason is sortBy in download spec is not
      *       supported by Jenkins Artifactory plugin.
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @Example Download 5 artifacts to local:
+     * <pre>
+     *     jfrog.download(
+     *         spec        : 'path/to/my/download/spec.json',
+     *         expected    : 5
+     *     )
+     * </pre>
+     * <p>Or specify download spec in parameter</p>
+     * <pre>
+     *     jfrog.download(
+     *         specContent : '[{"file": "lib-snapshot-local/path/to/file.zip"}]',
+     *         expected    : 1
+     *     )
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param   spec            jfrog cli download specification file. optional.
      * @param   specContent     jfrog cli download specification content text.
@@ -278,11 +315,14 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
-     * Upload an artifact
+     * Upload an artifact.
      *
-     * Requires these environment variables:
-     * - JOB_NAME
-     * - BUILD_NUMBER
+     * <p><strong>Requires these environment variables:</strong><ul>
+     * <li>- JOB_NAME</li>
+     * <li>- BUILD_NUMBER</li>
+     * </ul></p>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param  pattern           pattern to find local artifact(s)
      * @param  target            target path on remote Artifactory
@@ -345,11 +385,21 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Upload an artifact
      *
-     * You can choose one of three ways to upload:
+     * <p>You can choose one of three ways to upload:<ul>
+     * <li>- specify {@code spec} which pointing to a file</li>
+     * <li>- specify {@code specContent} which is upload specification text</li>
+     * <li>- specify {@code pattern} and {@code target}, these information will be rendered into upload specification</li>
+     * </ul></p>
      *
-     * - specify "spec" which pointing to a file
-     * - specify "specContent" which is upload specification text
-     * - specify "pattern" and "target", these information will be rendered into upload specification
+     * @Example Upload {@code my-project.zip} to artifactory {@coode lib-snapshot-local} repository.
+     * <pre>
+     *     jfrog.upload(
+     *         pattern : 'build/result/of/my-project.zip',
+     *         target  : 'lib-snapshot-local/org/zowe/my-project/0.1.2/my-project-0.1.2-snapshot.zip'
+     *     )
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param  spec             jfrog cli upload specification file. optional.
      * @param  specContent      jfrog cli upload specification content text.
@@ -385,15 +435,15 @@ class JFrogArtifactory implements ArtifactInterface {
                     k, v -> k + '=' + URLEncoder.encode("${v}", 'UTF-8')
                 }.join(';')
             }
-            spec = """{
-  "files": [
-    {
-      "pattern": "${args['pattern']}",
-      "target": "${args['target']}",
-      "props": "${extraProperties}"
-    }
- ]
-}"""
+            spec = "{\n" +
+                   "  \"files\": [\n" +
+                   "    {\n" +
+                   "      \"pattern\": \"${args['pattern']}\",\n" +
+                   "      \"target\": \"${args['target']}\",\n" +
+                   "      \"props\": \"${extraProperties}\"\n" +
+                   "    }\n" +
+                   " ]\n" +
+                   "}"
         } else {
             throw new InvalidArgumentException('spec')
         }
@@ -409,26 +459,37 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
-     * Upload an artifact
+     * Upload an artifact.
      *
-     * @param  pattern           pattern to find local artifact(s)
-     * @param  target            target path on remote Artifactory
-     * @param  properties        a map of extra properties we want to add to the artifact
+     * @see {@link #upload(Map)}
      */
     void upload(String pattern, String target, Map properties = [:]) {
         this.upload(pattern: pattern, target: target, properties: properties)
     }
 
     /**
-     * Promote artifact
+     * Promote artifact.
      *
-     * Requires these environment variables:
-     * - JOB_NAME
-     * - BUILD_NUMBER
+     * <p><strong>Requires these environment variables:</strong><ul>
+     * <li>- JOB_NAME</li>
+     * <li>- BUILD_NUMBER</li>
+     * </ul></p>
+     *
+     * @Example Promote {@code my-project-0.1.2-snapshot.zip} as formal release of v0.1.2:
+     * <pre>
+     *     String result = jfrog.promote(
+     *         source     : 'lib-snapshot-local/org/zowe/my-project/0.1.2/my-project-0.1.2-snapshot.zip',
+     *         targetPath : 'lib-release-local/org/zowe/my-project/0.1.2/',
+     *         targetName : 'my-project-0.1.2.zip'
+     *     )
+     *     assert result == 'lib-release-local/org/zowe/my-project/0.1.2/my-project-0.1.2.zip'
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param  source            information of the artifact will be promoted.
      * @param  targetPath        target path on remote Artifactory
-     * @param  targetName        target artifact name. optional, default to original name
+     * @param  targetName        target artifact name. Optional, default to original name.
      * @return                   full path to the promoted artifact
      */
     String promote(Map args = [:]) throws InvalidArgumentException, ArtifactException {
@@ -490,12 +551,11 @@ class JFrogArtifactory implements ArtifactInterface {
         def targetFullPath = "${targetPath}/${targetName}"
 
         // variables prepared, ready to promote
-        this.steps.echo """Promoting artifact: ${source['path']}
-- to              : ${targetFullPath}
-- build name      : ${buildName}
-- build number    : ${buildNumber}
-- build timestamp : ${buildTimestamp}
-"""
+        this.steps.echo "Promoting artifact: ${source['path']}\n" +
+                        "- to              : ${targetFullPath}\n" +
+                        "- build name      : ${buildName}\n" +
+                        "- build number    : ${buildNumber}\n" +
+                        "- build timestamp : ${buildTimestamp}\n"
 
         // promote (copy) artifact
         def promoteResult = this.steps.sh(
@@ -548,13 +608,11 @@ class JFrogArtifactory implements ArtifactInterface {
 
         return targetFullPath
     }
+
     /**
-     * Promote artifact
+     * Promote artifact.
      *
-     * @param  source            information of the artifact will be promoted.
-     * @param  targetPath        target path on remote Artifactory
-     * @param  targetName        target artifact name. optional, default to original name
-     * @return                   full path to the promoted artifact
+     * @see {@link #promote(Map)}
      */
     String promote(String source, String targetPath, String targetName = '') {
         return this.promote([source: source, targetPath: targetPath, targetName: targetName])

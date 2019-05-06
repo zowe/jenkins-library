@@ -9,6 +9,6 @@
  */
 
 /**
- * Packages that give basic utility methods to work with SCM.
+ * Package that give basic utility methods to work with SCM, like GitHub.
  */
 package org.zowe.jenkins_shared_library.scm

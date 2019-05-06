@@ -12,6 +12,8 @@ package org.zowe.jenkins_shared_library.gradle
 
 /**
  * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.gradle} classes
+ *
+ * @see org.zowe.jenkins_shared_library.gradle
  */
 class GradleException extends Exception {
     /**

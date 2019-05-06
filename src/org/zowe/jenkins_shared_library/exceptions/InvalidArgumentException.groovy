@@ -5,13 +5,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *
- * Copyright Contributors to the Zowe Project.
+ * Copyright IBM Corporation 2019
  */
 
 package org.zowe.jenkins_shared_library.exceptions
 
 /**
- * An exception that can be thrown from the {@link org.zowe} class
+ * An exception that can be thrown if an argument is invalid or missing.
  */
 class InvalidArgumentException extends Exception {
     /**

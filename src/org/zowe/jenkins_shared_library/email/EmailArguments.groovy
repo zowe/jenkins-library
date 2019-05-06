@@ -11,8 +11,7 @@
 package org.zowe.jenkins_shared_library.email
 
 /**
- * Arguments available to the {@link org.zowe.jenkins_shared_library.email.Email#send(EmailArguments)}
- * method.
+ * Arguments available to the {@link Email#send(EmailArguments)} method.
  */
 class EmailArguments {
     /**

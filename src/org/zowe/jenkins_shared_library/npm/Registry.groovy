@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -15,20 +15,35 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.Utils
 
+/**
+ * Methods to handle NPM project.
+ *
+ * @Example
+ * <pre>
+ *     def npm = new Registry(this)
+ *     // init npm registry
+ *     npm.init(
+ *         email                      : 'artifactory-user@gmail.com',
+ *         usernamePasswordCredential : 'my-artifactory-credential',
+ *         registry                   : 'https://my-project.jfrog.io/my-project/api/npm/npm-release/',
+ *         scope                      : 'zowe'
+ *     )
+ * </pre>
+ */
 @Log
 class Registry {
     /**
-     * Constant of .npmrc file name
+     * Constant of {@code .npmrc} file name
      */
     public static final String NPMRC_FILE = '~/.npmrc'
 
     /**
-     * Constant of package.json file name
+     * Constant of {@code package.json} file name
      */
     public static final String PACKAGE_JSON = 'package.json'
 
     /**
-     * Default npmjs registry
+     * Default npmjs registry. Default value is {@code "https://registry.npmjs.org/"}.
      */
     public static final String DEFAULT_REGISTRY = 'https://registry.npmjs.org/'
 
@@ -48,9 +63,9 @@ class Registry {
     String scope
 
     /**
-     * Jenkins credential ID for NPM token
+     * Jenkins credential ID for NPM token.
      *
-     * The content of token could be base64 encoded "username:password"
+     * @Note The content of token could be base64 encoded "username:password".
      */
     String tokenCredential
 
@@ -65,12 +80,12 @@ class Registry {
     String email
 
     /**
-     * package.json file name, default is PACKAGE_JSON
+     * File name of {@code package.json}. Default value is {@link #PACKAGE_JSON}.
      */
     String packageJsonFile = PACKAGE_JSON
 
     /**
-     * Package information extracted from package.json
+     * Package information extracted from {@link #PACKAGE_JSON}.
      */
     Map _packageInfo
 
@@ -93,12 +108,15 @@ class Registry {
     }
 
     /**
-     * Initialize npm registry properties
+     * Initialize npm registry properties.
+     *
+     * @Note The below parameters are supported keys of the {@code args} Map.
+     *
      * @param   registry                    the registry URL
-     * @param   tokenCredential             Jenkins credential ID for NPM token
-     * @param   usernamePasswordCredential  Jenkins credential ID for NPM username/base64_password
+     * @param   tokenCredential             Jenkins credential ID for NPM token. Optional.
+     * @param   usernamePasswordCredential  Jenkins credential ID for NPM username/base64_password. Optional.
      * @param   email                       NPM user email
-     * @param   packageJsonFile             package.json file name
+     * @param   packageJsonFile             {@code package.json} file name. Optional, default is {@link #PACKAGE_JSON}.
      */
     void init(Map args = [:]) {
         if (args['packageJsonFile']) {
@@ -135,12 +153,13 @@ class Registry {
     }
 
     /**
-     * Detect npm registry/scope from package.json
+     * Detect npm registry and scope from {@code package.json}.
      *
-     * Note: this is extracted from #init() because some registries (like install registries)
-     * shouldn't have this. Only publish registry makes sense from to get from package.json.
+     * @Note This method is taken out from {@link #init(Map)} because some registries (like install
+     * registries) shouldn't have this. Only publish registry makes sense to get from
+     * {@code package.json}.
      *
-     * @param  packageJsonFile    file name of package.json.
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
      */
     void initFromPackageJson(Map args = [:]) {
         Map info = this.getPackageInfo()
@@ -154,10 +173,22 @@ class Registry {
     }
 
     /**
-     * Get current package information from package.json
+     * Get current package information from {@code package.json}.
      *
-     * NOTE: this method has cache. If you need to reload package info from package.json, run method
-     * #clearPackageInfoCache()
+     * @Note This method has cache. If you need to reload package info from package.json, run method
+     * {@link #clearPackageInfoCache()} to reset the cache.
+     *
+     * <p><strong>Expected keys in the result Map:</strong><ul>
+     * <li>{@code name} - name of the package. For example, {@code "explorer-jes"}.</li>
+     * <li>{@code scope} - scope of the package. Optional. For example, {@code "zowe"}. Please note this value does <strong>NOT
+     *     </strong> have <strong>{@literal @}</strong> included.</li>
+     * <li>{@code description} - description of the package if defined. For example, {@code "A UI plugin to handle z/OS jobs."}.</li>
+     * <li>{@code version} - version of the package. For example, {@code "1.2.3"}.</li>
+     * <li>{@code versionTrunks} - Map version trunks returned from {@link jenkins_shared_library.Utils#parseSemanticVersion(java.lang.String)}.</li>
+     * <li>{@code license} - license of the package if defined. For example, {@code "EPL-2.0"}.</li>
+     * <li>{@code registry} - publish registry of the package if defined.</li>
+     * <li>{@code scripts} - List of scripts of the package defined. For example, {@code ["build", "test", "start", "coverage"]}.</li>
+     * </ul></p>
      *
      * @return             current package information including name, version, description, license, etc
      */
@@ -219,23 +250,25 @@ class Registry {
 
 
     /**
-     * Login to NPM registry
+     * Login to NPM registry.
      *
-     * NOTE:
-     *
-     * Using token credential may receive this error with whoami, but actually npm install is ok.
+     * @Note Using token credential may receive this error with whoami, but actually npm install is ok.
+     * <pre>
      * + npm whoami --registry https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/
      * npm ERR! code E401
      * npm ERR! Unable to authenticate, need: Basic realm="Artifactory Realm"
+     * </pre>
      *
-     * This happens if we set "//gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/:_authToken",
-     * but if we set "_auth=<token>", everything is ok.
+     * <p>This happens if we set {@code "//gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/:_authToken"},
+     * but if we set {@code "_auth=<token>"}, everything is ok.</p>
      *
-     * Is this a bug of Artifactory?
+     * <p>Is this a bug of Artifactory?</p>
      *
-     * So for now, only usernamePasswordCredential works well.
+     * <p>So for now, only usernamePasswordCredential works well.</p>
      *
-     * Use similar parameters like init() method and with these extra:
+     * @see <a href="https://www.jfrog.com/confluence/display/RTF/Npm+Registry#NpmRegistry-ConfiguringthenpmClientforaScopeRegistry">jFrog Artifactory - Configuring the npm Client for a Scope Registry</a>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
      *
      * @return                              username who login
      */
@@ -341,12 +374,21 @@ class Registry {
     }
 
     /**
-     * Publish npm package with tag
+     * Publish npm package with tag.
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Example
+     * <pre>
+     *     // publish package 1.2.3-snapshot-20190101010101 with dev tag
+     *     npm.publish(
+     *         tag     : 'dev',
+     *         version : '1.2.3-snapshot-20190101010101'
+     *     )
+     * </pre>
      *
-     * @param tag          npm publish tag, default is empty which is (latest)
-     * @param version      package version to publish
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @param tag          npm publish tag. Optional, default is empty which is (@code latest).
+     * @param version      package version to publish.
      */
     void publish(Map args = [:]) {
         // init with arguments
@@ -365,6 +407,7 @@ class Registry {
 
             try {
                 // npm version without tag & commit
+                // so this command just update package.json version to target version.
                 steps.sh "npm version --no-git-tag-version ${args.version}"
             } catch (err) {
                 // ignore error
@@ -384,7 +427,27 @@ class Registry {
     }
 
     /**
-     * Declare a new version of npm package
+     * Declare a new version of npm package.
+     *
+     * @Note This task will bump the package version defined in package.json, commit the change, and push
+     * to GitHub. The commit is signed-off.
+     *
+     * @Example
+     * <pre>
+     *     def github = new org.zowe.jenkins_shared_library.scm.GitHub(this)
+     *     // bump patch version on master branch
+     *     npm.version(
+     *         github  :     github,
+     *         branch  :     'master',
+     *         version :     'patch'
+     *     )
+     *     // After this, you should be able to see your repository master branch has a commit of
+     *     // version bump.
+     * </pre>
+     *
+     * @see {@link jenkins_shared_library.scm.GitHub}
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param github         GitHub instance must have been initialized with repository, credential, etc
      * @param branch         which branch to release
@@ -450,11 +513,9 @@ class Registry {
     }
 
     /**
-     * Declare a new version of npm package
+     * Declare a new version of npm package.
      *
-     * @param github         GitHub instance must have been initialized with repository, credential, etc
-     * @param branch         which branch to release
-     * @param version        what kind of version bump we should make
+     * @see #version(Map)
      */
     void version(GitHub github, String branch, String version = 'PATCH') {
         this.version([

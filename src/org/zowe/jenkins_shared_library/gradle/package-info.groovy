@@ -9,6 +9,6 @@
  */
 
 /**
- * Packages that give basic utility methods to work with Gradle project.
+ * Package that give basic utility methods to work with Gradle project.
  */
 package org.zowe.jenkins_shared_library.gradle

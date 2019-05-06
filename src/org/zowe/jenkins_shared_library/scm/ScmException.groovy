@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.scm
 
 /**
- * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.scm} classes
+ * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.scm} classes.
  */
 class ScmException extends Exception {
     /**

@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *
- * Copyright Contributors to the Zowe Project.
+ * Copyright IBM Corporation 2019
  */
 
 package org.zowe.jenkins_shared_library.pipelines.gradle.exceptions

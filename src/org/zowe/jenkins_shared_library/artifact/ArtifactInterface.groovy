@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -10,6 +10,12 @@
 
 package org.zowe.jenkins_shared_library.artifact
 
+/**
+ * Interface for classes handling artifacts.
+ *
+ * <p>For example, JFrog Artifactory class should implement this interface. If we support Nexus,
+ * the class should also implement this interface.</p>
+ */
 interface ArtifactInterface {
     /**
      * Init artifactory configuration

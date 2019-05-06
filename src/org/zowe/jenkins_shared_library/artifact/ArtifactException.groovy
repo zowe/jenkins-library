@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.artifact
 
 /**
- * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.artifact} classes
+ * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.artifact} classes.
  */
 class ArtifactException extends Exception {
     /**

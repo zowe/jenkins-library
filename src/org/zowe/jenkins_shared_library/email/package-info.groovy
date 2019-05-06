@@ -9,6 +9,6 @@
  */
 
 /**
- * Packages that give basic utility methods to work with emails.
+ * Package that give basic utility methods to work with emails.
  */
 package org.zowe.jenkins_shared_library.email

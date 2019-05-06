@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -24,11 +24,17 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 /**
  * Various static methods which doesn't have a class.
  *
- * NOTICE: any method which getting complicated should be extracted as an independent Class.
+ * @Note Any methods which getting complicated should be extracted as an independent Class.
  */
 class Utils {
     /**
      * Read resource file
+     *
+     * @Example
+     * <pre>
+     *     String content = Utils.loadResource('src/test/resources/my-file.txt')
+     * </pre>
+     *
      * @param  path        path to the resource file
      * @return             the file content
      * @throws IOException if failed to read the file
@@ -39,9 +45,19 @@ class Utils {
 
     /**
      * Sanitize branch name so it can only contains:
-     * - letters
-     * - numbers
-     * - dash
+     *
+     * <ul>
+     * <li>- letters</li>
+     * <li>- numbers</li>
+     * <li>- dash</li>
+     * </ul>
+     *
+     * @Example
+     * <pre>
+     * String branch = 'stagings/mytest'
+     * String santizedBranch = Utils.sanitizeBranchName(branch)
+     * assert santizedBranch == 'stagings-mytest'
+     * </pre>
      *
      * @param  branch      branch name
      * @return             sanitized branch name
@@ -60,8 +76,24 @@ class Utils {
     /**
      * Parse semantic version into trunks.
      *
-     * @param  version     version to parse
-     * @return             a map with major, minor, path, prerelease and metadata keys.
+     * <p><strong>The result should be a Map with these keys:</strong><ul>
+     * <li>- major</li>
+     * <li>- minor</li>
+     * <li>- patch</li>
+     * <li>- prerelease</li>
+     * <li>- metadata</li>
+     * </ul></p>
+     *
+     * @Example With input: {@code 1.2.3-alpha.1+20190101010101}, the method should return an output of:<ul>
+     * <li>- major: 1</li>
+     * <li>- minor: 2</li>
+     * <li>- patch: 3</li>
+     * <li>- prerelease: alpha.1</li>
+     * <li>- metadata: 20190101010101</li>
+     * </ul></p>
+     *
+     * @param  version     the version string to parse
+     * @return             a Map with major, minor, path, prerelease and metadata keys.
      */
     static Map parseSemanticVersion(String version) {
         // https://github.com/semver/semver/issues/232
@@ -82,13 +114,13 @@ class Utils {
     }
 
     /**
-     * Convert a version bump
+     * Convert a version bump string to exact new version string.
      *
-     * This should have same logic as `npm version`.
+     * @Note This method has similar logic as {@code npm version}.
      *
-     * @param  versionTrunks    version trunks map, returned from parseSemanticVersion
-     * @param  bump             new expected version, for example, patch
-     * @return                  interpreted semantic version, for exmaple, 1.2.4
+     * @param  versionTrunks    Map of version trunks returned from {@link #parseSemanticVersion(String)}.
+     * @param  bump             New expected version. For example, patch, or minor.
+     * @return                  Interpreted semantic version. For exmaple, 1.2.4.
      */
     static String interpretSemanticVersionBump(Map versionTrunks, String bump) {
         bump = bump.toLowerCase()
@@ -117,11 +149,12 @@ class Utils {
     }
 
     /**
-     * Get current timestamp in a format of YYYYMMDDHHMMSSMMM.
+     * Get current timestamp in a specific format.
      *
-     * The result only includes numbers.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">java.time.format.DateTimeFormatter - Patterns for Formatting and Parsing</a>
      *
-     * @return  timestamp string
+     * @param format       Format of datatime. Default value is {@code yyyyMMddHHmmss}
+     * @return             Timestamp string in specified format. For example, {@code 20190101010101}
      */
     static String getTimestamp(String format = "yyyyMMddHHmmss") {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern(format))
@@ -129,13 +162,17 @@ class Utils {
     }
 
     /**
-     * Get Build Identifier
+     * Get Build Identifier.
      *
-     * Example output:
-     *    - 20180101.010101-pr-11-1       PR-11 branch build #1 at 20180101.010101
-     *    - 20180101.010101-13            master branch build #13 at 20180101.010101
-     *    - 20180101-010101-13            master branch build #13 using "%Y%m%d-%H%M%S" format
+     * @Note This method is for back compatible purpose.
      *
+     * <p><strong>Example output:</strong><ul>
+     * <li>{@code 20180101.010101-pr-11-1}:       PR-11 branch build #1 at 20180101.010101</li>
+     * <li>{@code 20180101.010101-13}:            master branch build #13 at 20180101.010101</li>
+     * <li>{@code 20180101-010101-13}:            master branch build #13 using "%Y%m%d-%H%M%S" format</li>
+     * </ul></p>
+     *
+     * @deprecated
      * @param  env                        Jenkins environment variable
      * @param  includeTimestamp           Boolean|String, default is true. If add timstamp to the build identifier, or specify a
      *                                    formatting string. Support format is using Java DateTimeFormatter:
@@ -197,15 +234,22 @@ class Utils {
     }
 
     /**
-     * Get release identifier from branch name
+     * Get release identifier from branch name.
      *
-     * Example output:
-     *    - SNAPSHOT             default release name on master branch
-     *    - pr-13                pull request #13
+     * @Note This method use {@code env.BRANCH_NAME} to get branch name, so it only works on
+     * Multibranch Pipeline.
      *
-     * Usage examples:
-     * - getReleaseIdentifier(env, ['master': 'snapshot', 'staging': 'latest'])
+     * <p><strong>Example output:</strong><ul>
+     * <li>{@code SNAPSHOT}:       default release name on master branch</li>
+     * <li>{@code pr-13}:          pull request #13</li>
+     * </ul></p>
      *
+     * <p><strong>Usage examples:</strong><ul>
+     * <li>{@code getReleaseIdentifier(env, ['master': 'snapshot', 'staging': 'latest'])}</li>
+     * </ul></p>
+     *
+     * @deprecated
+     * @param  env                       Map of Jenkins environment variable. This map should have {@code BRANCH_NAME} key.
      * @param  mappings                  mappings of branch name and identifier
      * @return                           branch identifier
      */
@@ -224,7 +268,11 @@ class Utils {
     }
 
     /**
-     * Convert a map to URL query string
+     * Convert a Map to URL query string.
+     *
+     * @Example With input of {@code ['param1': 'value1', 'param2': 234]}, should expect a result of
+     * {@code param1=value1&amp;param2=234}
+     *
      * @param  params     map to hold the URL parameters
      * @return            URL query string
      */
@@ -235,6 +283,9 @@ class Utils {
 
     /**
      * Escape special characters in text to make it safe to put in XML
+     *
+     * @Note This method uses {@link <a href="https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/StringEscapeUtils.html#escapeXml11-java.lang.String-">org.apache.commons.lang3.StringEscapeUtils#escapeXml11(String)</a>} to escape XML.
+     *
      * @param  params     text to escape
      * @return            escaped text
      */
@@ -243,7 +294,12 @@ class Utils {
     }
 
     /**
-     * Get logger
+     * Get a logger instance
+     *
+     * @Note This method is mainly used in integration test to write extra logs. For Jenkins Library
+     * classes, should {@code import groovy.util.logging.Log} then use {@code @Log} annoutation to
+     * enable logging.
+     *
      * @param  name    name of the logger
      * @return         a Logger instance
      */
@@ -278,13 +334,39 @@ class Utils {
     }
 
     /**
-     * [waitForInput description]
+     * Pause the Jenkins pipeline and wait for end-user input.
+     *
+     * <p>The result should be a Map include these keys:<ul>
+     * <li>{@code timeout}: a Boolean value if the input has reached timeout.</li>
+     * <li>{@code proceed}: a Boolean value if the pipeline should proceed. It will be true only if
+     * the input is <strong>Approved to proceed</strong> by a user.</li>
+     * <li>{@code user}: a nullable string represents who approved/rejected the input.</li>
+     * </ul></p>
+     *
+     * @Example Pause the pipeline for 30 minutes:
+     * <pre>
+     * Map action = Utils.waitForInput(
+     *     this.steps,
+     *     [
+     *         timeout: [time: 30, unit: 'MINUTES'],
+     *         message: "Please verify before continue:"
+     *     ]
+     * )
+     * </pre>
+     *
+     * <p>Here is senarios what could be returned:<ul>
+     * <li>{@code [timeout: true, proceed: false, user: 'TIMEOUT']}: No one intervened, so the input reached timeout.</li>
+     * <li>{@code [timeout: false, proceed: true, user: 'Jack T. Jia']}: Jack clicked on Proceed button.</li>
+     * <li>{@code [timeout: false, proceed: false, user: 'Jack T. Jia']}: Jack chosed to abort the pipeline.</li>
+     * </ul></p>
+     *
      * @param  jenkinsSteps    jenkins steps object
-     * @param  args            arguments for the input:
-     *                         - timeout        map of timeout, example [time: 2, unit: 'MINUTES']
-     *                         - message        message of the input
-     *                         - proceedButton  proceed button text
-     * @return     [description]
+     * @param  args            arguments for the input:<ul>
+     *                         <li>- timeout        map of timeout. For example {@code [time: 2, unit: 'MINUTES']}</li>
+     *                         <li>- message        message of the input</li>
+     *                         <li>- proceedButton  proceed button text</li>
+     *                         </ul>
+     * @return                 A map represents how the input is handled.
      */
     static Map waitForInput(jenkinsSteps, Map args = [:]) {
         Map result = [

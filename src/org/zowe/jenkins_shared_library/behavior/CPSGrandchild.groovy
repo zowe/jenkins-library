@@ -1,4 +1,4 @@
-/**
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -14,12 +14,12 @@ package org.zowe.jenkins_shared_library.behavior
  * This demostrate after the children class calling super.method(), the method is altered by CPS
  * plugin, and the context to super is lost.
  *
- * But super on construction method is working properly.
+ * @Note But super on construction method is working properly.
  *
+ * <p>When calling {@code (new CPSGrandchild()).test()}:</p>
  *
- * When calling (new CPSGrandchild()).test():
- *
- * Expected to see:
+ * <p>Expected to see:
+ * <pre>
  * CPSBase construction
  * CPSChild construction
  * CPSGrandchild construction
@@ -28,8 +28,10 @@ package org.zowe.jenkins_shared_library.behavior
  * CPSBase.test()
  * CPSChild.test() done
  * CPSGrandchild.test() done
+ * </pre></p>
  *
- * Actual we get if we capture and ignore the error:
+ * <p>Actual we get if we capture and ignore the error:
+ * <pre>
  * CPSBase construction
  * CPSChild construction
  * CPSGrandchild construction
@@ -40,7 +42,8 @@ package org.zowe.jenkins_shared_library.behavior
  * CPSChild.test() started
  * CPSChild.test() started
  * CPSChild.test() started
- * ... infinite loop
+ * //... infinite loop
+ * </pre></p>
  */
 class CPSGrandchild extends CPSChild {
     CPSGrandchild(steps) {
