@@ -134,7 +134,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                 sh "git config user.email \"${GITHUB_EMAIL}\"\n" +
                    "git config user.name \"${GITHUB_USERNAME}\"\n" +
                    "git add .\n" +
-                   "git commit -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"\n"
+                   "git commit -s -m \"Updating docs from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"\n"
                 // push changes
                 withCredentials([
                     usernamePassword(
@@ -148,6 +148,18 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                 }
             }
         }
+    }
+
+    stage('done') {
+      // send out notification
+      emailext body: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} success.\n\nCheck detail: ${env.BUILD_URL}" ,
+          subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} success",
+          recipientProviders: [
+            [$class: 'RequesterRecipientProvider'],
+            [$class: 'CulpritsRecipientProvider'],
+            [$class: 'DevelopersRecipientProvider'],
+            [$class: 'UpstreamComitterRecipientProvider']
+          ]
     }
 
   } catch (err) {
