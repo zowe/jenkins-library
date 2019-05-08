@@ -9,9 +9,9 @@
  */
 
 /**
- * Classes that extend the capability of a {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+ * Classes that extend the capability of a {@link jenkins_shared_library.pipelines.base.Pipeline}.
  *
- * <p>The main class of importance in this package is the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline} class. This class provides
+ * <p>The main class of importance in this package is the {@link jenkins_shared_library.pipelines.generic.GenericPipeline} class. This class provides
  * various methods to create a scripted Generic Jenkins pipeline. The other classes in this package
  * provide supporting code for the main GenericPipeline class.</p>
  */

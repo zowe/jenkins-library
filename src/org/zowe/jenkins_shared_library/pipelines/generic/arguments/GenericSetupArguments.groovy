@@ -16,7 +16,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import java.util.concurrent.TimeUnit
 
 /**
- * Arguments available to the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric(org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments)}
+ * Arguments available to the {@link jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric(jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments)}
  * method.
  */
 class GenericSetupArguments extends SetupArguments {
@@ -37,29 +37,29 @@ class GenericSetupArguments extends SetupArguments {
     /**
      * Github configurations
      *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.scm.GitHub#init}.
+     * <p>Use configurations defined at {@link jenkins_shared_library.scm.GitHub#init(Map)}.</p>
      */
     Map github
 
     /**
      * Artifactory configurations
      *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory#init}.
+     * <p>Use configurations defined at {@link jenkins_shared_library.artifact.JFrogArtifactory#init(Map)}.</p>
      */
     Map artifactory
 
     /**
      * PAX server configurations
      *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.package.Pax#init}.
+     * <p>Use configurations defined at {@link jenkins_shared_library.package.Pax#init(Map)}.</p>
      */
     Map pax
 
     /**
      * Extra init operations
      *
-     * This closure will execute in 'Init Generic Pipeline' stage, and the pipeline object will be
-     * passed to Clusure as arguments.
+     * <p>This closure will execute in 'Init Generic Pipeline' stage, and the pipeline object will be
+     * passed to Clusure as arguments.</p>
      */
     Closure extraInit
 }

@@ -26,6 +26,8 @@ class GenericPipelineControl extends PipelineControl {
      * Test stages that occur before publish.
      *
      * <p>Test stages require that the build was successful.</p>
+     *
+     * @Note A pipeline may have multiple test stages.
      */
     List<Stage> prePublishTests = []
 

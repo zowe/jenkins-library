@@ -15,6 +15,9 @@ import org.zowe.jenkins_shared_library.pipelines.base.interfaces.BranchPropertie
 
 /**
  * Manages the branches of a Pipeline.
+ *
+ * @see jenkins_shared_library.pipelines.base.interfaces.BranchProperties
+ *
  * @param <T> This type ensures that the branch properties implement the {@link BranchProperties}
  *            interface and all branches are of the same property.
  */
@@ -40,17 +43,20 @@ final class Branches<T extends BranchProperties> implements Serializable {
 
     /**
      * Adds a branch object as protected.
+     *
+     * @Note If the branch is already defined, the config will be overwritten.
+     *
      * @param branch The properties of a branch that is protected.
      * @return The object that was added.
      * @throws BranchException when a branch is already protected.
      */
     T add(T branch) throws BranchException {
-        // if it's already defined, we will overwrite the config
         return _branches.put(branch.name, branch)
     }
 
     /**
      * Adds a list of branches to the map.
+     *
      * @param branches The branches to add as protected.
      */
     void add(List<T> branches) {
@@ -62,6 +68,7 @@ final class Branches<T extends BranchProperties> implements Serializable {
     /**
      * Add a branch map into the object. This map must follow the syntax of the Groovy Map Object
      * Constructor.
+     *
      * @param branch The branch to add.
      * @return The object that was added
      */
@@ -72,6 +79,7 @@ final class Branches<T extends BranchProperties> implements Serializable {
     /**
      * Adds a list of branches to the protected maps. The elements of the list must follow the syntax
      * of the Groovy Map Object Constructor.
+     *
      * @param branches The branches to add as protected.
      */
     void addMap(List<Map> branches) {
@@ -83,7 +91,8 @@ final class Branches<T extends BranchProperties> implements Serializable {
     /**
      * Gets a protected branch's properties from the map.
      *
-     * This method is used to access the property based on raw branch name or name pattern.
+     * @Note: This method is used to access the property based on raw branch name or name pattern.
+     * Usually we should use {@link #getByPattern(String)} to find the branch properties.
      *
      * @param branchName The name or the pattern of the branch to retrieve
      * @return The object for the branch name or null if there is no branch of the corresponding name.
@@ -95,7 +104,7 @@ final class Branches<T extends BranchProperties> implements Serializable {
     /**
      * Gets a protected branch's properties from the map by name pattern.
      *
-     * This should be the suggested way to find a branch property.
+     * @Note: This is the recommended method to find a branch property.
      *
      * @param branchName The name of the branch to retrieve
      * @return The object for the branch name or null if there is no branch of the corresponding name.

@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.base.models
 
 /**
- * Control variables for a {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}
+ * Control variables for a {@link jenkins_shared_library.pipelines.base.Pipeline}
  */
 class PipelineControl {
     /**

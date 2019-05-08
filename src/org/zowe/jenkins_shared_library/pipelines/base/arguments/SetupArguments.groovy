@@ -15,8 +15,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import java.util.concurrent.TimeUnit
 
 /**
- * Arguments available to the
- * {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#setupBase(org.zowe.jenkins_shared_library.pipelines.base.arguments.SetupArguments)}
+ * Arguments available to the {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupArguments)}
  * method.
  */
 class SetupArguments {
@@ -37,12 +36,14 @@ class SetupArguments {
     /**
      * Package name
      *
-     * Example: org.zowe.my-project
+     * @Example {@code "org.zowe.my-project"}
      */
     String packageName
 
     /**
      * Package current version
+     *
+     * @Example {@code "1.2.3"}
      */
     String version
 }

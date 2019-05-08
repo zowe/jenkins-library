@@ -16,56 +16,71 @@ import org.zowe.jenkins_shared_library.Utils
 /**
  * Create PAX file on the folder provided
  *
- * The work place folder should have these sub-folder or files
+ * <p>The local work place folder should have these sub-folder(s) or files:</p>
+ * <ul>
+ * <li><strong>content</strong> folder which holds all the required files/contents</li>
+ * <li><strong>ascii</strong> folder is optional, which holds all plain text files will be converted to IBM-1047 encoding</li>
+ * <li><strong>prepare-packaging.sh</strong> is the script to prepare workspace. <strong>This script will run in local workspace environment.</strong></li>
+ * <li><strong>pre-packaging.sh</strong> is the pre-hook which will run on PAX server before packaging</li>
+ * <li><strong>post-packaging.sh</strong> is the post-hook which will run on PAX server after packaging</li>
+ * </ul>
  *
- * - "content" folder which holds all the required files/contents
- * - "ascii" folder is optional, which holds all plain text files will be converted to IBM-1047 encoding
- * - "prepare-packaging.sh" is the script to prepare workspace
- * - "pre-packaging.sh" is the pre-hook which will run on PAX server before packaging
- * - "post-packaging.sh" is the post-hook which will run on PAX server after packaging
- *
- * If the process is successfully, a file named as "filename" will be placed in
- * the "workspace".
+ * <p>If the process is successfully, a PAX file (named followed "filename" argument of {@link #pack(Map)}
+ * will be placed in the {@link #localWorkspace}.</p>
  */
 class Pax {
     /**
-     * Constant of package.json file name
+     * Constant of default local workspace folder.
+     *
+     * @Default {@code ".pax"}
      */
-    static final String DEFAULT_LOCAL_WORKSPACE = './pax-workspace'
+    static final String DEFAULT_LOCAL_WORKSPACE = './.pax'
 
     /**
-     * Constant of package.json file name
+     * Constant of default remote workspace folder.
+     *
+     * @Default {@code "/tmp"}
      */
     static final String DEFAULT_REMOTE_WORKSPACE = '/tmp'
 
     /**
-     * Constant of local content folder
+     * Constant of local content folder name
+     *
+     * @Default {@code "content"}
      */
     static final String PATH_CONTENT = 'content'
 
     /**
-     * Constant of local ascii folder
+     * Constant of local ascii folder name
+     *
+     * @Default {@code "ascii"}
      */
     static final String PATH_ASCII = 'ascii'
 
     /**
-     * Constant of prepare-packaging hook
+     * Constant of prepare-packaging hook name
      *
-     * This hook script runs on local workspace
+     * @Note This hook script runs on local workspace.
+     *
+     * @Default {@code "prepare-workspace.sh"}
      */
     static final String HOOK_PREPARE_WORKSPACE = 'prepare-workspace.sh'
 
     /**
      * Constant of pre-packaging hook
      *
-     * This hook script runs on remote workspace
+     * @Note This hook script runs on remote workspace.
+     *
+     * @Default {@code "pre-packaging.sh"}
      */
     static final String HOOK_PRE_PACKAGING = 'pre-packaging.sh'
 
     /**
      * Constant of post-packaging hook
      *
-     * This hook script runs on remote workspace
+     * @Note This hook script runs on remote workspace.
+     *
+     * @Default {@code "post-packaging.sh"}
      */
     static final String HOOK_POST_PACKAGING = 'post-packaging.sh'
 
@@ -91,13 +106,15 @@ class Pax {
 
     /**
      * SSH server port
+     *
+     * @Default {@code 22}
      */
     String sshPort = '22'
 
     /**
      * SSH server credential ID
      *
-     * The content of token could be base64 encoded "username:password"
+     * <p>The content of token could be base64 encoded "username:password".</p>
      */
     String sshCredential
 
@@ -109,7 +126,7 @@ class Pax {
      *
      * @Example
      * <pre>
-     * def npm = new Pax(this)
+     * def pax = new Pax(this)
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
@@ -121,8 +138,9 @@ class Pax {
 
     /**
      * Initialize pax packaging properties
-     * @param   localWorkspace       workspace folder on local
-     * @param   remoteWorkspace      workspace folder on remote (ssh server)
+     *
+     * @param   localWorkspace       workspace folder on local. Default value is {@link #DEFAULT_LOCAL_WORKSPACE}.
+     * @param   remoteWorkspace      workspace folder on remote (ssh server). Default value is {@link #DEFAULT_REMOTE_WORKSPACE}.
      * @param   sshHost              hostname/ip of packaging server
      * @param   sshPort              ssh port of packaging server
      * @param   sshCredential        SSH credential of packaging server
@@ -154,7 +172,7 @@ class Pax {
     /**
      * Create PAX Package
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param   job            job identifier
      * @param   filename       package file name will be created
@@ -369,13 +387,9 @@ EOF"""
     /**
      * Create PAX Package
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
-     * @param   job            job identifier
-     * @param   filename       package file name will be created
-     * @param   environments   environment variables
-     * @param   paxOptions     pax write command options
-     * @return                 pax package created
+     * @see #pack(Map)
      */
     String pack(String job, String filename, Map environments = [:], String paxOptions = '') {
         this.pack(job: job, filename: filename, environments: environments, paxOptions: paxOptions)
@@ -384,7 +398,7 @@ EOF"""
     /**
      * Extract PAX Package to remoteWorkspace
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param   filename       package file name will be extracted
      * @param   paxOptions     pax extract command options
@@ -446,12 +460,9 @@ EOF"""
     /**
      * Extract PAX Package to remoteWorkspace
      *
-     * Use similar parameters like init() method and with these extra:
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
-     * @param   filename           package file name will be extracted
-     * @param   remoteWorkspace    workspace folder on remote (ssh server)
-     * @param   paxOptions         pax extract command options
-     * @return                     pax package content list with "find . -print"
+     * @see #unpack(Map)
      */
     String unpack(String filename, String remoteWorkspace, String paxOptions = '') {
         this.unpack(filename: filename, remoteWorkspace: remoteWorkspace, paxOptions: paxOptions)

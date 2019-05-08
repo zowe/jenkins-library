@@ -10,24 +10,35 @@
 
 package org.zowe.jenkins_shared_library.pipelines
 
+/**
+ * Constants used by Jenkins Shared Library Pipelines
+ */
 class Constants {
     /**
      * Text used for the CI SKIP commit.
+     *
+     * @Default {@code "[ci skip]"}
      */
     static String CI_SKIP = "[ci skip]"
 
     /**
-     * Default size of build history
+     * Default size of build history.
+     *
+     * @Default {@code 5}
      */
     static Integer DEFAULT_BUILD_HISTORY = 5
 
     /**
-     * Default size of build history for protected branches
+     * Default size of build history for protected branches.
+     *
+     * @Default {@code 20}
      */
     static Integer DEFAULT_BUILD_HISTORY_FOR_PROTECTED_BRANCH = 20
 
     /**
-     * Default branch release tag
+     * Default branch release tag.
+     *
+     * @Default {@code "snapshot"}
      */
     static String DEFAULT_BRANCH_RELEASE_TAG = "snapshot"
 
@@ -52,5 +63,8 @@ class Constants {
         ]
     ]
 
+    /**
+     * Default artifact NPM tag for non-release build. Default value is {@code "snapshot"}.
+     */
     static String DEFAULT_NPM_NON_RELEASE_TAG = 'snapshot'
 }

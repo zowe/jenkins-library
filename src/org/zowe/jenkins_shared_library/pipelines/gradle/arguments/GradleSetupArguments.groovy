@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Arguments available to the
- * {@link org.zowe.jenkins_shared_library.pipelines.Gradle.GradlePipeline#setup(org.zowe.jenkins_shared_library.pipelines.Gradle.arguments.GradleSetupArguments)}
+ * {@link jenkins_shared_library.pipelines.Gradle.GradlePipeline#setupGradle(jenkins_shared_library.pipelines.Gradle.arguments.GradleSetupArguments)}
  * method.
  */
 class GradleSetupArguments extends GenericSetupArguments {

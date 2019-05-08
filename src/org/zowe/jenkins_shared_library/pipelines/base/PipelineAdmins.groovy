@@ -15,6 +15,21 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.PipelineAdmin
 
 /**
  * Stores the list of admins for a pipeline.
+ *
+ * @Example
+ * <pre>
+ *     def admins = new PipelineAdmins()
+ *     // add some admins
+ *     admins.add('adminA', 'admin-b', 'another-admin')
+ *     // show "We have 3 admins."
+ *     echo "We have ${admins.size()} admins."
+ *     // show admin name
+ *     echo "another-admin's name is ${admins.get('another-admin').name}."
+ *     // get email list
+ *     def emailTo = admins.getEmailList()
+ *     // emailTo should be a string similar to:
+ *     // "adminA@gmail.com,admin-b@hotmail.com,another-admin@ibm.com"
+ * </pre>
  */
 class PipelineAdmins {
     /**
@@ -38,6 +53,7 @@ class PipelineAdmins {
 
     /**
      * Get a particular admin from the User ID.
+     *
      * @param id The User ID to lookup
      * @return An object representing the admin user or null if none was found.
      */
@@ -46,11 +62,11 @@ class PipelineAdmins {
     }
 
     /**
-     * Gets the admin emails as a CC list.
-     * @return a CC list of admin emails.
+     * Gets the number of admins defined.
+     * @return The number of admins defined
      */
-    String getCCList() {
-        _getEmailList("cc")
+    int getSize() {
+        return _admins.size()
     }
 
     /**
@@ -71,22 +87,6 @@ class PipelineAdmins {
     }
 
     /**
-     * Gets the admin emails as a TO list.
-     * @return a TO list of admin emails.
-     */
-    String getEmailList() {
-        return _getEmailList()
-    }
-
-    /**
-     * Gets the number of admins defined.
-     * @return The number of admins defined
-     */
-    int getSize() {
-        return _admins.size()
-    }
-
-    /**
      * Generic method to formulate the syntax of the email list.
      * @param prefix The prefix for the email. If specified this will be present as {@code "$prefix:$email"}
      *               for each email address.
@@ -101,5 +101,21 @@ class PipelineAdmins {
         }
 
         return emailList
+    }
+
+    /**
+     * Gets the admin emails as a TO list.
+     * @return a TO list of admin emails.
+     */
+    String getEmailList() {
+        return _getEmailList()
+    }
+
+    /**
+     * Gets the admin emails as a CC list.
+     * @return a CC list of admin emails.
+     */
+    String getCCList() {
+        _getEmailList("cc")
     }
 }

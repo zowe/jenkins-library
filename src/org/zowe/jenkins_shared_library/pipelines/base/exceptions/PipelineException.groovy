@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.base.exceptions
 
 /**
- * An exception that can be thrown from the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class
+ * An exception that can be thrown from the {@link jenkins_shared_library.pipelines.base.Pipeline} class
  */
 class PipelineException extends Exception {
     /**

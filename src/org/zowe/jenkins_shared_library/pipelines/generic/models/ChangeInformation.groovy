@@ -20,14 +20,16 @@ class ChangeInformation {
     final boolean isPullRequest
 
     /**
-     * The branch name reported by the build. If it's a pull request, it will be PR-<id>.
+     * The branch name reported by the build.
+     *
+     * <p>If it's a pull request, it will be PR-&lt;id&gt;.</p>
      */
     final String branchName
 
     /**
      * The base branch for a pull request.
      *
-     * If the PR is merging branch "test" into "master", this value will be "master".
+     * <p>If the PR is merging branch "test" into "master", this value will be "master".</p>
      *
      * <p>This property will be null if {@link #isPullRequest} is false.</p>
      */
@@ -36,7 +38,7 @@ class ChangeInformation {
     /**
      * The change branch for a pull request.
      *
-     * If the PR is merging branch "test" into "master", this value will be "test".
+     * <p>If the PR is merging branch "test" into "master", this value will be "test".</p>
      *
      * <p>This property will be null if {@link #isPullRequest} is false.</p>
      */

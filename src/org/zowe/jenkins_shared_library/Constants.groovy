@@ -17,12 +17,16 @@ import java.util.logging.Level
  */
 class Constants {
     /**
-     * Default logging level. Default value is {@code Level.INFO}.
+     * Default logging level.
+     *
+     * @Default {@code Level.INFO}
      */
     static Level DEFAULT_LOGGING_LEVEL = Level.INFO
 
     /**
-     * Repository name of this jenkins library. Default value is {@code zowe/jenkins-library}.
+     * Repository name of this jenkins library.
+     *
+     * @Default {@code "zowe/jenkins-library"}
      */
     static String REPOSITORY_JENKINS_LIBRARY = 'zowe/jenkins-library'
 }

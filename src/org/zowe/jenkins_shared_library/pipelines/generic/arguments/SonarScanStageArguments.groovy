@@ -28,17 +28,21 @@ class SonarScanStageArguments extends GenericStageArguments {
     /**
      * The name of the SonarQube Scan step.
      *
-     * @default {@code ""}
+     * @default {@code (empty)}
      */
     String name = ""
 
     /**
-     * SonarQube scanner tool name defined in Jenkins
+     * SonarQube scanner tool name defined in Jenkins.
+     *
+     * @Note This argument is required if {@link #operation} is not provided.
      */
     String scannerTool
 
     /**
      * SonarQube scanner server name defined in Jenkins
+     *
+     * @Note This argument is required if {@link #operation} is not provided.
      */
     String scannerServer
 }

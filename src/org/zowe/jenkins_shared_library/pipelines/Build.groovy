@@ -17,31 +17,44 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4
 import org.zowe.jenkins_shared_library.Constants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
 
+/**
+ * This class extends Jenkins current build functions.
+ *
+ * @Example
+ * <pre>
+ *     // init Build instance
+ *     def build = new Build(currentBuild)
+ *     // show change summary
+ *     echo build.getChangeSummary()
+ *     // show test summary
+ *     echo build.getTestSummary()
+ * </pre>
+ */
 class Build {
     /**
      * Reference to the Jenkins build variable.
      */
-    def build
+    def _build
 
     /**
      * Constructs the class.
      *
      * @Example
      * <pre>
-     * def o = new Build(currentBuild)
+     * def build = new Build(currentBuild)
      * </pre>
      *
      * @param build    Normally should be "currentBuild" (org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper)
      */
     Build(def build) {
-        this.build = build
+        this._build = build
     }
 
     /**
      * Render list of changes for a build.
      *
-     * <p>This method will omit any changes reported from the shared pipeline library. These changes
-     * aren't relevant to dependent project builds so they provide no value to include.</p>
+     * @Note This method will omit any changes reported from the shared pipeline library. These changes
+     * aren't relevant to dependent project builds so they provide no value to include.
      *
      * @return An HTML string that represents list of changes
      */
@@ -49,7 +62,7 @@ class Build {
         String changeString = ""
 
         // Loop through each change present in the change set
-        for (def changeLog : this.build.changeSets) {
+        for (def changeLog : this._build.changeSets) {
             def browser = changeLog.browser
 
             // Add each item in the change set to the list
@@ -83,16 +96,16 @@ class Build {
     /**
      * Gets a test summary string.
      *
-     * <p>This method was created using {@literal @NonCPS} because some of the operations performed cannot be
+     * @Note This method was created using {@literal @NonCPS} because some of the operations performed cannot be
      * serialized. The {@literal @NonCPS} annotation tells jenkins to not save the variable state of this
      * function on shutdown. Failure to run in this mode causes a java.io.NotSerializableException
-     * in this method.</p>
+     * in this method.
      *
      * @return An HTML string of test results.
      */
     @NonCPS
     String getTestSummary() {
-        def testResultAction = this.build.rawBuild.getAction(AbstractTestResultAction.class)
+        def testResultAction = this._build.rawBuild.getAction(AbstractTestResultAction.class)
         def text = "<h3>Test Results</h3>"
 
         if (testResultAction != null) {

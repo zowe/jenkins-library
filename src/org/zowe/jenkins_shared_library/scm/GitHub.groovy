@@ -48,27 +48,37 @@ class GitHub {
     def steps
 
     /**
-     * GitHub domain name. Default value is {@code "github.com"}.
+     * GitHub domain name.
+     *
+     * @Default {@code "github.com"}
      */
     public static final String GITHUB_DOMAIN = 'github.com'
 
     /**
-     * GitHub domain name for downloading user content. Default value is {@code "raw.githubusercontent.com"}.
+     * GitHub domain name for downloading user content.
+     *
+     * @Default {@code "raw.githubusercontent.com"}
      */
     public static final String GITHUB_DOWNLOAD_DOMAIN = 'raw.githubusercontent.com'
 
     /**
-     * GitHub domain name for api calls. Default value is {@code "api.github.com"}.
+     * GitHub domain name for api calls.
+     *
+     * @Default {@code "api.github.com"}
      */
     public static final String GITHUB_API_DOMAIN = 'api.github.com'
 
     /**
-     * Default branch name. Default value is {@code "master"}.
+     * Default branch name.
+     *
+     * @Default {@code "master"}
      */
     public static final String DEFAULT_BRANCH = 'master'
 
     /**
-     * Default remote name. Default value is {@code "origin"}.
+     * Default remote name.
+     *
+     * @Default {@code "origin"}
      */
     public static final String DEFAULT_REMOTE = 'origin'
 
@@ -375,7 +385,7 @@ class GitHub {
     /**
      * Commit all the changes.
      *
-     * @see {@link #commit(Map)}
+     * @see #commit(Map)
      */
     void commit(String message) {
         this.commit(['message': message])

@@ -48,7 +48,7 @@ class StageTimeout {
      *
      * @param value The StageTimeout map to construct
      * @return A new timeout object representing the operation
-     * @see #add(StageTimeout)
+     * @see #add(jenkins_shared_library.pipelines.base.models.StageTimeout)
      */
     StageTimeout add(Map value) {
         return add(new StageTimeout(value))
@@ -72,7 +72,7 @@ class StageTimeout {
      *
      * @param value The StageTimeout map to construct
      * @return A new timeout object representing the operation
-     * @see #subtract(StageTimeout)
+     * @see #subtract(jenkins_shared_library.pipelines.base.models.StageTimeout)
      */
     StageTimeout subtract(Map value) {
         return subtract(new StageTimeout(value))

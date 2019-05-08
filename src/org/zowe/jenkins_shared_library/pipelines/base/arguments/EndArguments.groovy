@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.base.arguments
 
 /**
- * Arguments available to the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#endBase(EndArguments)}
+ * Arguments available to the {@link jenkins_shared_library.pipelines.base.Pipeline#endBase(jenkins_shared_library.pipelines.base.arguments.EndArguments)}
  * method.
  */
 class EndArguments {

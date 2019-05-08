@@ -28,8 +28,8 @@ import org.zowe.jenkins_shared_library.pipelines.nodejs.models.*
 import org.zowe.jenkins_shared_library.scm.ScmException
 
 /**
- * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline} class.
- * This class adds more advanced functionality to build, test, and deploy your application.
+ * Extends the functionality available in the {@link jenkins_shared_library.pipelines.generic.GenericPipeline} class.
+ * This class adds more advanced functionality to build, test, and deploy your JavaScript/TypeScript application.
  *
  * <dl><dt><b>Required Plugins:</b></dt><dd>
  * The following plugins are required:
@@ -51,13 +51,9 @@ import org.zowe.jenkins_shared_library.scm.ScmException
  *     // Set your config up before calling setup
  *     pipeline.admins.add("userid1", "userid2", "userid3")
  *
+ *     // We have extra branches which can perform release.
  *     pipeline.branches.addMap([
- *         [name: "master", tag: "daily", prerelease: "alpha"],
- *         [name: "beta", tag: "beta", prerelease: "beta"],
- *         [name: "dummy", tag: "dummy", autoDeploy: true],
- *         [name: "latest", tag: "latest"],
- *         [name: "lts-incremental", tag: "lts-incremental", level: SemverLevel.MINOR],
- *         [name: "lts-stable", tag: "lts-stable", level: SemverLevel.PATCH]
+ *         [name: "lts-stable", allowRelease: true, allowFormalRelease: true, isProtected: true, npmTag: "lts-stable"]
  *     ])
  *
  *     // MUST BE CALLED FIRST
@@ -96,6 +92,9 @@ import org.zowe.jenkins_shared_library.scm.ScmException
  *     // Run a test
  *     pipeline.test()    // Provide required parameters in your pipeline
  *
+ *     // Run a SonarQube code scan
+ *     pipeline.sonarScan()
+ *
  *     // publish artifact to artifactory
  *     pipeline.publish() // Provide required parameters in your pipeline
  *
@@ -115,19 +114,16 @@ import org.zowe.jenkins_shared_library.scm.ScmException
 class NodeJSPipeline extends GenericPipeline {
     /**
      * A map of branches.
-     *
-     * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
-     * is to prevent issues with publishing.</p>
      */
     protected Branches<NodeJSBranch> branches = new Branches<>(NodeJSBranch.class)
 
     /**
-     * Artifactory instance
+     * Registry for publishing npm package
      */
     Registry publishRegistry
 
     /**
-     * Artifactory instances for npm install registries
+     * Registries for installing npm dependencies
      */
     List<Registry> installRegistries = []
 
@@ -192,7 +188,7 @@ class NodeJSPipeline extends GenericPipeline {
     }
 
     /**
-     * Try to login to npm publish registry
+     * Login to npm publish registry
      */
     void loginToPublishRegistry() {
         // try to determin registry again if not presented
@@ -213,7 +209,7 @@ class NodeJSPipeline extends GenericPipeline {
     }
 
     /**
-     * Try to login to npm install registries
+     * Login to npm install registries
      */
     void loginToInstallRegistries() {
         for (Registry registry : installRegistries) {
@@ -228,6 +224,13 @@ class NodeJSPipeline extends GenericPipeline {
     /**
      * Calls {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric()} to setup the build.
      *
+     * <p>This method adds extra initialization steps to the default setup "Init Generic Pipeline"
+     * stage. The initialization will try to extract package information, like name, version, etc
+     * from package.json. And if there is publish registry defined, it will try to run #init() on
+     * the Registry instance. Similar to install registries. If there are install registries defined,
+     * and credential(s) are provided, the initliazation will try to login to the registries so we
+     * can perform npm install without issues.</p>
+     *
      * @Stages
      * This method adds one stage to the build:
      *
@@ -235,26 +238,51 @@ class NodeJSPipeline extends GenericPipeline {
      *     <dt><b>Install Node Package Dependencies</b></dt>
      *     <dd>
      *         <p>
-     *             This step will install all your package dependencies via `npm install`. Prior to install
-     *             the stage will login to any registries specified in the {@link #registryConfig} array. On
-     *             exit, the step will try to logout of the registries specified in {@link #registryConfig}.
+     *             This step will install all your package dependencies via {@code npm install} or {@code npm ci}. Prior to install
+     *             the stage will login to any registries specified in the {@link #installRegistries} array.
      *         </p>
      *         <dl>
      *             <dt><b>Exceptions:</b></dt>
      *             <dd>
      *                 <dl>
      *                     <dt><b>{@link NodeJSPipelineException}</b></dt>
-     *                     <dd>
-     *                         When two default registries, a registry that omits a url, are specified.
-     *                     </dd>
-     *                     <dd>
-     *                         When a login to a registry fails. <b>Note:</b> Failure to logout of a
-     *                         registry will not result in a failed build.
-     *                     </dd>
+     *                     <dd>When two default registries, a registry that omits a url, are specified.</dd>
+     *                     <dd>When a login to a registry fails. <b>Note:</b> Failure to logout of a
+     *                         registry will not result in a failed build.</dd>
      *                     <dt><b>{@link Exception}</b></dt>
-     *                     <dd>
-     *                         When a failure to install dependencies occurs.
-     *                     </dd>
+     *                     <dd>When a failure to install dependencies occurs.</dd>
+     *                     <dd>When the git folder is not clean after npm install if arguments.exitIfFolderNotClean is true.</dd>
+     *                 </dl>
+     *             </dd>
+     *         </dl>
+     *     </dd>
+     *     <dt><b>Lint</b></dt>
+     *     <dd>
+     *         <p>
+     *             This step will run {@code npm run lint} if the command exists. You can skip this
+     *             stage by setting arguments.disableLint to true.
+     *         </p>
+     *         <dl>
+     *             <dt><b>Exceptions:</b></dt>
+     *             <dd>
+     *                 <dl>
+     *                     <dt><b>{@link Exception}</b></dt>
+     *                     <dd>When the linting failed.</dd>
+     *                 </dl>
+     *             </dd>
+     *         </dl>
+     *     </dd>
+     *     <dt><b>Audit</b></dt>
+     *     <dd>
+     *         <p>
+     *             This step will perform dependency vulnerability audit with command {@code npm audit}.
+     *         </p>
+     *         <dl>
+     *             <dt><b>Exceptions:</b></dt>
+     *             <dd>
+     *                 <dl>
+     *                     <dt><b>{@link Exception}</b></dt>
+     *                     <dd>When the audit check failed. Set arguments.ignoreAuditFailure to true if you want to ignore the audit error.</dd>
      *                 </dl>
      *             </dd>
      *         </dl>
@@ -421,8 +449,6 @@ ${gitStatus}
      * method and will have the following additional operations. <ul>
      *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments#operation} is not
      *     provided, the stage will default to executing {@code npm run build}.</li>
-     *     <li>After the operation is complete, the stage will use npm pack to generate an
-     *     installable artifact. This artifact is archived to the build for later access.</li>
      * </ul></p>
      *
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
@@ -493,40 +519,19 @@ ${gitStatus}
     /**
      * Publish a Node JS package.
      *
-     * @Stages
-     * This will extend the stages provided by the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#deployGeneric(java.util.Map, java.util.Map)}
-     * method.
+     * <p>Arguments passed to this function will map to the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PublishStageArguments} class.</p>
      *
-     * <dl>
-     *     <dt><b>Deploy</b></dt>
-     *     <dd>
-     *         <p>In a Node JS Pipeline, this stage will always be executed on a protected branch.
-     *         This stage will execute after the version bump has been completed and is tasked
-     *         with doing an {@code npm publish} to the publish registry.</p>
+     * <p>The stage will be created with the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method and will
+     * have the following additional operations: <ul>
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PublishStageArguments#operation} is not
+     *     provided, this method will default to executing {@code npm publish} with defined npmTag of the branch.</li>
+     * </ul>
+     * </p>
      *
-     *         <p>The publish registry is determined by looking in <b>package.json</b> for the
-     *         publishConfig.registry property. If this is absent, the deploy will fail. After the
-     *         registry is loaded, the pipeline will attempt to login using the specified
-     *         {@link #publishConfig}.</p>
-     *
-     *         <p>Prior to executing the deploy, changes will be pushed to
-     *         the remote server. If the pipeline is behind the branch's remote, the push will
-     *         fail and the deploy will stop. After changes are successfully pushed, the npm
-     *         publish command will be executed with the {@link NodeJSBranch#tag} specified.
-     *         On successful deploy, an email will be sent out to the {@link #admins}.</p>
-     *
-     *         <p>Note that the local npmrc configuration file will not affect publishing in any way.
-     *         This step only considers the configuration parameters provided in {@link #publishConfig}.</p>
-     *
-     *         <dl><dt><b>Exceptions:</b></dt><dd>
-     *         <dl>
-     *             <dt><b>{@link IllegalArgumentException}</b></dt>
-     *             <dd>When versionArguments.operation is provided. This is an invalid parameter.</dd>
-     *         </dl></dd>
-     *     </dd>
-     * </dl>
-     *
-     * @param arguments The arguments for the Deploy stage.
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PublishStageArguments} used to define
+     *                  the stage.
      */
     protected void publishNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
@@ -540,9 +545,12 @@ ${gitStatus}
                 Boolean _isPerformingRelease = this.isPerformingRelease()
 
                 NodeJSBranch branchProps = branches.getByPattern(changeInfo.branchName)
-                String npmTag = Constants.DEFAULT_NPM_NON_RELEASE_TAG
+                String npmTag = ''
                 if (branchProps && _isReleaseBranch && _isPerformingRelease) {
                     npmTag = branchProps.getNpmTag()
+                }
+                if (!npmTag) {
+                    npmTag = Constants.DEFAULT_NPM_NON_RELEASE_TAG
                 }
 
                 steps.echo "Publishing package v${steps.env['PUBLISH_VERSION']} as tag ${npmTag}"
@@ -571,7 +579,10 @@ ${gitStatus}
     }
 
     /**
-     * Bump patch level version
+     * This method overrides and perform version bump on JavaScript project.
+     *
+     * <p>By default, the {@code version} defined in {@code package.json} will be bumped with command
+     * {@code npm version patch}.</p>
      */
     @Override
     protected void bumpVersion() {
@@ -585,13 +596,5 @@ ${gitStatus}
             throw new NodeJSPipelineException('Unable to determine branch name to for version bump.')
         }
         publishRegistry.version(this.github, branch, 'patch')
-    }
-
-    /**
-     * Signal that no more stages will be added and begin pipeline execution.
-     */
-    @Override
-    void end(Map options = [:]) {
-        super.endGeneric(options)
     }
 }

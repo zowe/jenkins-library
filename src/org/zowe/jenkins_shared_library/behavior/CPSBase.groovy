@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library.behavior
 /**
  * Base class.
  *
- * @see {@link CPSGrandchild}
+ * @see CPSGrandchild
  */
 class CPSBase {
     def steps

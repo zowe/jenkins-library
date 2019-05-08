@@ -28,16 +28,18 @@ class PackagingStageArguments extends GenericStageArguments {
     /**
      * The name of the package step.
      *
-     * No special characters allowed, only letters and numbers.
+     * @Note No special characters allowed, only letters and numbers.
      *
      * Example: explorer-jes
      */
     String name
 
     /**
-     * Local workspace folder
+     * Local workspace folder.
+     *
+     * @Default {@link jenkins_shared_library.package.Pax#DEFAULT_LOCAL_WORKSPACE}
      */
-    String localWorkspace = 'pax-workspace'
+    String localWorkspace
 
     /**
      * Remote workspace folder

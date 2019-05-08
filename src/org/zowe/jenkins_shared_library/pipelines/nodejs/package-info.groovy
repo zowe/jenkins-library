@@ -9,10 +9,10 @@
  */
 
 /**
- * Classes that extend the capability of a {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}.
+ * Classes that extend the capability of a {@link jenkins_shared_library.pipelines.generic.GenericPipeline}.
  *
- * <p>The main class of importance in this package is the {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline}
+ * <p>The main class of importance in this package is the {@link jenkins_shared_library.pipelines.nodejs.NodeJSPipeline}
  * class. This class provides various methods to create a scripted Node JS Jenkins pipeline. The
- * other classes in this package provide supporting code for the main GenericPipeline class.</p>
+ * other classes in this package provide supporting code for the main NodeJSPipeline class.</p>
  */
 package org.zowe.jenkins_shared_library.pipelines.nodejs

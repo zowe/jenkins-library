@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 import org.zowe.jenkins_shared_library.pipelines.base.arguments.StageArguments
 
 /**
- * Arguments available to stage creation methods present in {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}
+ * Arguments available to stage creation methods present in {@link jenkins_shared_library.pipelines.generic.GenericPipeline}
  */
 class GenericStageArguments extends StageArguments{
     /**

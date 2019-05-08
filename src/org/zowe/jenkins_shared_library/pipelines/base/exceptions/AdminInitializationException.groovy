@@ -12,7 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.base.exceptions
 
 /**
  * An exception that is thrown when an issue has occurred while creating a
- * {@link org.zowe.jenkins_shared_library.pipelines.base.models.PipelineAdmin}.
+ * {@link jenkins_shared_library.pipelines.base.models.PipelineAdmin}.
  */
 class AdminInitializationException extends PipelineException {
     /**

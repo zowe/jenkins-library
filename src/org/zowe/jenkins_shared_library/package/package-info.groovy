@@ -9,6 +9,6 @@
  */
 
 /**
- * Packages that give basic utility methods to work with packages like PAX.
+ * Package that give basic utility methods to work with packages like PAX.
  */
 package org.zowe.jenkins_shared_library.package

@@ -18,7 +18,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
  */
 class Stage {
     /**
-     * The arguments passed into the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#createStage(org.zowe.jenkins_shared_library.pipelines.base.arguments.StageArguments)}
+     * The arguments passed into the {@link jenkins_shared_library.pipelines.base.Pipeline#createStage(jenkins_shared_library.pipelines.base.arguments.StageArguments)}
      * method.
      */
     StageArguments args

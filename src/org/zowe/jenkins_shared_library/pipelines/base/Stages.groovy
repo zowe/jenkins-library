@@ -16,10 +16,8 @@ import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
 /**
  * Create the various stages of a pipeline.
  *
- * <h4>Creating a generic pipeline</h4>
- *
+ * @Example
  * <pre>
- * {@code
  *     Stages stages = new Stages()
  *
  *     // Add some stages
@@ -33,7 +31,6 @@ import org.zowe.jenkins_shared_library.pipelines.base.exceptions.*
  *
  *     // Stage 1 will be executed
  *     // then Stage 2 will be executed
- * }
  * </pre>
  */
 final class Stages {

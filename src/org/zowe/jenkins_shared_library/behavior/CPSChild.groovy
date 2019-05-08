@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library.behavior
 /**
  * Child class.
  *
- * @see {@link CPSGrandchild}
+ * @see CPSGrandchild
  */
 class CPSChild extends CPSBase {
     CPSChild(steps) {

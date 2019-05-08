@@ -15,7 +15,7 @@ import com.cloudbees.groovy.cps.NonCPS
 /**
  * Child class.
  *
- * @see {@link NonCPSGrandchild}
+ * @see NonCPSGrandchild
  */
 class NonCPSChild extends NonCPSBase {
     NonCPSChild(steps) {

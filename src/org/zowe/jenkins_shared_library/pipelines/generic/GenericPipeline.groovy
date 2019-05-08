@@ -28,21 +28,25 @@ import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Utils
 
 /**
- * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
+ * Extends the functionality available in the {@link jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
  * building and testing your application.
  *
- * A typical pipeline should include these stage in sequence:
- *
- * - build       : build and generate artifact locally.
- * - test        : test the artifact.
- * - publish     : publish the artifact to Artifactory. If the build is a release, we publish the artifact to release folder.
- * - release     : if the build is a release, we tag the GitHub. If the build is a formal release, we also bump release on code base.
+ * <p>A typical pipeline should include these stage in sequence:
+ * <ul>
+ * <li>build       : build and generate artifact locally.</li>
+ * <li>test        : test the artifact.</li>
+ * <li>sonarScan   : SonarQube static code scanning.</li>
+ * <li>packaging   : package/create artifact.</li>
+ * <li>publish     : publish the artifact to Artifactory. If the build is a release, we publish the artifact to release folder.</li>
+ * <li>release     : if the build is a release, we tag the GitHub. If the build is a formal release, we also bump release on code base.</li>
+ * </ul>
+ * </p>
  *
  * <dl><dt><b>Required Plugins:</b></dt><dd>
  * The following plugins are required:
  *
  * <ul>
- *     <li>All plugins listed at {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}</li>
+ *     <li>All plugins listed at {@link jenkins_shared_library.pipelines.base.Pipeline}</li>
  *     <li><a href="https://plugins.jenkins.io/credentials-binding">Credentials Binding</a></li>
  *     <li><a href="https://plugins.jenkins.io/junit">JUnit</a></li>
  *     <li><a href="https://plugins.jenkins.io/htmlpublisher">HTML Publisher</a></li>
@@ -60,11 +64,13 @@ import org.zowe.jenkins_shared_library.Utils
  *     // Set your config up before calling setup
  *     pipeline.admins.add("userid1", "userid2", "userid3")
  *
- *     // Define some protected branches
+ *     // update branches settings if we have different settings from #defineDefaultBranches()
  *     pipeline.branches.addMap([
- *       [name: "master", isProtected: true, buildHistory: 20],
- *       [name: "beta", isProtected: true, buildHistory: 20],
- *       [name: "rc", isProtected: true, buildHistory: 20]
+ *         [
+ *             name         : 'lts-incremental',
+ *             isProtected  : true,
+ *             buildHistory : 20,
+ *         ]
  *     ])
  *
  *     // MUST BE CALLED FIRST
@@ -72,7 +78,7 @@ import org.zowe.jenkins_shared_library.Utils
  *         // Define the git configuration
  *         github: [
  *             email: 'git-user-email@example.com',
- *             credentialsId: 'git-user-credentials-id'
+ *             usernamePasswordCredential: 'git-user-credentials-id'
  *         ],
  *         // Define the artifactory configuration
  *         artifactory: [
@@ -105,14 +111,13 @@ class GenericPipeline extends Pipeline {
 
     /**
      * A map of branches.
-     *
-     * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
-     * is to prevent issues with publishing.</p>
      */
     protected Branches<GenericBranch> branches = new Branches<>(GenericBranch.class)
 
     /**
      * Temporary upload spec name
+     *
+     * @default {@code ".tmp-pipeline-publish-spec.json"}
      */
     protected static final String temporaryUploadSpecName = '.tmp-pipeline-publish-spec.json'
 
@@ -122,33 +127,74 @@ class GenericPipeline extends Pipeline {
     final ChangeInformation changeInfo
 
     /**
-     * Package information extracted from project
+     * Package information extracted from project.
+     *
+     * <p>Based on type of project, the keys included could be vary.</p>
+     *
+     * @Note These keys should exist all the time, otherwise exceptions may be thrown for missing
+     * values.
+     * <ul>
+     * <li>- name</li>
+     * <li>- version</li>
+     * <li>- versionTrunks</li>
+     * </ul>
      */
     Map packageInfo
 
     /**
-     * Publishing version pattern
+     * The full version pattern when the pipeline try to publish artifacts.
      *
-     * Example: 1.2.3-snapshot-23-20190101010101
+     * @Note Allowed macros are same as macros defined in {@link #artifactoryUploadTargetPath}.
+     *
+     * @Default {@code "&#123;version&#125;&#123;prerelease&#125;&#123;branchtag&#125;&#123;buildnumber&#125;&#123;timestamp&#125;"}
+     *
+     * @Example With the default pattern, the pipeline may interpret the targe version string as
+     * {@code "1.2.3-snapshot-23-20190101010101"}.
      */
     String publishTargetVersion = '{version}{prerelease}{branchtag}{buildnumber}{timestamp}'
 
     /**
-     * Default artifactory upload path
+     * Artifactory upload path pattern when the pipeline try to publish artifacts.
      *
-     * Allowed macros:
+     * @Note Allowed macros:
+     * <ul>
+     * <li>- repository: Artifactory repository name where the artifact will be published.</li>
+     * <li>- package: value defined by pipeline.setPackage(name)</li>
+     * <li>- subproject: optional value passed when parsing the path string</li>
+     * <li>- version: the current version</li>
+     * <li>- prerelease: pre-release string, like rc1, beta1, etc.</li>
+     * <li>- branchtag: branch tag</li>
+     * <li>- branchtag-uc: branch tag but in UPPER case.</li>
+     * <li>- timestamp: timestamp in yyyyMMddHHmmss format</li>
+     * <li>- buildnumber: current build number</li>
+     * </ul>
      *
-     * - package: value defined by pipeline.setPackage(name)
-     * - subproject: optional value passed when parsing the path string
-     * - version: the current version
-     * - branchtag: branch tag
-     * - timestamp: timestamp in yyyyMMddHHmmss format
-     * - buildnumber: current build number
+     * @Note If the artifactory repository is a Maven repository, the upload may fail if the
+     * {@code branchtag} is lower case characters.
+     *
+     * @Default {@code "&#123;repository&#125;/&#123;package&#125;&#123;subproject&#125;/&#123;version&#125;&#123;branchtag-uc&#125;/"}
+     *
+     * @Example With the default pattern, the pipeline may interpret the targe upload path as
+     * {@code "lib-snapshot-local/org/zowe/my-project/1.2.3-STAGINGS-TLS/"}.
      */
     String artifactoryUploadTargetPath = '{repository}/{package}{subproject}/{version}{branchtag-uc}/'
 
     /**
-     * Default artifactory file name pattern
+     * Artifactory file name pattern when the pipeline try to publish artifacts.
+     *
+     * @Note Allowed macros are same as macros defined in {@link #artifactoryUploadTargetPath} and with
+     * these extras.
+     * <ul>
+     * <li>- filename: the base file name extracted from original artifact.</li>
+     * <li>- fileext: the file extension extracted from original artifact.</li>
+     * <li>- publishversion: parsed string of {@link #publishTargetVersion}</li>
+     * </ul>
+     * </p>
+     *
+     * @Default {@code "&#123;filename&#125;-&#123;publishversion&#125;&#123;fileext&#125;"}
+     *
+     * @Example With the default pattern, if we want to upload {@code my-artifact.zip}, the pipeline
+     * may interpret the targe file name as {@code "my-artifact-1.2.3-snapshot-23-20190101010101.zip"}.
      */
     String artifactoryUploadTargetFile = '{filename}-{publishversion}{fileext}'
 
@@ -231,7 +277,10 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * If current pipeline branch can do a release
+     * If current pipeline branch can do a release.
+     *
+     * @Note For regular Pipeline build, since we cannot determin branch name easily, this method
+     * will always return true to allow release.
      *
      * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return               true or false
@@ -258,6 +307,9 @@ class GenericPipeline extends Pipeline {
     /**
      * If current pipeline branch can do a formal release
      *
+     * @Note For regular Pipeline build, since we cannot determin branch name easily, this method
+     * will always return true to allow formal release.
+     *
      * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return               true or false
      */
@@ -281,7 +333,8 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * If current build is a release build
+     * If current build is a release build based on the build parameter which starts the build.
+     *
      * @return            true or false
      */
     protected Boolean isPerformingRelease() {
@@ -293,11 +346,16 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * If current build is a release build
-     * @return            true or false
+     * The pre-release string parameter of current build.
+     *
+     * @Note This value will be empty if the build is not a release build (build parameter
+     * {@link #BUILD_PARAMETER_PERFORM_RELEASE} is not set).
+     *
+     * @return            the pre-release string, or empty if not set.
      */
     protected String getPreReleaseString() {
-        if (steps && steps.params && steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]) {
+        if (steps && steps.params && steps.params[BUILD_PARAMETER_PERFORM_RELEASE] &&
+            steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]) {
             return steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]
         } else {
             return ''
@@ -306,6 +364,7 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Get branch tag
+     *
      * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return            tag of the branch
      */
@@ -333,6 +392,12 @@ class GenericPipeline extends Pipeline {
         return Utils.sanitizeBranchName(result)
     }
 
+    /**
+     * Return map of build string macros. Those macros will be used to parse build string.
+     *
+     * @param  macros        default value of macros.
+     * @return               updated macro list.
+     */
     protected Map<String, String> getBuildStringMacros(Map<String, String> macros = [:]) {
         Boolean _isReleaseBranch = this.isReleaseBranch()
         Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
@@ -406,7 +471,7 @@ class GenericPipeline extends Pipeline {
         }
 
         if (!macros.containsKey('publishversion')) {
-            macros['publishversion'] = parseBuildStringMacros(this.publishTargetVersion, macros)
+            macros['publishversion'] = _parseString(this.publishTargetVersion, macros)
         }
 
         macros['branchtag-uc'] = macros['branchtag'] ? macros['branchtag'].toUpperCase() : ''
@@ -417,7 +482,14 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Extract macro of "filename" and "fileext" for artifactory upload file
+     * Extract macro of "filename" and "fileext" for artifactory upload file.
+     *
+     * @Note The {@code filename} and {@code fileext} extracted from the file path does not include
+     * path to the file and version information.
+     *
+     * <p>For example, if we have a local artifact {@code "./path/to/my-artifact-1.2.3-snapshot.zip"}, then
+     * the expected macros extracted are: {@code [filename: "my-artifact", fileext: "zip"]}</p>
+     *
      * @param  file     original file name
      * @return          macro map
      */
@@ -453,48 +525,26 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Parse Artifactory upload target path
+     * Parse a string using macros Map.
      *
-     * @param  target     target path string
+     * <p>Macros wrap with curly brackets will be replace in the string. For example, all occurence
+     * of {@code &#123;repository&#125;} in the string will be replaced with value of macro key
+     * {@code repository}.</p>
+     *
+     * @param  str        string to parse
      * @param  macros     map of macros to replace
-     * @return           return target path
+     * @return            parsed string
      */
-    protected String parseBuildStringMacros(String target, Map<String, String> macros) {
+    protected String _parseString(String str, Map<String, String> macros) {
         for (String m : macros) {
-            target = target.replace("{${m.key}}", m.value)
+            str = str.replace("{${m.key}}", m.value)
         }
 
-        return target
+        return str
     }
 
     /**
-     * Replace macro of "filename" and "fileext" for artifactory upload file
-     * @param  file     original file name
-     * @return          target file
-     */
-    protected String getArtifactoryUploadTargetFile(String file) {
-        String pattern = artifactoryUploadTargetFile
-        String fileName
-        String fileExt
-
-        String baseName = file.lastIndexOf('/').with {
-            it != -1 ? file[(it + 1)..-1] : file
-        }
-        Integer idx = baseName.lastIndexOf('.')
-        if (idx != -1) {
-            fileName = baseName[0..(idx - 1)]
-            fileExt = baseName[idx..-1]
-        } else {
-            fileName = baseName
-            fileExt = ''
-        }
-
-        return pattern.replace('{filename}', fileName)
-                      .replace('{fileext}', fileExt)
-    }
-
-    /**
-     * Calls {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#setupBase()} to setup the build.
+     * Calls {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupArguments)} to setup the build.
      *
      * @Stages
      * This method adds 2 stages to the build:
@@ -502,14 +552,21 @@ class GenericPipeline extends Pipeline {
      * <dl>
      *     <dt><b>Check for CI Skip</b></dt>
      *     <dd>
-     *         Checks that the build commit doesn't contain the CI Skip indicator. If the pipeline finds
+     *         Checks that the build commit doesn't contain the CI Skip {@link jenkins_shared_library.pipelines.Constants#CI_SKIP} indicator. If the pipeline finds
      *         the skip commit, all remaining steps (except those explicitly set to ignore this condition)
      *         will also be skipped. The build will also be marked as not built in this scenario.
+     *     </dd>
+     *     <dt><b>Init Generic Pipeline</b></dt>
+     *     <dd>
+     *         This initialization stage will run {@code #init()} methods of dependended instances,
+     *         for example, GitHub, JFrogArtifactory, Pax etc. This step is placed in a stage because
+     *         some initlialization requires code checkout. You can specify {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments#extraInit} to extend the
+     *         default initialization.
      *     </dd>
      * </dl>
      *
      * @Note This method was intended to be called {@code setup} but had to be named
-     * {@code setupGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+     * {@code setupGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
      */
     void setupGeneric(GenericSetupArguments arguments) {
         // Call setup from the super class
@@ -552,7 +609,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Initialize the pipeline.
      *
-     * @param arguments A map that can be instantiated as {@link GenericSetupArguments}
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments}
      * @see #setupGeneric(GenericSetupArguments)
      */
     void setupGeneric(Map arguments = [:]) {
@@ -561,7 +618,8 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param arguments A map that can be instantiated as {@link SetupArguments}
+     *
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments}
      */
     @Override
     protected void setup(Map arguments = [:]) {
@@ -571,7 +629,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Signal that no more stages will be added and begin pipeline execution.
      *
-     * @param options Options to send to {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#endBase(java.util.Map)}
+     * @param options Options to send to {@link jenkins_shared_library.pipelines.base.Pipeline#endBase(java.util.Map)}
      */
     void endGeneric(Map options = [:]) {
         // can we do a release? if so, allow a release parameter
@@ -596,7 +654,7 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo end method, should be overridden by inherited classes
-     * @param args A map that can be instantiated as {@link EndArguments}.
+     * @param args A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.EndArguments}.
      */
     @Override
     protected void end(Map args = [:]) {
@@ -607,17 +665,17 @@ class GenericPipeline extends Pipeline {
      * Creates a stage that will build a generic package.
      *
      * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
-     * to this function will map to the {@link BuildStageArguments} class. The
-     * {@link BuildStageArguments#operation} will be executed after all checks are complete. This must
+     * to this function will map to the {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} class. The
+     * {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments#operation} will be executed after all checks are complete. This must
      * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
      *
      * @Stages
      * This method adds the following stage to your build:
      * <dl>
-     *     <dt><b>Build: {@link BuildStageArguments#name}</b></dt>
+     *     <dt><b>Build: {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments#name}</b></dt>
      *     <dd>
      *         Runs the build of your application. The build stage also ignores any
-     *         {@link BuildStageArguments#resultThreshold} provided and only runs
+     *         {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments#resultThreshold} provided and only runs
      *         on {@link ResultEnum#SUCCESS}.</p>
      *     </dd>
      * </dl>
@@ -628,7 +686,7 @@ class GenericPipeline extends Pipeline {
      *     The following exceptions can be thrown by the build stage:
      *
      *     <dl>
-     *         <dt><b>{@link BuildStageException}</b></dt>
+     *         <dt><b>{@link jenkins_shared_library.pipelines.generic.exceptions.BuildStageException}</b></dt>
      *         <dd>When arguments.stage is provided. This is an invalid argument field for the operation.</dd>
      *         <dd>When called more than once in your pipeline. Only one build may be present in a
      *             pipeline.</dd>
@@ -638,9 +696,9 @@ class GenericPipeline extends Pipeline {
      * </p>
      *
      * @Note This method was intended to be called {@code build} but had to be named
-     * {@code buildGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+     * {@code buildGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
      *
-     * @param arguments A map of arguments to be applied to the {@link BuildStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
      */
     void buildGeneric(Map arguments = [:]) {
@@ -677,7 +735,7 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo build method, should be overridden by inherited classes
-     * @param arguments A map of arguments to be applied to the {@link BuildStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
      */
     protected void build(Map arguments = [:]) {
@@ -688,13 +746,13 @@ class GenericPipeline extends Pipeline {
      * Creates a stage that will execute tests on your application.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} class.</p>
+     * {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} class.</p>
      *
      * @Stages
      * This method adds the following stage to the build:
      *
      * <dl>
-     *     <dt><b>Test: {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#name}</b></dt>
+     *     <dt><b>Test: {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#name}</b></dt>
      *     <dd>
      *         <p>Runs one of your application tests. If the test operation throws an error, that error is
      *         ignored and  will be assumed to be caught in the junit processing. Some test functions may
@@ -706,17 +764,17 @@ class GenericPipeline extends Pipeline {
      *
      *         <p>The following reports can be captured:</p>
      *         <dl>
-     *             <dt><b>Test Results HTML Report (REQUIRED)</b></dt>
+     *             <dt><b>Test Results HTML Report</b></dt>
      *             <dd>
      *                 This is an html report that contains the result of the build. The report must be defined to
-     *                 the method in the {@link TestStageArguments#testResults} variable.
+     *                 the method in the {@link TestStageArguments#htmlReports} variable.
      *             </dd>
      *             <dt><b>Code Coverage HTML Report</b></dt>
      *             <dd>
      *                 This is an HTML report generated from code coverage output from your build. The report can
-     *                 be omitted by omitting {@link TestStageArguments#coverageResults}
+     *                 be omitted by omitting {@link TestStageArguments#htmlReports}
      *             </dd>
-     *             <dt><b>JUnit Report (REQUIRED)</b></dt>
+     *             <dt><b>JUnit Report</b></dt>
      *             <dd>
      *                 This report feeds Jenkins the data about the current test run. It can be used to mark a build
      *                 as failed or unstable. The report location must be present in
@@ -739,8 +797,8 @@ class GenericPipeline extends Pipeline {
      *         <p>
      *             After the test is complete, the stage will continue to collect the JUnit Report and the Test
      *             Results HTML Report. The stage will fail if either of those are missing. If specified, the
-     *             Code Coverage HTML Report and the Cobertura Report are then captured. The build will fail if
-     *             these reports are to be collected and were missing.
+     *             Cobertura Report are then captured. The build will fail if these reports are to be collected
+     *             and were missing.
      *         </p>
      *     </dd>
      * </dl>
@@ -752,19 +810,18 @@ class GenericPipeline extends Pipeline {
      *     <dl>
      *         <dt><b>{@link TestStageException}</b></dt>
      *         <dd>When a test stage is created before a call to {@link #buildGeneric(Map)}</dd>
-     *         <dd>When {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#testResults} is missing</dd>
-     *         <dd>When invalid options are specified for {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#testResults}</dd>
-     *         <dd>When {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#coverageResults} is provided but has an invalid format</dd>
-     *         <dd>When {@link TestStageArguments#junit} is missing.</dd>
-     *         <dd>When {@link TestStageArguments#operation} is missing.</dd>
+     *         <dd>When {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#junit} is missing</dd>
+     *         <dd>When invalid options are specified for {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#junit}</dd>
+     *         <dd>When {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#cobertura} is provided but has an invalid format</dd>
+     *         <dd>When {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#operation} is missing.</dd>
      *         <dd>
      *     </dl>
      * </p>
      *
      * @Note This method was intended to be called {@code test} but had to be named
-     * {@code testGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.</p>
+     * {@code testGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.</p>
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
     void testGeneric(Map arguments = [:]) {
@@ -851,13 +908,68 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo test method, should be overridden by inherited classes
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
     protected void test(Map arguments = [:]) {
         testGeneric(arguments)
     }
 
+    /**
+     * Creates a stage that will perform SonarQube static code scanning.
+     *
+     * <p>The default behavior of this stage will check if there is a {@code "sonar-project.properties"}
+     * file presents. If so, then run a SonarQube static code scanning using that configuration file.</p>
+     *
+     * <p>Provide arguments.operation to override the default behavior.</p>
+     *
+     * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
+     * to this function will map to the {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} class. The
+     * {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#operation} will be executed after all checks are complete. This must
+     * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
+     *
+     * @Stages
+     * This method adds the following stage to your build:
+     * <dl>
+     *     <dt><b>SonarQube Scan: {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#name}</b></dt>
+     *     <dd>
+     *         Perform a SonarQube static code scanning on your application. The stage also ignores any
+     *         {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#resultThreshold} provided and only runs
+     *         on {@link ResultEnum#SUCCESS}.</p>
+     *     </dd>
+     * </dl>
+     *
+     * @Exceptions
+     *
+     * <p>
+     *     The following exceptions can be thrown by the sonar scan stage:
+     *
+     *     <dl>
+     *         <dt><b>{@link jenkins_shared_library.pipelines.generic.exceptions.SonarScanStageException}</b></dt>
+     *         <dd>When arguments.stage is provided. This is an invalid argument field for the operation.</dd>
+     *         <dd>When called more than once in your pipeline. Only one sonar scan may be present in a
+     *             pipeline.</dd>
+     *         <dd>When arguments.scannerServer is not defined and arguments.operation is not provided.</dd>
+     *         <dd>When arguments.scannerTool is not defined and arguments.operation is not provided.</dd>
+     *         <dt><b>{@link NullPointerException}</b></dt>
+     *         <dd>When arguments.operation is not provided.</dd>
+     *     </dl>
+     * </p>
+     *
+     * @Note With default behavior (by not providing arguments.operation), the SonarQube scan stage
+     * will only run if {@code "sonar-project.properties"} file presents. This file should have
+     * basic scanning configurations.
+     *
+     * @Note With default behavior (by not providing arguments.operation), the SonarQube scan stage
+     * won't fail the build if the scan result doesn't pass the threshold. The stage will only fail
+     * when then scanning cannot be performed, like cannot connect to the SonarQube server.
+     *
+     * @Note This method was intended to be called {@code sonarScan} but had to be named
+     * {@code sonarScanGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
+     *
+     * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} used to define
+     *                  the stage.
+     */
     void sonarScanGeneric(Map arguments = [:]) {
         if (!arguments) {
             // can be empty
@@ -889,11 +1001,11 @@ class GenericPipeline extends Pipeline {
                 args.operation(stageName)
             } else {
                 if (!args.scannerServer) {
-                    throw new PackagingStageException("arguments.scannerServer is not defined for sonarScanGeneric", args.name)
+                    throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", args.name)
                 }
                 // scannerTool is required for default operation
                 if (!args.scannerTool) {
-                    throw new PackagingStageException("arguments.scannerTool is not defined for sonarScanGeneric", args.name)
+                    throw new SonarScanStageException("arguments.scannerTool is not defined for sonarScanGeneric", args.name)
                 }
 
                 def configExists = steps.fileExists('sonar-project.properties')
@@ -918,13 +1030,66 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo SonarQube Scan method, should be overridden by inherited classes
-     * @param arguments The arguments for the sonarScan step. {@code arguments.operation} must be
-     *                        provided.
+     *
+     * @param arguments The arguments for the sonarScan step.
      */
     protected void sonarScan(Map arguments) {
         sonarScanGeneric(arguments)
     }
 
+    /**
+     * Creates a stage that will package artifact(s).
+     *
+     * <p>The default behavior of this stage will check if there is a local PAX workspace presents.
+     * If so, then run a PAX packaging process to generate a Pax package.</p>
+     *
+     * <p>Provide arguments.operation to override the default behavior.</p>
+     *
+     * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
+     * to this function will map to the {@link jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments} class. The
+     * {@link jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments#operation} will be executed after all checks are complete. This must
+     * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
+     *
+     * @Stages
+     * This method adds the following stage to your build:
+     * <dl>
+     *     <dt><b>Packaging: {@link jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments#name}</b></dt>
+     *     <dd>
+     *         Create a package for your project. The stage also ignores any
+     *         {@link jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments#resultThreshold} provided and only runs
+     *         on {@link ResultEnum#SUCCESS}.</p>
+     *     </dd>
+     * </dl>
+     *
+     * @Exceptions
+     *
+     * <p>
+     *     The following exceptions can be thrown by the sonar scan stage:
+     *
+     *     <dl>
+     *         <dt><b>{@link jenkins_shared_library.pipelines.generic.exceptions.PackagingStageException}</b></dt>
+     *         <dd>When arguments.stage is provided. This is an invalid argument field for the operation.</dd>
+     *         <dd>When called more than once in your pipeline. Only one sonar scan may be present in a
+     *             pipeline.</dd>
+     *         <dd>When arguments.name is not defined. This name will be used as final pacakge name.</dd>
+     *         <dd>When arguments.sshHost is not defined and arguments.operation is not provided.</dd>
+     *         <dd>When arguments.sshCredential is not defined and arguments.operation is not provided.</dd>
+     *         <dd>When arguments.remoteWorkspace is not defined and arguments.operation is not provided.</dd>
+     *         <dt><b>{@link NullPointerException}</b></dt>
+     *         <dd>When arguments.operation is not provided.</dd>
+     *     </dl>
+     * </p>
+     *
+     * @Note With default behavior (by not providing arguments.operation), the SonarQube scan stage
+     * won't fail the build if the scan result doesn't pass the threshold. The stage will only fail
+     * when then scanning cannot be performed, like cannot connect to the SonarQube server.
+     *
+     * @Note This method was intended to be called {@code pacakging} but had to be named
+     * {@code packagingGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
+     *
+     * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} used to define
+     *                  the stage.
+     */
     void packagingGeneric(Map arguments = [:]) {
         if (!arguments) {
             // can be empty
@@ -950,9 +1115,10 @@ class GenericPipeline extends Pipeline {
         if (!args.name) {
             preSetupException = new PackagingStageException("arguments.name is not defined for packagingGeneric", args.name)
         }
-        if (!args.localWorkspace) {
-            preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
-        }
+        // localWorkspace should have a default value after init stage.
+        // if (!args.localWorkspace) {
+        //     preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
+        // }
 
         def originalPackageName = args.name
         // now args.name is used as stage name
@@ -1013,7 +1179,7 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo packaging method, should be overridden by inherited classes
-     * @param arguments The arguments for the packaging step. {@code arguments.operation} must be
+     * @param arguments The arguments for the packaging step. {@code arguments.name} must be
      *                        provided.
      */
     protected void packaging(Map arguments) {
@@ -1022,6 +1188,12 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Creates a stage that will publish artifacts to Artifactory.
+     *
+     * <p>By default, if you publish a pre-release version on formal release branch, the pipeline will
+     * show a confirmation information requiring human intervene. For example, you want to publish
+     * {@code rc1} on {@code master} branch. Normally a pre-release should be released from {@code staging}
+     * branch. Set {@link PublishStageArguments.allowPublishPreReleaseFromFormalReleaseBranch}
+     * to true to disable it.</p>
      *
      * @Conditions
      *
@@ -1051,10 +1223,9 @@ class GenericPipeline extends Pipeline {
      * </p>
      *
      * @Note This method was intended to be called {@code publish} but had to be named
-     * {@code publishGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
+     * {@code publishGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
      *
-     * @param arguments The arguments for the publish step. {@code arguments.operation} must be
-     *                        provided.
+     * @param arguments The arguments for the publish step.
      */
     void publishGeneric(Map arguments) {
         if (!arguments) {
@@ -1151,6 +1322,15 @@ class GenericPipeline extends Pipeline {
         }
     }
 
+    /**
+     * Upload artifacts.
+     *
+     * <p>This is a part of publish stage default behavior. If {@link PublishStageArguments#artifacts}
+     * is defined, those artifacts will be uploaded to artifactory with this method.</p>
+     *
+     * @param artifacts      list of artifacts. glob file pattern is allowed.
+     * @param baseTargetPath The targe path to upload
+     */
     protected void uploadArtifacts(List<String> artifacts, String baseTargetPath) {
         if (!baseTargetPath.endsWith('/')) {
             baseTargetPath += '/'
@@ -1167,7 +1347,7 @@ class GenericPipeline extends Pipeline {
                 String targetFileFull = baseTargetPath + artifactoryUploadTargetFile
                 Map<String, String> fileMacros = extractArtifactoryUploadTargetFileMacros(f)
                 Map<String, String> macros = baseMacros.clone() + fileMacros
-                String t = parseBuildStringMacros(targetFileFull, macros)
+                String t = _parseString(targetFileFull, macros)
                 log.fine("- + found ${f} -> ${t}")
                 uploadSpec['files'].push([
                     "pattern" : f,
@@ -1184,8 +1364,7 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo publish method, should be overridden by inherited classes
-     * @param arguments The arguments for the publish step. {@code arguments.operation} must be
-     *                        provided.
+     * @param arguments The arguments for the publish step.
      */
     protected void publish(Map arguments) {
         publishGeneric(arguments)
@@ -1194,47 +1373,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Creates a stage that will execute a release
      *
-     * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
-     * to this function will map to the {@link ReleaseStageArguments} class. The
-     * {@link ReleaseStageArguments#operation} will be executed after all checks are complete. This must
-     * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
-     *
-     * @Stages
-     * This method adds the following stage to your build:
-     * <dl>
-     *     <dt><b>Releasing: {@link ReleaseStageArguments#name}</b></dt>
-     *     <dd>This stage is responsible for bumping the release of your application source.</dd>
-     * </dl>
-     *
-     * @Conditions
-     *
-     * <p>
-     *     This stage will adhere to the following conditions:
-     *
-     *     <ul>
-     *         <li>The stage will only execute if the current build result is {@link ResultEnum#SUCCESS} or higher.</li>
-     *         <li>The stage will only execute if the current branch is a releasing branch.</li>
-     *     </ul>
-     * </p>
-     *
-     * @Exceptions
-     *
-     * <p>
-     *     The following exceptions will be thrown if there is an error.
-     *
-     *     <dl>
-     *         <dt><b>{@link ReleaseStageException}</b></dt>
-     *         <dd>When stage is provided as an argument.</dd>
-     *         <dd>When a test stage has not executed.</dd>
-     *         <dt><b>{@link NullPointerException}</b></dt>
-     *         <dd>When an operation is not provided for the stage.</dd>
-     *     </dl>
-     * </p>
-     *
-     * @Note This method was intended to be called {@code release} but had to be named
-     * {@code releaseGeneric} due to the issues described in {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline}.
-     *
-     * @param arguments A map of arguments to be applied to the {@link ReleaseStageArguments} used to define the stage.
+     * @see #releaseGeneric(ReleaseStageArguments)
      */
     void releaseGeneric(Map arguments = [:]) {
         if (!arguments) {
@@ -1247,6 +1386,62 @@ class GenericPipeline extends Pipeline {
         this.releaseGeneric(args)
     }
 
+    /**
+     * Creates a stage that will execute a release
+     *
+     * <p>The default behavior of release stage is after the publish stage, which release artifacts
+     * have been uploaded to Artifactory, we have to tag the GitHub branch with the release. If this
+     * is a formal release, we also need to bump project version, so we won't build same version
+     * again. The version bump will create a commit and push to GitHub. After all, the stage will
+     * send out email notification for the new release.</p>
+     *
+     * <p>Provide arguments.operation to override the default behavior. Or you can provide
+     * arguments.tagBranch or arguments.bumpVersion to override part of the behavior.</p>
+     *
+     * <p>Calling this function will add the following stage to your Jenkins pipeline. Arguments passed
+     * to this function will map to the {@link ReleaseStageArguments} class. The
+     * {@link ReleaseStageArguments#operation} will be executed after all checks are complete. This must
+     * be provided or a {@link java.lang.NullPointerException} will be encountered.</p>
+     *
+     * @Stages
+     * This method adds the following stage to your build:
+     * <dl>
+     *     <dt><b>Releasing: {@link ReleaseStageArguments#name}</b></dt>
+     *     <dd>This stage is responsible for tagging the branch and bumping the release of your
+     *     application source.</dd>
+     * </dl>
+     *
+     * @Conditions
+     *
+     * <p>
+     *     This stage will adhere to the following conditions:
+     *
+     *     <ul>
+     *         <li>The stage will only execute if the current build result is {@link ResultEnum#SUCCESS} or higher.</li>
+     *         <li>The stage will only execute if the current branch is a releasing branch.</li>
+     *         <li>The build job is started when build parameter "Perform Release" {@link #BUILD_PARAMETER_PERFORM_RELEASE} is checked.</li>
+     *     </ul>
+     * </p>
+     *
+     * @Exceptions
+     *
+     * <p>
+     *     The following exceptions will be thrown if there is an error.
+     *
+     *     <dl>
+     *         <dt><b>{@link ReleaseStageException}</b></dt>
+     *         <dd>When stage is provided as an argument.</dd>
+     *         <dd>When publish stage is not successful.</dd>
+     *         <dt><b>{@link NullPointerException}</b></dt>
+     *         <dd>When an operation is not provided for the stage.</dd>
+     *     </dl>
+     * </p>
+     *
+     * @Note This method was intended to be called {@code release} but had to be named
+     * {@code releaseGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
+     *
+     * @param arguments A map of arguments to be applied to the {@link ReleaseStageArguments} used to define the stage.
+     */
     void releaseGeneric(ReleaseStageArguments arguments) {
         ReleaseStageException preSetupException
 
@@ -1318,7 +1513,10 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Tag branch when release
+     * Tag branch when release.
+     *
+     * @Example If we are releasing {@code "1.2.3"} with pre-release string {@code "rc1"}, we will
+     * creating a tag {@code "v1.2.3-rc1"}.
      */
     protected void tagBranch() {
         String _preReleaseString = this.getPreReleaseString()
@@ -1337,14 +1535,15 @@ class GenericPipeline extends Pipeline {
     /**
      * This method should be overridden to properly bump version in different kind of project.
      *
-     * For example, npm package should use `npm version patch` to bump, and gradle project should ...
+     * <p>For example, npm package should use `npm version patch` to bump, and gradle project should
+     * update the {@code version} definition in {@code "gradle.properties"}.</p>
      */
     protected void bumpVersion() {
         log.warning('This method should be overridden.')
     }
 
     /**
-     * Send out email notification
+     * Send out email notification for the new version released.
      */
     protected void sendReleaseNotice() {
         String subject = 'NEW_RELEASE'
@@ -1363,8 +1562,7 @@ class GenericPipeline extends Pipeline {
 
     /**
      * Pseudo release method, should be overridden by inherited classes
-     * @param arguments The arguments for the release step. {@code arguments.operation} must be
-     *                        provided.
+     * @param arguments The arguments for the release step.
      */
     protected void release(Map arguments = [:]) {
         releaseGeneric(arguments)

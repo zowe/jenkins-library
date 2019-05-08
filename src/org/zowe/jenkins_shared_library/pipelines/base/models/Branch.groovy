@@ -15,13 +15,6 @@ import org.zowe.jenkins_shared_library.pipelines.Constants
 
 /**
  * Properties of a branch
- *
- * <p>A protected branch is usually one that has some restrictions on what code
- * can be published to it. These are typically your release and forward development
- * branches.</p>
- *
- * <p>If a branch is marked as protected, emails will always be sent out to the committers and
- * the list of {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline#admins} provided.</p>
  */
 class Branch implements BranchProperties {
     /**
@@ -30,15 +23,22 @@ class Branch implements BranchProperties {
     String name
 
     /**
-     * If the branch is a protected branch
+     * If the branch is a protected branch.
+     *
+     * <p>A protected branch is usually one that has some restrictions on what code
+     * can be published to it. These are typically your release and forward development
+     * branches.</p>
+     *
+     * @Note If a branch is marked as protected, emails will always be sent out to the committers and
+     * the list of {@link jenkins_shared_library.pipelines.base.Pipeline#admins} provided.
      */
     Boolean isProtected = false
 
     /**
      * Build history length.
      *
-     * For non-protected branches, default value is org.zowe.jenkins_shared_library.pipelines.Constants.DEFAULT_BUILD_HISTORY.
-     * For protected branches, default value is org.zowe.jenkins_shared_library.pipelines.Constants.DEFAULT_BUILD_HISTORY_FOR_PROTECTED_BRANCH.
+     * @Default For non-protected branches, default value is {@link jenkins_shared_library.pipelines.Constants#DEFAULT_BUILD_HISTORY}.
+     * For protected branches, default value is {@link jenkins_shared_library.pipelines.Constants#DEFAULT_BUILD_HISTORY_FOR_PROTECTED_BRANCH}.
      */
     Integer buildHistory
 }

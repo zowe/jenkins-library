@@ -11,8 +11,8 @@
 /**
  * Packages that give basic utility methods for a Jenkins pipeline.
  *
- * <p>The main class of importance in this package is the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class provides
+ * @Note The main class of importance in this package is the {@link org.zowe.jenkins_shared_library.pipelines.base.Pipeline} class. This class provides
  * various methods to create a basic scripted Jenkins pipeline. The other classes in this package
- * provide supporting code for the main Pipeline class.</p>
+ * provide supporting code for the main Pipeline class.
  */
 package org.zowe.jenkins_shared_library.pipelines.base

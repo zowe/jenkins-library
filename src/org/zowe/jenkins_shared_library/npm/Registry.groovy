@@ -34,16 +34,22 @@ import org.zowe.jenkins_shared_library.Utils
 class Registry {
     /**
      * Constant of {@code .npmrc} file name
+     *
+     * @Default {@code "~/.npmrc"}
      */
     public static final String NPMRC_FILE = '~/.npmrc'
 
     /**
      * Constant of {@code package.json} file name
+     *
+     * @Default {@code "package.json"}
      */
     public static final String PACKAGE_JSON = 'package.json'
 
     /**
-     * Default npmjs registry. Default value is {@code "https://registry.npmjs.org/"}.
+     * Default npmjs registry.
+     *
+     * @Default {@code "https://registry.npmjs.org/"}
      */
     public static final String DEFAULT_REGISTRY = 'https://registry.npmjs.org/'
 
@@ -80,7 +86,9 @@ class Registry {
     String email
 
     /**
-     * File name of {@code package.json}. Default value is {@link #PACKAGE_JSON}.
+     * File name of {@code package.json}.
+     *
+     * @Default {@link #PACKAGE_JSON}
      */
     String packageJsonFile = PACKAGE_JSON
 
@@ -445,7 +453,7 @@ class Registry {
      *     // version bump.
      * </pre>
      *
-     * @see {@link jenkins_shared_library.scm.GitHub}
+     * @see jenkins_shared_library.scm.GitHub
      *
      * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *

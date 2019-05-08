@@ -10,7 +10,5 @@
 
 /**
  * A collections of exceptions that can be thrown out of <strong>org.zowe.jenkins_shared_library</strong>.
- *
- * @see org.zowe.jenkins_shared_library
  */
 package org.zowe.jenkins_shared_library.exceptions

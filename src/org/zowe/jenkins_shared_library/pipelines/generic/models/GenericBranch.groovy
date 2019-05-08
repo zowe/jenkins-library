@@ -13,7 +13,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic.models
 import org.zowe.jenkins_shared_library.pipelines.base.models.Branch
 
 /**
- * @see org.zowe.jenkins_shared_library.pipelines.base.models.Branch
+ * @see jenkins_shared_library.pipelines.base.models.Branch
  */
 class GenericBranch extends Branch {
     /**
@@ -27,7 +27,7 @@ class GenericBranch extends Branch {
     Boolean allowFormalRelease = false
 
     /**
-     * Tag to do a release
+     * Branch tag when performing a release
      */
     String releaseTag
 }

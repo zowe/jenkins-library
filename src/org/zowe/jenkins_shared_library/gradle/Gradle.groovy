@@ -52,7 +52,9 @@ class Gradle {
     Map _packageInfo
 
     /**
-     * File name which defined package version. Default is {@link #GRADLE_PROPERTIES}.
+     * File name which defined package version.
+     *
+     * @Default {@link #GRADLE_PROPERTIES}.
      */
     String versionDefinitionFile = GRADLE_PROPERTIES
 
@@ -243,7 +245,7 @@ class Gradle {
      *     // version bump.
      * </pre>
      *
-     * @see {@link jenkins_shared_library.scm.GitHub}
+     * @see jenkins_shared_library.scm.GitHub
      *
      * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *

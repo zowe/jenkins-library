@@ -44,30 +44,31 @@ class NodeJSSetupArguments extends GenericSetupArguments {
     /**
      * npm install registry configurations
      *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
+     * <p>Use configurations defined at {@link jenkins_shared_library.npm.Registry#init(Map)}.</p>
      */
     List<Map> installRegistries
 
     /**
      * npm publish registry configurations
      *
-     * Use configurations defined at {@link org.zowe.jenkins_shared_library.npm.Registry#init}.
+     * <p>Use configurations defined at {@link jenkins_shared_library.npm.Registry#init(Map)}.</p>
      */
     Map publishRegistry
 
     /**
-     * If we always use `npm install`.
+     * If we always use {@code npm install}, never use {@code npm ci}.
      *
-     * By default, with value false, the install dependencies stage will try to decide whether use `npm ci` or `npm install` based on existence of `package.json`.
+     * <p>By default, with value false, the install dependencies stage will try to decide whether
+     * use {@code npm ci} or {@code npm install} based on existence of {@code package.json}.</p>
      */
     Boolean alwaysUseNpmInstall = false
 
     /**
      * If exit the pipeline if the git folder is not clean after install dependencies.
      *
-     * Usually the failure is caused by mismatched package-lock.json or wrong registry configuration.
+     * <p>Usually the failure is caused by mismatched package-lock.json or wrong registry configuration.</p>
      *
-     * Pipeline will always exit if there are changes other than lock files.
+     * <p>Pipeline will always exit if there are changes other than lock files.</p>
      */
     Boolean exitIfFolderNotClean = false
 

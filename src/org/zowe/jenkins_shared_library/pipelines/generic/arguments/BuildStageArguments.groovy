@@ -12,7 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
 /**
  * Represents the arguments available to the
- * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#buildGeneric(java.util.Map)} method.
+ * {@link jenkins_shared_library.pipelines.generic.GenericPipeline#buildGeneric(java.util.Map)} method.
  */
 class BuildStageArguments extends GenericStageArguments {
     /**

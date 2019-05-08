@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.base.interfaces
 
 /**
- * Required properties of a model used in the {@link org.zowe.jenkins_shared_library.pipelines.base.Branches}
+ * Required properties of a model used in the {@link jenkins_shared_library.pipelines.base.Branches}
  * class.
  */
 interface BranchProperties {

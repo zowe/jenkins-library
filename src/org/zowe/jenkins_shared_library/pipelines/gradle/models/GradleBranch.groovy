@@ -13,13 +13,8 @@ package org.zowe.jenkins_shared_library.pipelines.gradle.models
 import org.zowe.jenkins_shared_library.pipelines.generic.models.GenericBranch
 
 /**
- * @see org.zowe.jenkins_shared_library.pipelines.generic.models.GenericBranch
+ * @see jenkins_shared_library.pipelines.generic.models.GenericBranch
  */
 class GradleBranch extends GenericBranch {
-    /**
-     * This is the npm tag in which the branch will be published with. If this
-     * property is left null, then the branch will not be published.
-     */
-    String npmTag
 }
 

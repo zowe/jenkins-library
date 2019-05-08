@@ -29,14 +29,14 @@ import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Utils
 
 /**
- * Extends the functionality available in the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline} class.
- * This class adds more advanced functionality to build, test, and deploy your application.
+ * Extends the functionality available in the {@link jenkins_shared_library.pipelines.generic.GenericPipeline} class.
+ * This class adds more advanced functionality to build, test, and deploy your Gradle application.
  *
  * <dl><dt><b>Required Plugins:</b></dt><dd>
  * The following plugins are required:
  *
  * <ul>
- *     <li>All plugins listed at {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline}</li>
+ *     <li>All plugins listed at {@link jenkins_shared_library.pipelines.generic.GenericPipeline}</li>
  *     <li><a href="https://plugins.jenkins.io/pipeline-utility-steps">Pipeline Utility Steps</a></li>
  *     <li><a href="https://plugins.jenkins.io/pipeline-input-step">Pipeline: Input Step</a></li>
  * </ul>
@@ -52,15 +52,6 @@ import org.zowe.jenkins_shared_library.Utils
  *     // Set your config up before calling setup
  *     pipeline.admins.add("userid1", "userid2", "userid3")
  *
- *     pipeline.branches.addMap([
- *         [name: "master", tag: "daily", prerelease: "alpha"],
- *         [name: "beta", tag: "beta", prerelease: "beta"],
- *         [name: "dummy", tag: "dummy", autoDeploy: true],
- *         [name: "latest", tag: "latest"],
- *         [name: "lts-incremental", tag: "lts-incremental", level: SemverLevel.MINOR],
- *         [name: "lts-stable", tag: "lts-stable", level: SemverLevel.PATCH]
- *     ])
- *
  *     // MUST BE CALLED FIRST
  *     pipeline.setup(
  *         // Define the git configuration
@@ -73,17 +64,6 @@ import org.zowe.jenkins_shared_library.Utils
  *             url : 'https://your-artifactory-url',
  *             usernamePasswordCredential : 'artifactory-credential-id',
  *         ],
- *         // Define install registries
- *         installRegistries: [
- *             [email: 'email@example.com', usernamePasswordCredential: 'credentials-id'],
- *             [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id']
- *             [registry: 'https://registry.com', email: 'email@example.com', usernamePasswordCredential: 'credentials-id', scope: '@myOrg']
- *         ],
- *         // Define publish registry
- *         publishRegistry: [
- *             email: 'robot-user@example.com',
- *             usernamePasswordCredential: 'robot-user'
- *         ]
  *     )
  *
  *     // Create custom stages for your build like this
@@ -96,6 +76,12 @@ import org.zowe.jenkins_shared_library.Utils
  *
  *     // Run a test
  *     pipeline.test()    // Provide required parameters in your pipeline
+ *
+ *     // Run a SonarQube code scan
+ *     pipeline.sonarScan()
+ *
+ *     // Create package of your build result
+ *     pipeline.packaging()    // Provide required parameters in your pipeline
  *
  *     // publish artifact to artifactory
  *     pipeline.publish() // Provide required parameters in your pipeline
@@ -114,20 +100,17 @@ import org.zowe.jenkins_shared_library.Utils
  */
 @Log
 class GradlePipeline extends GenericPipeline {
+    /**
+     * Default gradle.properties file name.
+     *
+     * @Default {@code "gradle.properties"}
+     */
     public static final String GRADLE_PROPERTIES = 'gradle.properties'
 
     /**
      * A map of branches.
-     *
-     * <p>Any branches that are specified as protected will also have concurrent builds disabled. This
-     * is to prevent issues with publishing.</p>
      */
     protected Branches<GradleBranch> branches = new Branches<>(GradleBranch.class)
-
-    /**
-     * Package information extracted from package.json
-     */
-    Map packageInfo
 
     /**
      * Gradle instance
@@ -166,7 +149,6 @@ class GradlePipeline extends GenericPipeline {
                 allowRelease       : true,
                 allowFormalRelease : true,
                 releaseTag         : 'snapshot',
-                npmTag             : 'latest',
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/master',
@@ -175,21 +157,18 @@ class GradlePipeline extends GenericPipeline {
                 allowRelease       : true,
                 allowFormalRelease : true,
                 releaseTag         : '$1-snapshot',
-                npmTag             : '$1-latest',
             ],
             [
                 name               : 'staging',
                 isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
-                npmTag             : 'dev',
             ],
             [
                 name               : 'v[0-9]+\\.[0-9x]+(\\.[0-9x]+)?/staging',
                 isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
-                npmTag             : '$1-dev',
             ],
         ])
     }
@@ -197,38 +176,9 @@ class GradlePipeline extends GenericPipeline {
     /**
      * Calls {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#setupGeneric()} to setup the build.
      *
-     * @Stages
-     * This method adds one stage to the build:
-     *
-     * <dl>
-     *     <dt><b>Install Node Package Dependencies</b></dt>
-     *     <dd>
-     *         <p>
-     *             This step will install all your package dependencies via `npm install`. Prior to install
-     *             the stage will login to any registries specified in the {@link #registryConfig} array. On
-     *             exit, the step will try to logout of the registries specified in {@link #registryConfig}.
-     *         </p>
-     *         <dl>
-     *             <dt><b>Exceptions:</b></dt>
-     *             <dd>
-     *                 <dl>
-     *                     <dt><b>{@link GradlePipelineException}</b></dt>
-     *                     <dd>
-     *                         When two default registries, a registry that omits a url, are specified.
-     *                     </dd>
-     *                     <dd>
-     *                         When a login to a registry fails. <b>Note:</b> Failure to logout of a
-     *                         registry will not result in a failed build.
-     *                     </dd>
-     *                     <dt><b>{@link Exception}</b></dt>
-     *                     <dd>
-     *                         When a failure to install dependencies occurs.
-     *                     </dd>
-     *                 </dl>
-     *             </dd>
-     *         </dl>
-     *     </dd>
-     * </dl>
+     * <p>This method adds extra initialization steps to the default setup "Init Generic Pipeline"
+     * stage. The initialization will try to extract package information, like name, version, etc
+     * from gradle properties.</p>
      */
     void setupGradle(GradleSetupArguments arguments) throws GradlePipelineException {
         Closure initGradle = { pipeline ->
@@ -270,7 +220,7 @@ class GradlePipeline extends GenericPipeline {
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param arguments A map that can be instantiated as {@link SetupArguments}
+     * @param arguments A map that can be instantiated as {@link GradleSetupArguments}
      */
     @Override
     protected void setup(Map arguments = [:]) {
@@ -278,7 +228,7 @@ class GradlePipeline extends GenericPipeline {
     }
 
     /**
-     * Creates a stage that will build a GradlePipeline package.
+     * Creates a stage that will build jars of your project.
      *
      * <p>Arguments passed to this function will map to the
      * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} class.</p>
@@ -286,12 +236,13 @@ class GradlePipeline extends GenericPipeline {
      * <p>The stage will be created with the {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#buildGeneric(java.util.Map)}
      * method and will have the following additional operations. <ul>
      *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments#operation} is not
-     *     provided, the stage will default to executing {@code npm run build}.</li>
-     *     <li>After the operation is complete, the stage will use npm pack to generate an
-     *     installable artifact. This artifact is archived to the build for later access.</li>
+     *     provided, the stage will default to executing {@code ./gradlew assemble}.</li>
      * </ul></p>
      *
-     * Gradle Java plugin: {@link https://docs.gradle.org/current/userguide/java_plugin.html}, diagram shows the relationships between these tasks.
+     * <p>The build is performed by gradle {@code assemble} task. Based on Gradle Java plugin
+     * {@link https://docs.gradle.org/current/userguide/java_plugin.html}, the diagram shows the
+     * relationships between these tasks. Assemble is a task to create a build, but won't run test
+     * task.
      *
      * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
@@ -329,7 +280,7 @@ class GradlePipeline extends GenericPipeline {
      * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method and will
      * have the following additional operations: <ul>
      *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.TestStageArguments#operation} is not
-     *     provided, this method will default to executing {@code npm run test}</li>
+     *     provided, this method will default to executing {@code ./gradlew coverage} or {@code ./gradlew check}.</li>
      * </ul>
      * </p>
      *
@@ -365,6 +316,69 @@ class GradlePipeline extends GenericPipeline {
         testGradle(arguments)
     }
 
+    /**
+     * Creates a stage that will execute SonarQube code scan on your application.
+     *
+     * <p>Arguments passed to this function will map to the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} class.</p>
+     *
+     * <p>The stage will be created with the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#sonarScanGeneric(java.util.Map)} method and will
+     * have the following additional operations: <ul>
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#operation} is not
+     *     provided, this method will default to executing {@code ./gradlew sonarqube}.</li>
+     * </ul>
+     * </p>
+     *
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} used to define
+     *                  the stage.
+     */
+    void sonarScanGradle(Map arguments = [:]) {
+        if (!arguments.operation) {
+            arguments.operation = {
+                if (!arguments.scannerServer) {
+                    throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", arguments.name)
+                }
+                steps.withSonarQubeEnv(arguments.scannerServer) {
+                    def scannerParam = steps.readJSON text: steps.env.SONARQUBE_SCANNER_PARAMS
+                    if (!scannerParam || !scannerParam['sonar.host.url']) {
+                        error "Unable to find sonar host url from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
+                    }
+                    // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
+                    steps.sh "./gradlew --info sonarqube -Psonar.host.url=${scannerParam['sonar.host.url']}"
+                }
+            }
+        }
+
+        super.sonarScanGeneric(arguments)
+    }
+
+    /**
+     * Pseudo sonarScan method, should be overridden by inherited classes
+     * @param arguments The arguments for the sonarScan step.
+     */
+    @Override
+    protected void sonarScan(Map arguments) {
+        sonarScanGradle(arguments)
+    }
+
+    /**
+     * Creates a stage that will execute SonarQube code scan on your application.
+     *
+     * <p>Arguments passed to this function will map to the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments} class.</p>
+     *
+     * <p>The stage will be created with the
+     * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#packagingGeneric(java.util.Map)} method and will
+     * have the following additional operations: <ul>
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments#operation} is not
+     *     provided, this method will default to executing {@code ./gradlew jar}.</li>
+     * </ul>
+     * </p>
+     *
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PackagingStageArguments} used to define
+     *                  the stage.
+     */
     void packagingGradle(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
@@ -380,8 +394,7 @@ class GradlePipeline extends GenericPipeline {
 
     /**
      * Pseudo packaging method, should be overridden by inherited classes
-     * @param arguments The arguments for the packaging step. {@code arguments.operation} must be
-     *                        provided.
+     * @param arguments The arguments for the packaging step.
      */
     @Override
     protected void packaging(Map arguments) {
@@ -389,9 +402,9 @@ class GradlePipeline extends GenericPipeline {
     }
 
     /**
-     * This method should be overridden to properly bump version in different kind of project.
+     * This method overrides and perform version bump on gradle project.
      *
-     * For example, npm package should use `npm version patch` to bump, and gradle project should ...
+     * <p>By default, the {@code version} defined in {@code gradle.properties} will be bumped.</p>
      */
     @Override
     protected void bumpVersion() {

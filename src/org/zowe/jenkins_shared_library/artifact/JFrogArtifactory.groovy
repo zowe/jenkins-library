@@ -16,7 +16,7 @@ import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
 
 /**
- * Operating artifacts with jFrog Artifatory CLI commands or API.
+ * Operating artifacts with jFrog Artifatory CLI commands or Jenkins Plugin.
  *
  * @Example
  * <pre>
@@ -38,17 +38,23 @@ class JFrogArtifactory implements ArtifactInterface {
     def steps
 
     /**
-     * CLI config name. Default value is {@code rt-server-1}.
+     * CLI config name.
+     *
+     * @Default {@code "rt-server-1"}
      */
     static final CLI_CONFIG_NAME = 'rt-server-1'
 
     /**
-     * Repository name for snapshots. Default value is {@code libs-snapshot-local}.
+     * Repository name for snapshots.
+     *
+     * @Default {@code "libs-snapshot-local"}
      */
     static final REPOSITORY_SNAPSHOT = 'libs-snapshot-local'
 
     /**
-     * Repository name for releases. Default value is {@code libs-release-local}.
+     * Repository name for releases.
+     *
+     * @Default {@code "libs-release-local"}
      */
     static final REPOSITORY_RELEASE = 'libs-release-local'
 
@@ -72,7 +78,7 @@ class JFrogArtifactory implements ArtifactInterface {
      *
      * @Example
      * <pre>
-     * def o = new JFrogArtifactory(this)
+     * def jfrog = new JFrogArtifactory(this)
      * </pre>
      *
      * @param steps    The workflow steps object provided by the Jenkins pipeline
@@ -227,7 +233,7 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Get detail information of an artifact.
      *
-     * @see {@link #getArtifact(Map)}
+     * @see #getArtifact(Map)
      */
     Map getArtifact(String pattern, String buildName = '', String buildNumber = '') {
         return getArtifact([
@@ -461,7 +467,7 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Upload an artifact.
      *
-     * @see {@link #upload(Map)}
+     * @see #upload(Map)
      */
     void upload(String pattern, String target, Map properties = [:]) {
         this.upload(pattern: pattern, target: target, properties: properties)
@@ -612,7 +618,7 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Promote artifact.
      *
-     * @see {@link #promote(Map)}
+     * @see #promote(Map)
      */
     String promote(String source, String targetPath, String targetName = '') {
         return this.promote([source: source, targetPath: targetPath, targetName: targetName])
