@@ -1033,7 +1033,7 @@ class GenericPipeline extends Pipeline {
      *
      * @param arguments The arguments for the sonarScan step.
      */
-    protected void sonarScan(Map arguments) {
+    protected void sonarScan(Map arguments = [:]) {
         sonarScanGeneric(arguments)
     }
 
