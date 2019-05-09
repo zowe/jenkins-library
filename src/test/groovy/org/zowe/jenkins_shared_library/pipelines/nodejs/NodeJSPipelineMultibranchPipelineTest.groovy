@@ -96,6 +96,9 @@ class NodeJSPipelineMultibranchPipelineTest extends IntegrationTest {
             'Recording test results', // junit
             '[Cobertura] Publishing Cobertura coverage report...', // cobertura
             '[htmlpublisher] Archiving HTML reports...',
+            // packaging
+            'Creating pax file "jenkins-library-fvt-nodejs" from workspace...',
+            'Packaging result jenkins-library-fvt-nodejs.pax is in place.',
             // publish stage
             'Executing stage Publish',
             'Publishing package ',
