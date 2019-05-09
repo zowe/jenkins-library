@@ -112,7 +112,7 @@ class GenericPipeline extends Pipeline {
     /**
      * A map of branches.
      */
-    protected Branches<GenericBranch> branches = new Branches<>(GenericBranch.class)
+    Branches<GenericBranch> branches = new Branches<>(GenericBranch.class)
 
     /**
      * Temporary upload spec name

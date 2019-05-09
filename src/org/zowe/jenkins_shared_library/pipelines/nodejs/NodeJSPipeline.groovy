@@ -115,7 +115,7 @@ class NodeJSPipeline extends GenericPipeline {
     /**
      * A map of branches.
      */
-    protected Branches<NodeJSBranch> branches = new Branches<>(NodeJSBranch.class)
+    Branches<NodeJSBranch> branches = new Branches<>(NodeJSBranch.class)
 
     /**
      * Registry for publishing npm package

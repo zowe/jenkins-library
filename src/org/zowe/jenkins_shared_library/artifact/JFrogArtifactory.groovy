@@ -176,7 +176,6 @@ class JFrogArtifactory implements ArtifactInterface {
         // this.steps.echo "Raw search result:\n${resultText}"
         /*
         Example result:
-         *
         [
           {
             "path": "libs-snapshot-local/com/project/zowe/0.9.0-SNAPSHOT/zowe-0.9.0-20180918.163158-38.pax",

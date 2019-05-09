@@ -110,7 +110,7 @@ class GradlePipeline extends GenericPipeline {
     /**
      * A map of branches.
      */
-    protected Branches<GradleBranch> branches = new Branches<>(GradleBranch.class)
+    Branches<GradleBranch> branches = new Branches<>(GradleBranch.class)
 
     /**
      * Gradle instance
