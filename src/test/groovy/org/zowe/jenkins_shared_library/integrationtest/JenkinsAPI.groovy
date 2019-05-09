@@ -72,7 +72,7 @@ class JenkinsAPI {
 
         // init Awaitility
         Awaitility.setDefaultTimeout(1, TimeUnit.MINUTES)
-        Awaitility.setDefaultPollInterval(Duration.ONE_SECOND)
+        Awaitility.setDefaultPollInterval(Duration.FIVE_SECONDS)
         Awaitility.setDefaultPollDelay(1, TimeUnit.SECONDS)
 
         // validate parameters
