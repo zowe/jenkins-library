@@ -1135,37 +1135,38 @@ class GenericPipeline extends Pipeline {
             if (args.operation) {
                 args.operation(stageName)
             } else {
-                def workspaceExists = steps.fileExists(args.localWorkspace)
+                // re-init if there are config changes passed on arguments
+                this.pax.init(arguments)
+                def workspaceExists = steps.fileExists(this.pax.localWorkspace)
                 if (workspaceExists) {
-                    steps.echo "Found local packaging workspace ${args.localWorkspace}"
+                    steps.echo "Found local packaging workspace ${this.pax.localWorkspace}"
 
                     if (!this.pax.getSshHost()) {
-                        throw new PackagingStageException("PAX server configuration sshHost is missing", args.sshHost)
+                        throw new PackagingStageException("PAX server configuration sshHost is missing", this.pax.sshHost)
                     }
                     if (!this.pax.getSshCredential()) {
-                        throw new PackagingStageException("PAX server configuration sshCredential is missing", args.sshCredential)
+                        throw new PackagingStageException("PAX server configuration sshCredential is missing", this.pax.sshCredential)
                     }
                     if (!this.pax.getRemoteWorkspace()) {
-                        throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", args.remoteWorkspace)
+                        throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", this.pax.remoteWorkspace)
                     }
 
                     // normalize package name
                     def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
                     steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
                     def result = this.pax.pack(
-                        localWorkspace  : args.localWorkspace,
                         job             : "pax-packaging-${paxPackageName}",
                         filename        : "${paxPackageName}.pax",
                         paxOptions      : args.paxOptions ?: '',
                     )
-                    if (steps.fileExists("${args.localWorkspace}/${paxPackageName}.pax")) {
+                    if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageName}.pax")) {
                         steps.echo "Packaging result ${paxPackageName}.pax is in place."
                     } else {
-                        steps.sh "ls -la ${args.localWorkspace}"
+                        steps.sh "ls -la ${this.pax.localWorkspace}"
                         steps.error "Failed to find packaging result ${paxPackageName}.pax"
                     }
                 } else {
-                    steps.echo "Not found local packaging workspace ${args.localWorkspace}"
+                    steps.echo "Not found local packaging workspace ${this.pax.localWorkspace}"
                 }
             }
         }
