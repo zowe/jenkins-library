@@ -382,6 +382,44 @@ class Registry {
     }
 
     /**
+     * Reset NPN configurations.
+     *
+     * @Note This will also reset login information, which effectly logout from all repositories.
+     */
+    void resetConfig() {
+        // remove .npmrc in current folder
+        if (this.steps.fileExists('.npmrc')) {
+            this.steps.sh "rm -f .npmrc || exit 0"
+        }
+        // remove .npmrc in home folder
+        if (this.steps.fileExists(NPMRC_FILE)) {
+            this.steps.sh "rm -f ${NPMRC_FILE} || exit 0"
+        }
+    }
+
+    /**
+     * Run npm audit with default config.
+     *
+     * @Note {@code npm audit} cannot be ran on private registry, so we reset config before audit.
+     */
+    void audit() {
+        if (this.steps.fileExists(NPMRC_FILE)) {
+            this.steps.sh "mv ${NPMRC_FILE} ${NPMRC_FILE}.bak || exit 0"
+        }
+        try {
+            this.steps.ansiColor('xterm') {
+                this.steps.sh "npm audit"
+            }
+        } catch (e) {
+            throw e
+        } finally {
+            if (this.steps.fileExists("${NPMRC_FILE}.bak")) {
+                this.steps.sh "mv ${NPMRC_FILE}.bak ${NPMRC_FILE} || exit 0"
+            }
+        }
+    }
+
+    /**
      * Publish npm package with tag.
      *
      * @Example
