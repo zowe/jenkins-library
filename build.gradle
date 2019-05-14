@@ -69,7 +69,7 @@ sourceSets {
     }
 }
 group = 'org.zowe'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 description = 'zowe-cli-version-controller'
 sourceCompatibility = '1.8'
 
