@@ -639,8 +639,6 @@ class GenericPipeline extends Pipeline {
                 description  : 'Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn\'t have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on branches which "allowRelease" is true.',
                 defaultValue : false
             ))
-        }
-        if (isFormalReleaseBranch()) {
             this.addBuildParameter(steps.string(
                 name         : BUILD_PARAMETER_PRE_RELEASE_STRING,
                 description  : 'Pre-release string for a release. For example: rc.1, beta.1, etc. This is required if the release is not performed on branches which "allowFormalRelease" is true.',
