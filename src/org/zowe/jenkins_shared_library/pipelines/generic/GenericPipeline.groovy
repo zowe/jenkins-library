@@ -888,7 +888,7 @@ class GenericPipeline extends Pipeline {
                 files.each { f ->
                     String file = f.toString()
 
-                    if (this._junitResults.contains(file)) {
+                    if (!this._junitResults.contains(file)) {
                         log.finer("- found junit file: ${file}")
                         this._junitResults.push(file)
                         steps.echo "Publishing junit file ${file}"
