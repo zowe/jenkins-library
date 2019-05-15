@@ -199,6 +199,13 @@ class GenericPipeline extends Pipeline {
     String artifactoryUploadTargetFile = '{filename}-{publishversion}{fileext}'
 
     /**
+     * Holds junit test result files.
+     *
+     * <p>This is internal used to avoid publishing duplicated junit file to Jenkins.</p>
+     */
+    protected List<String> _junitResults = []
+
+    /**
      * GitHub instance
      */
     GitHub github
@@ -875,8 +882,20 @@ class GenericPipeline extends Pipeline {
             }
 
             // Collect junit report
-            log.finer "junit arguments: ${args.junit}"
-            steps.junit args.junit
+            if (args.junit) {
+                log.finer "junit arguments: ${args.junit}"
+                def files = steps.findFiles glob: args.junit
+                files.each { f ->
+                    String file = f.toString()
+
+                    if (this._junitResults.contains(file)) {
+                        log.finer("- found junit file: ${file}")
+                        this._junitResults.push(file)
+                        steps.echo "Publishing junit file ${file}"
+                        steps.junit file
+                    }
+                }
+            }
 
             // Collect cobertura coverage if specified
             if (args.cobertura) {
