@@ -856,8 +856,10 @@ class GenericPipeline extends Pipeline {
 
             steps.echo "Processing Arguments"
 
-            if (!args.junit) {
-                throw new TestStageException("JUnit Report not provided", args.name)
+            if (!args.allowMissingJunit) {
+                if (!args.junit) {
+                    throw new TestStageException("JUnit Report not provided", args.name)
+                }
             }
 
             for (def rep : args.htmlReports) {
