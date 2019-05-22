@@ -180,7 +180,7 @@ EOF"""
       try {
         // clean up temporary files/folders
         echo "${func} cleaning up ..."
-        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no ${USERNAME}@${serverIP} \"rm -fr ${serverWorkplaceRoot}/${jobId}-${branch}-*\""
+        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${serverPort} ${USERNAME}@${serverIP} \"rm -fr ${serverWorkplaceRoot}/${jobId}-${branch}-*\""
       } catch (ex2) {
         // ignore errors for cleaning up
       }

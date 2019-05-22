@@ -856,8 +856,10 @@ class GenericPipeline extends Pipeline {
 
             steps.echo "Processing Arguments"
 
-            if (!args.junit) {
-                throw new TestStageException("JUnit Report not provided", args.name)
+            if (!args.allowMissingJunit) {
+                if (!args.junit) {
+                    throw new TestStageException("JUnit Report not provided", args.name)
+                }
             }
 
             for (def rep : args.htmlReports) {
@@ -1175,6 +1177,7 @@ class GenericPipeline extends Pipeline {
                         job             : "pax-packaging-${paxPackageName}",
                         filename        : "${paxPackageName}.pax",
                         paxOptions      : args.paxOptions ?: '',
+                        keepTempFolder  : args.keepTempFolder ?: false
                     )
                     if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageName}.pax")) {
                         steps.echo "Packaging result ${paxPackageName}.pax is in place."

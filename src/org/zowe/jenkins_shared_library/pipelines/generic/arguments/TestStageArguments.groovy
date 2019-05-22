@@ -26,6 +26,16 @@ class TestStageArguments extends GenericStageArguments {
     String junit
 
     /**
+     * If we allow the test stage to bypass junit file check.
+     *
+     * <p>JUnit file is required to determine if test stage is successful or not, and later stages
+     * may rely on the test status.</p>
+     *
+     * <p>This option allows the pipeline doesn't supply junit file for this test.</p>
+     */
+    Boolean allowMissingJunit = false
+
+    /**
      * Default values provided to cobertura.
      *
      * <p>This map will be merged with {@link #cobertura}, preferring cobertura, as the final

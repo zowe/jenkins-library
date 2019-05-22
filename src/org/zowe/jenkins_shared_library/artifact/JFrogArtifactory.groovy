@@ -285,7 +285,9 @@ class JFrogArtifactory implements ArtifactInterface {
 
         def tmpFile = ".tmp-down-artifact-spec-${Utils.getTimestamp()}.json"
         def specFile = args.containsKey('spec') ? args['spec'] : tmpFile
-        this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
+        if (args.containsKey('specContent')) {
+            this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
+        }
         def expectedArtifacts = args.containsKey('expected') ? args['expected'] : -1
 
         // download
