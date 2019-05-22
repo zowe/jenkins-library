@@ -50,4 +50,11 @@ class PackagingStageArguments extends GenericStageArguments {
      * PAX command line options
      */
     String paxOptions
+
+    /**
+     * If we want to keep the temporary folder for debugging purpose.
+     *
+     * @Default {@code false}
+     */
+    Boolean keepTempFolder = false
 }

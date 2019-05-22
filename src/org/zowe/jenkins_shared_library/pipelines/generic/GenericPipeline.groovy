@@ -1177,6 +1177,7 @@ class GenericPipeline extends Pipeline {
                         job             : "pax-packaging-${paxPackageName}",
                         filename        : "${paxPackageName}.pax",
                         paxOptions      : args.paxOptions ?: '',
+                        keepTempFolder  : args.keepTempFolder ?: false
                     )
                     if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageName}.pax")) {
                         steps.echo "Packaging result ${paxPackageName}.pax is in place."
