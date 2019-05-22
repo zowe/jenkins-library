@@ -180,6 +180,8 @@ class Pax {
      * @param   filename       package file name will be created
      * @param   environments   environment variables
      * @param   paxOptions     pax write command options
+     * @param   keepTempFolder if we want to keep the temporary packaging folder on the remote machine
+     *                         for debugging purpose. Default is false.
      * @return                 pax package created
      */
     String pack(Map args = [:]) throws InvalidArgumentException, PackageException {
@@ -215,6 +217,10 @@ class Pax {
                 // FIXME: ignore errors, or throw?
                 this.steps.echo "${func}[WARN] failed to prepare environments: ${args['environments']}\n${err}"
             }
+        }
+        def keepTempFolder = false
+        if (args.containsKey('keepTempFolder') && args['keepTempFolder']) {
+            keepTempFolder = true
         }
 
         def env = this.steps.env
@@ -372,17 +378,21 @@ EOF"""
                     // throw error
                     throw new PackageException("Pack Pax package failed: ${ex1}")
                 } finally {
-                    try {
-                        // always clean up temporary files/folders
-                        this.steps.echo "${func} cleaning up remote workspace..."
-                        def resultCleaning = this.steps.sh(
-                            script: "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}*\"",
-                            returnStdout: true
-                        )
-                        this.log.finer("${func} cleaning up remote workspace returns: ${resultCleaning}")
-                    } catch (ex2) {
-                        // ignore errors for cleaning up
-                        this.log.finer("${func} cleaning up remote workspace failed: ${ex2}")
+                    if (keepTempFolder) {
+                        this.steps.echo "${func}[warning] remote workspace will be left as-is without clean-up."
+                    } else {
+                        try {
+                            // always clean up temporary files/folders
+                            this.steps.echo "${func} cleaning up remote workspace..."
+                            def resultCleaning = this.steps.sh(
+                                script: "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}*\"",
+                                returnStdout: true
+                            )
+                            this.log.finer("${func} cleaning up remote workspace returns: ${resultCleaning}")
+                        } catch (ex2) {
+                            // ignore errors for cleaning up
+                            this.log.finer("${func} cleaning up remote workspace failed: ${ex2}")
+                        }
                     }
                 }
             } // end withCredentials
