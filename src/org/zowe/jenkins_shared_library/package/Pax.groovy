@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.package
 
+import groovy.util.logging.Log
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.Utils
 
@@ -28,6 +29,7 @@ import org.zowe.jenkins_shared_library.Utils
  * <p>If the process is successfully, a PAX file (named followed "filename" argument of {@link #pack(Map)}
  * will be placed in the {@link #localWorkspace}.</p>
  */
+@Log
 class Pax {
     /**
      * Constant of default local workspace folder.
@@ -373,9 +375,14 @@ EOF"""
                     try {
                         // always clean up temporary files/folders
                         this.steps.echo "${func} cleaning up remote workspace..."
-                        this.steps.sh "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}*\""
+                        def resultCleaning = this.steps.sh(
+                            script: "SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} \"rm -fr ${remoteWorkspaceFullPath}*\"",
+                            returnStdout: true
+                        )
+                        this.log.finer("${func} cleaning up remote workspace returns: ${resultCleaning}")
                     } catch (ex2) {
                         // ignore errors for cleaning up
+                        this.log.finer("${func} cleaning up remote workspace failed: ${ex2}")
                     }
                 }
             } // end withCredentials
