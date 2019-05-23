@@ -887,6 +887,11 @@ class GenericPipeline extends Pipeline {
             if (args.junit) {
                 log.finer "junit arguments: ${args.junit}"
                 def files = steps.findFiles glob: args.junit
+                if (!args.allowMissingJunit) {
+                    if (files.size() == 0) {
+                        throw new PublishStageException("Missing junit test result", args.name)
+                    }
+                }
                 files.each { f ->
                     String file = f.toString()
 
