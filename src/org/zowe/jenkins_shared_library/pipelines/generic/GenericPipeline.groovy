@@ -483,8 +483,6 @@ class GenericPipeline extends Pipeline {
 
         macros['branchtag-uc'] = macros['branchtag'] ? macros['branchtag'].toUpperCase() : ''
 
-        log.fine("getBuildStringMacros macros: ${macros}")
-
         return macros
     }
 

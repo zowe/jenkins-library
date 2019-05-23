@@ -207,11 +207,45 @@ class Gradle {
     }
 
     /**
-     * Update version in {@link #versionDefinitionFile}.
+     * Update version and releaseType in {@link #versionDefinitionFile}.
+     *
+     * <p>There are 2 properties should be defined in {@link #versionDefinitionFile}:<ul>
+     * <li>- version: for example: 1.2.3</li>
+     * <li>- releaseMode: either release or snapshot</li>
+     * </ul></p>
+     *
+     * @param version          new semantic version string. For example, {@code "1.2.3"}.
+     * @param isRelease        if current build is for release purpose.
+     */
+    void updateVersionForBuild(String version, Boolean isRelease) {
+        def releaseMode = isRelease ? 'release' : 'snapshot'
+        steps.sh "sed -e \"s#^version=.*\\\$#version=${version}#\" -e \"s#^releaseMode=.*\\\$#releaseMode=${releaseMode}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
+        // verify if releaseMode is in place
+        def releaseModeLine = this.steps.sh(script: "cat .${this.versionDefinitionFile}.tmp | grep releaseMode=", returnStdout: true).trim()
+        if (!releaseModeLine) {
+            // make sure we have releaseMode line
+            steps.sh "echo >> .${this.versionDefinitionFile}.tmp"
+            steps.sh "echo 'releaseMode=${releaseMode}' >> .${this.versionDefinitionFile}.tmp"
+        }
+
+        // log for debugging
+        String beforeConvert = steps.readFile "${this.versionDefinitionFile}"
+        String afterConvert = steps.readFile ".${this.versionDefinitionFile}.tmp"
+        log.finer("Before convert:\n${beforeConvert}")
+        log.finer("After convert:\n${afterConvert}")
+
+        // replace version
+        steps.sh "mv .${this.versionDefinitionFile}.tmp ${this.versionDefinitionFile}"
+    }
+
+    /**
+     * Bump version up in {@link #versionDefinitionFile} after release publish.
+     *
+     * <p>If bump failed, like version is same as before update, a GradleException will be thrown.</p>
      *
      * @param version          new semantic version string. For example, {@code "1.2.3"}.
      */
-    void _updateVersion(String version) {
+    void bumpVersionAfterRelease(String version) throws GradleException {
         steps.sh "sed -e \"s#^version=.*\\\$#version=${version}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
         // compare if we successfully bumped the version
         String beforeConvert = steps.readFile "${this.versionDefinitionFile}"
@@ -292,7 +326,7 @@ class Gradle {
             }
             newSemVer = Utils.interpretSemanticVersionBump(this.packageInfo['versionTrunks'], version)
 
-            this._updateVersion(newSemVer)
+            this.bumpVersionAfterRelease(newSemVer)
         }
 
         // commit

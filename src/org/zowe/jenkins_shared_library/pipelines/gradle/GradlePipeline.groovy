@@ -97,6 +97,42 @@ import org.zowe.jenkins_shared_library.Utils
  * <p>In the example above, the stages will run on a node labeled {@code 'pipeline-node'}. You must
  * define the node where your pipeline will execute. This node must have the ability to execute an
  * <a href="https://en.wikipedia.org/wiki/Expect">Expect Script</a>.</p>
+ *
+ * @Note: To publish artifacts, you have 2 choices:
+ *
+ * <p>1). If your artifact is a regular file, not neccessary to have maven metadata, you can define
+ * the artifacts in {@code pipeline.publish(artifacts:[])} list. Those artifacts, like GenericPipeline,
+ * will be uploaded to artifactory directly.</p>
+ *
+ * <p>2). If you have a gradle task like {@code publishArtifacts}, you can define it in opration
+ * like this:</p>
+ *
+ * <pre>
+ *     pipeline.publish(
+ *         operation: {
+ *             withCredentials([
+ *                 usernamePassword(
+ *                     credentialsId: lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
+ *                     usernameVariable: 'USERNAME',
+ *                     passwordVariable: 'PASSWORD'
+ *                 )
+ *             ]) {
+ *                 sh "./gradlew jar && ./gradlew publishArtifacts -Pdeploy.username=$USERNAME -Pdeploy.password=$PASSWORD"
+ *             }
+ *         }
+ *     )
+ * </pre>
+ *
+ * <p>And in your {@code publishing} task definition, you should have logic like this to decide which
+ * repository to publish to:</p>
+ *
+ * <pre>
+ *     if (rootProject.releaseMode == 'release') {
+ *         setUrl(artifactoryPublishingMavenRepo)
+ *     } else {
+ *         setUrl(artifactoryPublishingMavenSnapshotRepo)
+ *     }
+ * </pre>
  */
 @Log
 class GradlePipeline extends GenericPipeline {
@@ -199,6 +235,11 @@ class GradlePipeline extends GenericPipeline {
             // version could be used to publish artifact
             pipeline.setVersion(pipeline.packageInfo['version'])
             pipeline.steps.echo "Package information: ${pipeline.getPackageName()} v${pipeline.getVersion()}"
+
+            // update publish version & releaseMode
+            Map<String, String> macros = getBuildStringMacros()
+            Boolean _isPerformingRelease = this.isPerformingRelease()
+            this.gradle.updateVersionForBuild(macros['publishversion'], _isPerformingRelease)
         }
         // should we overwrite this?
         arguments.extraInit = initGradle
