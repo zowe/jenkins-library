@@ -219,7 +219,7 @@ class Gradle {
      */
     void updateVersionForBuild(String version, Boolean isRelease) {
         def releaseMode = isRelease ? 'release' : 'snapshot'
-        steps.sh "sed -e \"s#^version=.*\\\$#version=${version}#\" -e \"s#^releaseMode=.*\\\$#releaseMode=${releaseMode}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
+        steps.sh "sed -e \"s#^version=.*\\\$#version=${version.toUpperCase()}#\" -e \"s#^releaseMode=.*\\\$#releaseMode=${releaseMode}#\" ${this.versionDefinitionFile} > .${this.versionDefinitionFile}.tmp"
         // verify if releaseMode is in place
         def releaseModeLine = this.steps.sh(script: "cat .${this.versionDefinitionFile}.tmp | grep releaseMode=", returnStdout: true).trim()
         if (!releaseModeLine) {
