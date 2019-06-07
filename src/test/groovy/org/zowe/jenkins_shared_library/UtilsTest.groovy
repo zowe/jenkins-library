@@ -166,6 +166,41 @@ class UtilsTest {
     }
 
     @Test
+    void testParseFileExtension() {
+        // test success
+        def test1 = Utils.parseFileExtension('/path/to/my/special-file.zip')
+        logger.fine("[testParseFileExtension] test1 = \"${test1}\"")
+        assertThat('name ext', test1, IsMapContaining.hasKey('name'));
+        assertThat('name ext', test1, IsMapContaining.hasKey('ext'));
+        assertThat(test1['name'], equalTo('special-file'))
+        assertThat(test1['ext'], equalTo('.zip'))
+
+        // test success
+        def test2 = Utils.parseFileExtension('/path/to/my/special-file-without-ext')
+        logger.fine("[testParseFileExtension] test2 = \"${test2}\"")
+        assertThat('name ext', test2, IsMapContaining.hasKey('name'));
+        assertThat('name ext', test2, IsMapContaining.hasKey('ext'));
+        assertThat(test2['name'], equalTo('special-file-without-ext'))
+        assertThat(test2['ext'], equalTo(''))
+
+        // test success
+        def test3 = Utils.parseFileExtension('/path/to/my/special-file.tar.gz')
+        logger.fine("[testParseFileExtension] test3 = \"${test3}\"")
+        assertThat('name ext', test3, IsMapContaining.hasKey('name'));
+        assertThat('name ext', test3, IsMapContaining.hasKey('ext'));
+        assertThat(test3['name'], equalTo('special-file'))
+        assertThat(test3['ext'], equalTo('.tar.gz'))
+
+        // test success
+        def test4 = Utils.parseFileExtension('/path/to/my/special-file.pax.Z')
+        logger.fine("[testParseFileExtension] test4 = \"${test4}\"")
+        assertThat('name ext', test4, IsMapContaining.hasKey('name'));
+        assertThat('name ext', test4, IsMapContaining.hasKey('ext'));
+        assertThat(test4['name'], equalTo('special-file'))
+        assertThat(test4['ext'], equalTo('.pax.Z'))
+    }
+
+    @Test
     void testGetUriQueryString() {
         def test1 = Utils.getUriQueryString(['a': 1, 'b': 2])
         logger.fine("[testGetUriQueryString] test1 = \"${test1}\"")

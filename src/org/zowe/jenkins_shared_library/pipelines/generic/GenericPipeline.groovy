@@ -501,19 +501,10 @@ class GenericPipeline extends Pipeline {
      * @return          macro map
      */
     protected Map<String, String> extractArtifactoryUploadTargetFileMacros(String file) {
-        Map<String, String> macros = ['filename': '', 'fileext': '']
-
-        String baseName = file.lastIndexOf('/').with {
-            it != -1 ? file[(it + 1)..-1] : file
-        }
-        Integer idx = baseName.lastIndexOf('.')
-        if (idx != -1) {
-            macros['filename'] = baseName[0..(idx - 1)]
-            macros['fileext'] = baseName[idx..-1]
-        } else {
-            macros['filename'] = baseName
-            macros['fileext'] = ''
-        }
+        Map<String, String> macros = [:]
+        Map<String, String> fileNameExt = Utils.parseFileExtension(file)
+        macros['filename'] = fileNameExt['name']
+        macros['fileext'] = fileNameExt['ext']
 
         // Does file name looks like my-project-1.2.3-snapshot? If so, we remove the version information.
         def matches = macros['filename'] =~ /^(.+)-([0-9]+\.[0-9]+\.[0-9]+)(-[0-9a-zA-Z-+\.]+)?$/
