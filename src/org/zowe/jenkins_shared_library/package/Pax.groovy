@@ -176,13 +176,15 @@ class Pax {
      *
      * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
-     * @param   job            job identifier
-     * @param   filename       package file name will be created
-     * @param   environments   environment variables
-     * @param   paxOptions     pax write command options
-     * @param   keepTempFolder if we want to keep the temporary packaging folder on the remote machine
-     *                         for debugging purpose. Default is false.
-     * @return                 pax package created
+     * @param   job             job identifier
+     * @param   filename        package file name will be created
+     * @param   environments    environment variables
+     * @param   paxOptions      pax write command options
+     * @param   compress        if we want to compress the result
+     * @param   compressOptions compress command options
+     * @param   keepTempFolder   if we want to keep the temporary packaging folder on the remote machine
+     *                           for debugging purpose. Default is false.
+     * @return                   pax package created
      */
     String pack(Map args = [:]) throws InvalidArgumentException, PackageException {
         def func = '[Pax.pack]'
@@ -221,6 +223,19 @@ class Pax {
         def keepTempFolder = false
         if (args.containsKey('keepTempFolder') && args['keepTempFolder']) {
             keepTempFolder = true
+        }
+        def compressPax = false
+        if (args.containsKey('compress') && args['compress']) {
+            compressPax = true
+        }
+        def filePax = args['filename']
+        def filePaxZ = args['filename']
+        if (compressPax) {
+            if (filePax.endsWith('.Z')) {
+                filePax = filePax[0..-3]
+            } else {
+                filePaxZ = filePax + '.Z'
+            }
         }
 
         def env = this.steps.env
@@ -294,7 +309,7 @@ echo "${func} content of ${remoteWorkspaceFullPath} ends   <<<<<<<<<<<<<<<<<<<<<
 if [ -d "${remoteWorkspaceFullPath}/${PATH_CONTENT}" ]; then
   echo "${func} creating package ..."
   cd "${remoteWorkspaceFullPath}/${PATH_CONTENT}"
-  pax -w -f "${remoteWorkspaceFullPath}/${args['filename']}" ${args['paxOptions']} *
+  pax -w -f "${remoteWorkspaceFullPath}/${filePax}" ${args['paxOptions']} *
   if [ \$? -ne 0 ]; then
     exit 1
   fi
@@ -318,7 +333,15 @@ if [ -f "${HOOK_POST_PACKAGING}" ]; then
   fi
 fi
 
-if [ -f "${remoteWorkspaceFullPath}/${args['filename']}" ]; then
+# need to compress?
+if [ "${compressPax ? 'YES' : 'NO'}" = "YES" ]; then
+  compress ${args['compressOptions']} "${remoteWorkspaceFullPath}/${filePax}"
+fi
+
+if [ -f "${remoteWorkspaceFullPath}/${filePax}" ]; then
+  echo "${func} done"
+  exit 0
+elif [ -f "${remoteWorkspaceFullPath}/${filePaxZ}" ]; then
   echo "${func} done"
   exit 0
 else
@@ -372,7 +395,7 @@ exit 0
 EOF"""
                     // copy back pax file
                     this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
-get ${remoteWorkspaceFullPath}/${args['filename']} ${this.localWorkspace}
+get ${remoteWorkspaceFullPath}/${compressPax ? filePaxZ : filePax} ${this.localWorkspace}
 EOF"""
                 } catch (ex1) {
                     // throw error
@@ -398,7 +421,7 @@ EOF"""
             } // end withCredentials
         } // end lock
 
-        return "${this.localWorkspace}/${args['filename']}"
+        return "${this.localWorkspace}/${compressPax ? filePaxZ : filePax}"
     } // end package()
 
     /**
