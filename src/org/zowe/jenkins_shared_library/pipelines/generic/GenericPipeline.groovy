@@ -1169,19 +1169,20 @@ class GenericPipeline extends Pipeline {
                     // normalize package name
                     def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
                     steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
+                    def paxPackageFile = args.compress ? paxPackageName + '.pax' : paxPackageName + '.pax.Z'
                     def result = this.pax.pack(
                         job             : "pax-packaging-${paxPackageName}",
-                        filename        : "${paxPackageName}.pax",
+                        filename        : paxPackageFile,
                         paxOptions      : args.paxOptions ?: '',
-                        keepTempFolder  : args.keepTempFolder ?: false,
                         compress        : args.compress ?: false,
-                        compressOptions : args.compressOptions ?: ''
+                        compressOptions : args.compressOptions ?: '',
+                        keepTempFolder  : args.keepTempFolder ?: false
                     )
-                    if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageName}.pax")) {
-                        steps.echo "Packaging result ${paxPackageName}.pax is in place."
+                    if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageFile}")) {
+                        steps.echo "Packaging result ${paxPackageFile} is in place."
                     } else {
                         steps.sh "ls -la ${this.pax.localWorkspace}"
-                        steps.error "Failed to find packaging result ${paxPackageName}.pax"
+                        steps.error "Failed to find packaging result ${paxPackageFile}"
                     }
                 } else {
                     steps.echo "Not found local packaging workspace ${this.pax.localWorkspace}"
