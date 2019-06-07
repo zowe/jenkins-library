@@ -287,7 +287,7 @@ fi
 # list working folder
 cd ${remoteWorkspaceFullPath}
 echo "${func} content of ${remoteWorkspaceFullPath} starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-ls -REal
+ls -TREal
 echo "${func} content of ${remoteWorkspaceFullPath} ends   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 # create PAX file
