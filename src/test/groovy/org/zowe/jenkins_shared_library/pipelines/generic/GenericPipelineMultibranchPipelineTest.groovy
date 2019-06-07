@@ -91,7 +91,7 @@ class GenericPipelineMultibranchPipelineTest extends IntegrationTest {
             '[htmlpublisher] Archiving HTML reports...',
             // packaging
             'Creating pax file "jenkins-library-fvt-nodejs" from workspace...',
-            'Packaging result jenkins-library-fvt-nodejs.pax is in place.',
+            'Packaging result jenkins-library-fvt-nodejs.pax.Z is in place.',
             // publish stage
             'Executing stage Publish',
             'Deploying artifact:',

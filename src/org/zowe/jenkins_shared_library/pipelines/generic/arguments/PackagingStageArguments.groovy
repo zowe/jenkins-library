@@ -52,6 +52,18 @@ class PackagingStageArguments extends GenericStageArguments {
     String paxOptions
 
     /**
+     * If we want to compress the result
+     *
+     * @Default {@code false}
+     */
+    Boolean compress = false
+
+    /**
+     * Compress command line options
+     */
+    String compressOptions
+
+    /**
      * If we want to keep the temporary folder for debugging purpose.
      *
      * @Default {@code false}
