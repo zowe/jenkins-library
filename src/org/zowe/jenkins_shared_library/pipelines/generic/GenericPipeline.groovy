@@ -1169,7 +1169,7 @@ class GenericPipeline extends Pipeline {
                     // normalize package name
                     def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
                     steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
-                    def paxPackageFile = args.compress ? paxPackageName + '.pax' : paxPackageName + '.pax.Z'
+                    def paxPackageFile = args.compress ? paxPackageName + '.pax.Z' : paxPackageName + '.pax'
                     def result = this.pax.pack(
                         job             : "pax-packaging-${paxPackageName}",
                         filename        : paxPackageFile,
