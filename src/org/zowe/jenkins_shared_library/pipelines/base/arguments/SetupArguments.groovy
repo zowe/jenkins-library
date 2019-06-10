@@ -46,4 +46,11 @@ class SetupArguments {
      * @Example {@code "1.2.3"}
      */
     String version
+
+    /**
+     * Option to skip default {@code checkout scm} in setup stage.
+     *
+     * @default {@code false}
+     */
+    Boolean skipCheckout = false
 }
