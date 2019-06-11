@@ -628,7 +628,7 @@ class Pipeline {
         //
         // For regular pipeline pointing to a github repository Jenkinsfile, or multibranch pipelines,
         // scm should exist.
-        if (steps.scm) {
+        if (steps.scm && !arguments.skipCheckout) {
             createStage(name: 'Checkout', stage: {
                 steps.checkout steps.scm
             }, isSkippable: false, timeout: arguments.checkout)

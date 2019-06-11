@@ -154,8 +154,6 @@ class GitHub {
         }
         if (args['branch']) {
             this.branch = args['branch']
-        } else {
-            this.branch = DEFAULT_BRANCH
         }
 
         if (args['folder']) {

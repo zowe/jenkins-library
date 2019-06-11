@@ -501,19 +501,10 @@ class GenericPipeline extends Pipeline {
      * @return          macro map
      */
     protected Map<String, String> extractArtifactoryUploadTargetFileMacros(String file) {
-        Map<String, String> macros = ['filename': '', 'fileext': '']
-
-        String baseName = file.lastIndexOf('/').with {
-            it != -1 ? file[(it + 1)..-1] : file
-        }
-        Integer idx = baseName.lastIndexOf('.')
-        if (idx != -1) {
-            macros['filename'] = baseName[0..(idx - 1)]
-            macros['fileext'] = baseName[idx..-1]
-        } else {
-            macros['filename'] = baseName
-            macros['fileext'] = ''
-        }
+        Map<String, String> macros = [:]
+        Map<String, String> fileNameExt = Utils.parseFileExtension(file)
+        macros['filename'] = fileNameExt['name']
+        macros['fileext'] = fileNameExt['ext']
 
         // Does file name looks like my-project-1.2.3-snapshot? If so, we remove the version information.
         def matches = macros['filename'] =~ /^(.+)-([0-9]+\.[0-9]+\.[0-9]+)(-[0-9a-zA-Z-+\.]+)?$/
@@ -1178,17 +1169,20 @@ class GenericPipeline extends Pipeline {
                     // normalize package name
                     def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
                     steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
+                    def paxPackageFile = args.compress ? paxPackageName + '.pax.Z' : paxPackageName + '.pax'
                     def result = this.pax.pack(
                         job             : "pax-packaging-${paxPackageName}",
-                        filename        : "${paxPackageName}.pax",
+                        filename        : paxPackageFile,
                         paxOptions      : args.paxOptions ?: '',
+                        compress        : args.compress ?: false,
+                        compressOptions : args.compressOptions ?: '',
                         keepTempFolder  : args.keepTempFolder ?: false
                     )
-                    if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageName}.pax")) {
-                        steps.echo "Packaging result ${paxPackageName}.pax is in place."
+                    if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageFile}")) {
+                        steps.echo "Packaging result ${paxPackageFile} is in place."
                     } else {
                         steps.sh "ls -la ${this.pax.localWorkspace}"
-                        steps.error "Failed to find packaging result ${paxPackageName}.pax"
+                        steps.error "Failed to find packaging result ${paxPackageFile}"
                     }
                 } else {
                     steps.echo "Not found local packaging workspace ${this.pax.localWorkspace}"

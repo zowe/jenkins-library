@@ -282,6 +282,43 @@ class Utils {
     }
 
     /**
+     * Return file name and extension with the given file name
+     *
+     * @param  file      file name to parse
+     * @return           a map with keys of name and ext
+     */
+    static Map parseFileExtension(String file) {
+        Map result = [:]
+        List<String> KNOWN_DOUBLE_EXTS = ['.tar.gz', '.pax.Z']
+
+        String baseName = file.lastIndexOf('/').with {
+            it != -1 ? file[(it + 1)..-1] : file
+        }
+        Integer idx = -1
+
+        // some file names end with .tar.gz we want to keep
+        KNOWN_DOUBLE_EXTS.each {
+            if (baseName.endsWith(it)) {
+                idx = baseName.size() - it.size()
+            }
+        }
+
+        if (idx == -1) {
+            idx = baseName.lastIndexOf('.')
+        }
+
+        if (idx != -1) {
+            result['name'] = baseName[0..(idx - 1)]
+            result['ext'] = baseName[idx..-1]
+        } else {
+            result['name'] = baseName
+            result['ext'] = ''
+        }
+
+        return result
+    }
+
+    /**
      * Escape special characters in text to make it safe to put in XML
      *
      * @Note This method uses {@link <a href="https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/StringEscapeUtils.html#escapeXml11-java.lang.String-">org.apache.commons.lang3.StringEscapeUtils#escapeXml11(String)</a>} to escape XML.
