@@ -21,7 +21,7 @@ import org.zowe.jenkins_shared_library.Utils
  * <ul>
  * <li><strong>content</strong> folder which holds all the required files/contents</li>
  * <li><strong>ascii</strong> folder is optional, which holds all plain text files will be converted to IBM-1047 encoding</li>
- * <li><strong>prepare-packaging.sh</strong> is the script to prepare workspace. <strong>This script will run in local workspace environment.</strong></li>
+ * <li><strong>prepare-workspace.sh</strong> is the script to prepare workspace. <strong>This script will run in local workspace environment.</strong></li>
  * <li><strong>pre-packaging.sh</strong> is the pre-hook which will run on PAX server before packaging</li>
  * <li><strong>post-packaging.sh</strong> is the post-hook which will run on PAX server after packaging</li>
  * </ul>
@@ -178,6 +178,7 @@ class Pax {
      *
      * @param   job             job identifier
      * @param   filename        package file name will be created
+     * @param   extraFiles      extra artifacts will be generated and should be transferred back
      * @param   environments    environment variables
      * @param   paxOptions      pax write command options
      * @param   compress        if we want to compress the result
@@ -237,6 +238,20 @@ class Pax {
                 filePaxZ = filePax + '.Z'
             }
         }
+        def extraFiles = []
+        if (args.containsKey('extraFiles')) {
+            if (args['extraFiles'] instanceof String) {
+                if (args['extraFiles']) {
+                    extraFiles = args['extraFiles'].split(/,/)
+                }
+            } else if (args['extraFiles'] instanceof ArrayList || args['extraFiles'] instanceof String[]) {
+                if (args['extraFiles'].size() > 0) {
+                    extraFiles = args['extraFiles']
+                }
+            } else if (args['extraFiles']) {
+                throw new InvalidArgumentException('extraFiles', "extraFiles with type ${args['extraFiles'].getClass()} is not accepted")
+            }
+        }
 
         def env = this.steps.env
         this.steps.echo "env=${env}"
@@ -245,7 +260,7 @@ class Pax {
         def packageTar = "${processUid}.tar"
         def packageScriptFile = "${processUid}.sh"
         def packageScriptContent = """#!/bin/sh -e
-set -x
+set +x
 
 if [ -z "${remoteWorkspace}" ]; then
   echo "${func}[ERROR] remoteWorkspace is not set"
@@ -265,6 +280,7 @@ if [ -f "${remoteWorkspace}/${packageTar}" ]; then
   echo "${func} extracting ${remoteWorkspace}/${packageTar} to ${remoteWorkspaceFullPath} ..."
   pax -r -x tar -f "${remoteWorkspace}/${packageTar}"
   if [ \$? -ne 0 ]; then
+    echo "${func}[ERROR] failed on untar package"
     exit 1
   fi
   rm "${remoteWorkspace}/${packageTar}"
@@ -295,6 +311,7 @@ if [ -f "${HOOK_PRE_PACKAGING}" ]; then
   echo "${func} launch: ${environmentText} ./${HOOK_PRE_PACKAGING}"
   ${environmentText} ./${HOOK_PRE_PACKAGING}
   if [ \$? -ne 0 ]; then
+    echo "${func}[ERROR] failed on pre hook"
     exit 1
   fi
 fi
@@ -308,9 +325,11 @@ echo "${func} content of ${remoteWorkspaceFullPath} ends   <<<<<<<<<<<<<<<<<<<<<
 # create PAX file
 if [ -d "${remoteWorkspaceFullPath}/${PATH_CONTENT}" ]; then
   echo "${func} creating package ..."
+  echo "${func}   ${remoteWorkspaceFullPath}/${PATH_CONTENT}\$ pax -w -f ${remoteWorkspaceFullPath}/${filePax} ${args['paxOptions'] ?: ''} *"
   cd "${remoteWorkspaceFullPath}/${PATH_CONTENT}"
-  pax -w -f "${remoteWorkspaceFullPath}/${filePax}" ${args['paxOptions']} *
+  pax -w -f "${remoteWorkspaceFullPath}/${filePax}" ${args['paxOptions'] ?: ''} *
   if [ \$? -ne 0 ]; then
+    echo "${func}[ERROR] failed on creating pax file"
     exit 1
   fi
   cd "${remoteWorkspaceFullPath}"
@@ -329,12 +348,14 @@ if [ -f "${HOOK_POST_PACKAGING}" ]; then
   echo "${func} launch: ${environmentText} ./${HOOK_POST_PACKAGING}"
   ${environmentText} ./${HOOK_POST_PACKAGING}
   if [ \$? -ne 0 ]; then
+    echo "${func}[ERROR] failed on post hook"
     exit 1
   fi
 fi
 
 # need to compress?
 if [ "${compressPax ? 'YES' : 'NO'}" = "YES" ]; then
+  echo "${func} compressing ${remoteWorkspaceFullPath}/${filePax} ..."
   compress ${args['compressOptions']} "${remoteWorkspaceFullPath}/${filePax}"
 fi
 
@@ -355,7 +376,7 @@ fi
             if (this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}")) {
                 this.steps.sh "\"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
             }
-            this.steps.sh "echo \"${func} packaging contents:\" && find ${this.localWorkspace}/${PATH_ASCII} -print"
+            this.steps.sh "echo \"${func} packaging contents:\" && find ${this.localWorkspace} -print"
             // tar ascii folder if exists
             if (this.steps.fileExists("${this.localWorkspace}/${PATH_ASCII}")) {
                 this.steps.sh """tar -c -f ${this.localWorkspace}/${PATH_ASCII}.tar -C ${this.localWorkspace}/ ${PATH_ASCII}
@@ -394,8 +415,12 @@ rm ${remoteWorkspace}/${packageScriptFile}
 exit 0
 EOF"""
                     // copy back pax file
+                    String extraGets = ""
+                    extraFiles.each {
+                        extraGets += "\nget ${remoteWorkspaceFullPath}/${it} ${this.localWorkspace}"
+                    }
                     this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
-get ${remoteWorkspaceFullPath}/${compressPax ? filePaxZ : filePax} ${this.localWorkspace}
+get ${remoteWorkspaceFullPath}/${compressPax ? filePaxZ : filePax} ${this.localWorkspace}${extraGets}
 EOF"""
                 } catch (ex1) {
                     // throw error
@@ -480,7 +505,7 @@ EOF"""
                 // extract tar file, run pre/post hooks and create pax file
                 this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
 cd ${remoteWorkspace}
-pax -rf ${exactFilename} ${args['paxOptions']}
+pax -rf ${exactFilename} ${args['paxOptions'] ?: ''}
 exit 0
 EOF"""
                 // get extracted result

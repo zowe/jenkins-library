@@ -1173,6 +1173,7 @@ class GenericPipeline extends Pipeline {
                     def result = this.pax.pack(
                         job             : "pax-packaging-${paxPackageName}",
                         filename        : paxPackageFile,
+                        extraFiles      : args.extraFiles ?: '',
                         paxOptions      : args.paxOptions ?: '',
                         compress        : args.compress ?: false,
                         compressOptions : args.compressOptions ?: '',
