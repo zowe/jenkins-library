@@ -418,7 +418,7 @@ class GenericPipeline extends Pipeline {
         }
 
         if (!macros.containsKey('package')) {
-            macros['package'] = this.getPackageName().replace('.', '/')
+            macros['package'] = (this.getPackageName() ?: '').replace('.', '/')
         }
         if (!macros['package']) {
             throw new PublishStageException('Cannot determin package name for build string', '-')
@@ -427,7 +427,7 @@ class GenericPipeline extends Pipeline {
             macros['subproject'] = ''
         }
         if (!macros.containsKey('version')) {
-            macros['version'] = this.getVersion()
+            macros['version'] = (this.getVersion() ?: '')
         }
         if (!macros['version']) {
             throw new PublishStageException('Cannot determin version for build string', '-')
@@ -450,7 +450,7 @@ class GenericPipeline extends Pipeline {
                 macros['prerelease'] = ''
             }
             if (!macros.containsKey('branchtag')) {
-                macros['branchtag'] = this.getBranchTag()
+                macros['branchtag'] = (this.getBranchTag() ?: '')
             }
             if (!macros.containsKey('timestamp')) {
                 macros['timestamp'] = Utils.getTimestamp()
