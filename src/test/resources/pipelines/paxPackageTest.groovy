@@ -72,6 +72,7 @@ echo "[${hookPrePackaging}] ended."
 echo "[${hookPostPackaging}] started ..."
 echo "[${hookPostPackaging}] pwd=\$(pwd)"
 echo "[${hookPostPackaging}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
+echo "extra file" > extra-file.log
 echo "[${hookPostPackaging}] ended."
 """
 
@@ -82,7 +83,12 @@ echo "[${hookPostPackaging}] ended."
      * Should be able to create a PAX package
      */
     stage('package') {
-        def result = pax.pack(TEST_JOB_NAME, "${TEST_JOB_NAME}.pax", ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE])
+        def result = pax.pack(
+            job          : TEST_JOB_NAME,
+            filename     : "${TEST_JOB_NAME}.pax",
+            extraFiles   : "extra-file.log",
+            environments : ["${TEST_ENV_VAR_NAME}": TEST_ENV_VAR_VALUE]
+        )
 
         def localWorkspace = pax.getLocalWorkspace()
         if (result != "${localWorkspace}/${TEST_JOB_NAME}.pax") {
@@ -90,6 +96,9 @@ echo "[${hookPostPackaging}] ended."
         }
         if (!fileExists("${localWorkspace}/${TEST_JOB_NAME}.pax")) {
             error 'Failed to find the expected package'
+        }
+        if (!fileExists("${localWorkspace}/extra-file.log")) {
+            error 'Failed to find the expected extra file'
         }
 
         echo "[PAX_PACKAGE_TEST] pack successfully"

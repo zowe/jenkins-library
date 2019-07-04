@@ -297,7 +297,7 @@ class NodeJSPipeline extends GenericPipeline {
                 pipeline.publishRegistry.init(arguments.publishRegistry)
                 // try to extract publish registry from package.json
                 pipeline.publishRegistry.initFromPackageJson()
-                pipeline.steps.echo "- ${pipeline.publishRegistry.scope ? '@' + pipeline.publishRegistry.scope + ':' : ''}${pipeline.publishRegistry.registry}"
+                pipeline.steps.echo "- ${pipeline.publishRegistry.scope ? '@' + pipeline.publishRegistry.scope + ':' : ''}${pipeline.publishRegistry.registry ?: '(WARNING: undefined publish registry)'}"
             }
             if (arguments.installRegistries) {
                 pipeline.steps.echo 'Init install registries ...'

@@ -142,7 +142,7 @@ class Pipeline {
      *
      * @see jenkins_shared_library.pipelines.generic.GenericPipeline#getBuildStringMacros(Map&lt;String, String&gt;)
      */
-    String packageName
+    String packageName = ''
 
     /**
      * Package current semantic version in {@code &lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;} format.

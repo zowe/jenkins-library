@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.artifact
 
+import groovy.util.logging.Log
 import java.net.URLEncoder
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
@@ -31,6 +32,7 @@ import org.zowe.jenkins_shared_library.Utils
  *     )
  * </pre>
  */
+@Log
 class JFrogArtifactory implements ArtifactInterface {
     /**
      * Reference to the groovy pipeline variable.
@@ -623,5 +625,160 @@ class JFrogArtifactory implements ArtifactInterface {
      */
     String promote(String source, String targetPath, String targetName = '') {
         return this.promote([source: source, targetPath: targetPath, targetName: targetName])
+    }
+
+    /**
+     * Interpret artifact definition
+     *
+     * @Example Consider these scenarios:
+     * <pre>
+     * "org.zowe.zlux.zlux-core": {
+     *     &#47;&#47; no * in the pattern, will pick exact artifact with path
+     *     "artifact": "libs-snapshot-local&#47;org&#47;zowe&#47;zlux&#47;zlux-core&#47;1.3.0-RC&#47;zlux-core-1.3.0-20190607.143930.pax"
+     * },
+     * "org.zowe.explorer-jes": {
+     *     &#47;&#47; still pick exact artifact by release version
+     *     &#47;&#47; match 0.0.21 in libs-release-local&#47;org&#47;zowe&#47;explorer-jes&#47;0.0.21&#47;*
+     *     &#47;&#47; and it should only have one artifact in the folder
+     *     "version": "0.0.21"
+     * },
+     * "org.zowe.explorer-mvs": {
+     *     &#47;&#47; pick the most recent patch-level build
+     *     &#47;&#47; match 0.0.* from libs-snapshot-local&#47;org&#47;zowe&#47;explorer-mvs&#47;0.0.*&#47;*
+     *     "version": "~0.0.21",
+     *     &#47;&#47; optional to specify which artifact to pick from, if more than one in the folder
+     *     &#47;&#47; with this option, will try to find the artifact with pattern libs-snapshot-local&#47;org&#47;zowe&#47;explorer-mvs&#47;0.0.*&#47;explorer-mvs-special-name-*.pax
+     *     "artifact": "explorer-mvs-special-name-*.pax"
+     * },
+     * "org.zowe.another": {
+     *     &#47;&#47; pick the most recent minor-level build
+     *     &#47;&#47; match 0.* from libs-snapshot-local&#47;org&#47;zowe&#47;another&#47;0.*&#47;*
+     *     "version": "^0.0.21",
+     * },
+     * "license": {
+     *     &#47;&#47; pick exact artifact defined by artifact
+     *     "artifact": "libs-release-local&#47;org&#47;zowe&#47;licenses&#47;1.0.0&#47;zowe_licenses_full.zip"
+     * },
+     * "org.zowe.licenses": {
+     *     &#47;&#47; another way to define with same effect above
+     *     "version": "1.0.0"
+     * }
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @param  packageName       package name. For example {@code org.zowe.explorer-jes}
+     * @param  definition        map of definition. Supported keys are: version, artifact, explode, target, repository
+     * @param  defaults          default values for definition. Supported keys are: target, repository
+     * @return                   map of Artifactory download spec
+     */
+    Map interpretArtifactDefinition(String packageName, Map definition, Map defaults = [:]) throws InvalidArgumentException {
+        Map result = [:]
+        String packagePath = packageName.replaceAll(/\./, '/')
+        String repository = ''
+        log.fine("args.packageName = ${packageName}")
+        log.fine("args.definition  = ${definition}")
+        log.fine("args.defaults    = ${defaults}")
+
+        // target & explode will be copied over
+        if (definition.containsKey('target')) {
+            result['target'] = definition['target'] as String
+        } else if (defaults.containsKey('target')) {
+            result['target'] = defaults['target'] as String
+        }
+        if (definition.containsKey('repository')) {
+            repository = definition['repository'] as String
+        } else if (defaults.containsKey('repository')) {
+            repository = defaults['repository'] as String
+        }
+        if (definition.containsKey('explode')) {
+            result['explode'] = definition['explode'] as String
+        }
+        // always flat
+        result['flat'] = 'true'
+        result['pattern'] = ''
+
+        if (definition.containsKey('artifact')) {
+            if (definition['artifact'].contains('/')) {
+                // assume this is a full path to the artifact
+                result['pattern'] = definition['artifact'] as String
+            }
+        }
+
+        log.finer("result (before parsing version) = ${result}")
+
+        if (!result['pattern'] && definition.containsKey('version')) {
+            def m1 = (definition['version'] =~ /^~([0-9]+)\.([0-9]+)\.([0-9]+)(-.+)?$/)
+            def m2 = definition['version'] =~ /^\^([0-9]+)\.([0-9]+)\.([0-9]+)(-.+)?$/
+            if (m1.matches()) {
+                if (!repository) {
+                    repository = m1[0][4] ? REPOSITORY_SNAPSHOT : REPOSITORY_RELEASE
+                }
+                result['pattern'] = repository + '/' + packagePath + '/' +
+                                    m1[0][1] + '.' + m1[0][2] + ".*${m1[0][4] ?: ''}/"
+            } else if (m2.matches()) {
+                if (!repository) {
+                    repository = m2[0][4] ? REPOSITORY_SNAPSHOT : REPOSITORY_RELEASE
+                }
+                result['pattern'] = repository + '/' + packagePath + '/' +
+                                    m2[0][1] + ".*${m2[0][4] ?: ''}/"
+            } else {
+                // parse semantic version, this may throw exception if version is invalid
+                Map sv = Utils.parseSemanticVersion(definition['version'])
+                if (sv['prerelease'] == '' && sv['metadata'] == '') {
+                    // this is formal release
+                    result['pattern'] = (repository ?: REPOSITORY_RELEASE) + '/' + packagePath + '/' + definition['version'] + '/'
+                } else if (sv['prerelease'] != '') {
+                    result['pattern'] = (repository ?: REPOSITORY_SNAPSHOT) + '/' + packagePath + '/' +
+                        sv['major'] + '.' + sv['minor'] + '.' + sv['patch'] + '-' + sv['prerelease'] + '/'
+                }
+            }
+
+            if (result['pattern']) {
+                if (definition.containsKey('artifact')) {
+                    result['pattern'] += definition['artifact']
+                } else {
+                    result['pattern'] += '*'
+                }
+            }
+        }
+
+        if (!result['pattern']) {
+            throw new InvalidArgumentException('definition', 'Invalid artifact definition, either artifact nor version is provided.')
+        }
+
+        if (result['pattern'] =~ /\*.*\/[^\/]+$/) {
+            // if we have * in the path, we only pick the most recent artifact
+            // if we only have * in the artifact name, we may want to pick more than one
+            result["sortBy"] = ["created"]
+            result["sortOrder"] = "desc"
+            result["limit"] = 1
+        }
+
+        log.fine("result (final) = ${result}")
+
+        return result
+    }
+
+    /**
+     * Convert Map of package name - definition to Artifactory download specification
+     *
+     * @param  definitions       Map of package name - definition pairs
+     * @param  defaults          default values for definition. Supported keys are: target, repository
+     * @return                   map of download spec with 'files' List
+     */
+    Map interpretArtifactDefinitions(Map definitions, Map defaults = [:]) {
+        def result
+        if (this.steps) {
+            result = this.steps.readJSON text: '{"files":[]}'
+        } else {
+            result = ['files': []]
+        }
+
+        definitions.each { packageName, definition ->
+            result['files'].push(this.interpretArtifactDefinition(packageName, definition, defaults))
+        }
+
+        return result
     }
 }

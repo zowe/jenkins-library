@@ -64,6 +64,11 @@ class PackagingStageArguments extends GenericStageArguments {
     String compressOptions
 
     /**
+     * Extra files/artifacts should be download after packaging
+     */
+    def extraFiles
+
+    /**
      * If we want to keep the temporary folder for debugging purpose.
      *
      * @Default {@code false}
