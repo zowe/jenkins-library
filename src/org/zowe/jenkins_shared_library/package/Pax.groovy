@@ -356,7 +356,7 @@ fi
 # need to compress?
 if [ "${compressPax ? 'YES' : 'NO'}" = "YES" ]; then
   echo "${func} compressing ${remoteWorkspaceFullPath}/${filePax} ..."
-  compress ${args['compressOptions']} "${remoteWorkspaceFullPath}/${filePax}"
+  compress ${args['compressOptions'] ?: ''} "${remoteWorkspaceFullPath}/${filePax}"
 fi
 
 if [ -f "${remoteWorkspaceFullPath}/${filePax}" ]; then
