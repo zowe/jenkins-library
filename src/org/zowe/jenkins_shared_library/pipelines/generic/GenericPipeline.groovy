@@ -151,7 +151,7 @@ class GenericPipeline extends Pipeline {
      * @Example With the default pattern, the pipeline may interpret the targe version string as
      * {@code "1.2.3-snapshot-23-20190101010101"}.
      */
-    String publishTargetVersion = '{version}{prerelease}{branchtag}{buildnumber}{timestamp}'
+    String publishTargetVersion = '{version}{prerelease}{timestamp}'
 
     /**
      * Artifactory upload path pattern when the pipeline try to publish artifacts.
@@ -474,7 +474,7 @@ class GenericPipeline extends Pipeline {
             macros['timestamp'] = '-' + macros['timestamp']
         }
         if (macros['buildnumber'] && !macros['buildnumber'].startsWith('-')) {
-            macros['buildnumber'] = '-' + macros['buildnumber']
+            macros['buildnumber'] = '.' + macros['buildnumber']
         }
 
         if (!macros.containsKey('publishversion')) {
