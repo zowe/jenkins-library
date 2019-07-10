@@ -421,7 +421,7 @@ class GenericPipeline extends Pipeline {
             macros['package'] = this.getPackageName().replace('.', '/')
         }
         if (!macros['package']) {
-            throw new PublishStageException('Cannot determin package name for build string', '-')
+            throw new PublishStageException('Cannot determine package name for build string', '-')
         }
         if (!macros.containsKey('subproject')) {
             macros['subproject'] = ''
@@ -430,7 +430,7 @@ class GenericPipeline extends Pipeline {
             macros['version'] = this.getVersion()
         }
         if (!macros['version']) {
-            throw new PublishStageException('Cannot determin version for build string', '-')
+            throw new PublishStageException('Cannot determine version for build string', '-')
         }
         if (_isReleaseBranch && _isPerformingRelease) {
             if (!macros.containsKey('prerelease')) {
@@ -453,7 +453,7 @@ class GenericPipeline extends Pipeline {
                 macros['branchtag'] = this.getBranchTag()
             }
             if (!macros.containsKey('timestamp')) {
-                macros['timestamp'] = Utils.getTimestamp()
+                macros['timestamp'] = 'SNAPSHOT'
             }
             if (!macros.containsKey('buildnumber')) {
                 macros['buildnumber'] = "${(steps.env && steps.env.BUILD_NUMBER) ?: ''}"
