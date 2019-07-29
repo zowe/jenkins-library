@@ -79,30 +79,30 @@ class Constants {
     /**
      * Default PAX Packaging server host name
      *
-     * @Default {@code "river.zowe.org"}
+     * @Default {@code "zzow01.zowe.marist.cloud"}
      */
-    public static String DEFAULT_PAX_PACKAGING_SSH_HOST = 'river.zowe.org'
+    public static String DEFAULT_PAX_PACKAGING_SSH_HOST = 'zzow01.zowe.marist.cloud'
 
     /**
      * Default PAX Packaging server port
      *
-     * @Default {@code "2022"}
+     * @Default {@code "22"}
      */
-    public static String DEFAULT_PAX_PACKAGING_SSH_PORT = '2022'
+    public static String DEFAULT_PAX_PACKAGING_SSH_PORT = '22'
 
     /**
      * Default PAX Packaging server credential defined on Jenkins
      *
-     * @Default {@code "ssh-zdt-test-image-guest"}
+     * @Default {@code "ssh-marist-server-zzow01"}
      */
-    public static String DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL = 'ssh-zdt-test-image-guest'
+    public static String DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL = 'ssh-marist-server-zzow01'
 
     /**
      * Default PAX Packaging server default working space
      *
-     * @Default {@code "/zaas1"}
+     * @Default {@code "/ZOWE/tmp"}
      */
-    public static String DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE = '/zaas1'
+    public static String DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE = '/ZOWE/tmp'
 
     /**
      * Default NPM private registry url for npm install
