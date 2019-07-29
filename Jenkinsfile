@@ -25,9 +25,9 @@ def NPM_EMAIL              = 'giza-jenkins@gmail.com'
 def NPM_CREDENTIAL         = 'GizaArtifactoryEncoded'
 def ARTIFACTORY_URL        = 'https://gizaartifactory.jfrog.io/gizaartifactory'
 def ARTIFACTORY_CREDENTIAL = 'GizaArtifactory'
-def PAX_SERVER_HOST        = 'river.zowe.org'
-def PAX_SERVER_PORT        = 2022
-def PAX_SERVER_CREDENTIAL  = 'ssh-zdt-test-image-guest'
+def PAX_SERVER_HOST        = 'zzow01.zowe.marist.cloud'
+def PAX_SERVER_PORT        = 22
+def PAX_SERVER_CREDENTIAL  = 'ssh-marist-server-zzow01'
 
 def opts = []
 // keep last 20 builds for regular branches, no keep for pull requests
