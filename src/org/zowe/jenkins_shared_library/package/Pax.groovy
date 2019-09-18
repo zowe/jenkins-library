@@ -391,7 +391,7 @@ rm -fr ${this.localWorkspace}/${PATH_ASCII}
             throw new PackageException("Failed to prepare packaging workspace: ${ex0}")
         }
 
-        this.steps.lock("packaging-server-${this.sshHost}") {
+        // this.steps.lock("packaging-server-${this.sshHost}") {
             this.steps.withCredentials([
                 this.steps.usernamePassword(
                     credentialsId    : this.sshCredential,
@@ -444,7 +444,7 @@ EOF"""
                     }
                 }
             } // end withCredentials
-        } // end lock
+        // } // end lock
 
         return "${this.localWorkspace}/${compressPax ? filePaxZ : filePax}"
     } // end package()
