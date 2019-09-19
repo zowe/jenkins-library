@@ -374,7 +374,7 @@ fi
         try {
             // run prepare-packaging hook if exists
             if (this.steps.fileExists("${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}")) {
-                this.steps.sh "\"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
+                this.steps.sh "${environmentText} \"${this.localWorkspace}/${HOOK_PREPARE_WORKSPACE}\""
             }
             this.steps.sh "echo \"${func} packaging contents:\" && find ${this.localWorkspace} -print"
             // tar ascii folder if exists
@@ -391,7 +391,7 @@ rm -fr ${this.localWorkspace}/${PATH_ASCII}
             throw new PackageException("Failed to prepare packaging workspace: ${ex0}")
         }
 
-        this.steps.lock("packaging-server-${this.sshHost}") {
+        // this.steps.lock("packaging-server-${this.sshHost}") {
             this.steps.withCredentials([
                 this.steps.usernamePassword(
                     credentialsId    : this.sshCredential,
@@ -444,7 +444,7 @@ EOF"""
                     }
                 }
             } // end withCredentials
-        } // end lock
+        // } // end lock
 
         return "${this.localWorkspace}/${compressPax ? filePaxZ : filePax}"
     } // end package()
