@@ -139,18 +139,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to upload artifact
      */
     stage('upload') {
-        // get upload target artifact
-        def uploadTarget
-        try {
-            uploadTarget = jfrog.getArtifact("${snapshotArtifact}")
-        } catch (e) {
-            // ignore
-        }
-        if (uploadTarget && uploadTarget.containsKey('path')) {
-            // already exist, delete it
-            jfrog.delete(uploadTarget['path'])
-        }
-
         // prepare artifact
         sh "echo test > ${testLocalArtifact}"
 
