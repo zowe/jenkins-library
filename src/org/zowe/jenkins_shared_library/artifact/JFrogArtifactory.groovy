@@ -219,9 +219,9 @@ class JFrogArtifactory implements ArtifactInterface {
         // validate result size
         def resultSize = results.size()
         if (resultSize < 1) {
-            throw new ArtifactException("Cannot find artifact \"${args['pattern']}\"${searchOptionText}")
+            throw new ArtifactException("Cannot find artifact \"${args['pattern']}\"")
         } else if (resultSize > 1) {
-            throw new ArtifactException("Found more than one artifact (${resultSize}) of \"${args['pattern']}\"${searchOptionText}")
+            throw new ArtifactException("Found more than one artifact (${resultSize}) of \"${args['pattern']}\"")
         }
 
         // fetch the first artifact
