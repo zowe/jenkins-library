@@ -310,7 +310,7 @@ class JFrogArtifactory implements ArtifactInterface {
             )
         ]) {
             resultText = this.steps.sh(
-                script: "curl -u \"${USERNAME}:${PASSWORD}\" -sS" +
+                script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " \"${this.url}/api/build/${encodedBuildName}/${args['build-number']}\"",
                 returnStdout: true
             ).trim()
