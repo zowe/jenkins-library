@@ -66,9 +66,10 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to get build information
      */
     stage('getBuildInfo') {
-        String buildName           = 'zowe-promote-publish :: master'
-        String buildNumber         = '50'
-        String expectedVcsRevision = '70ff3493529f462f4785727cc4bd378a8f1a829c'
+        // this is parent build of `libs-release-local/org/zowe/1.0.0/zowe-1.0.0.pax`
+        String buildName           = 'zowe-install-packaging :: master'
+        String buildNumber         = '515'
+        String expectedVcsRevision = 'f11489d588321281a461eb7bc7883b495f16d882'
 
         // get build
         Map build = jfrog.getBuildInfo(buildName, buildNumber)
