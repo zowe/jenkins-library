@@ -63,6 +63,35 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     /**
+     * Should be able to get build information
+     */
+    stage('getBuildInfo') {
+        String buildName           = 'zowe-promote-publish :: master'
+        String buildNumber         = '50'
+        String expectedVcsRevision = '70ff3493529f462f4785727cc4bd378a8f1a829c'
+
+        // get build
+        Map build = jfrog.getBuildInfo(buildName, buildNumber)
+
+        // validate resolved build name
+        if (!build || !build['name']) {
+            error "Failed to find \"${buildName}/${buildNumber}\""
+        }
+
+        // validate build name
+        if (!build || !build['name'] || build['name'] != buildName) {
+            error "build name \"${build['name']}\" is not expected as \"${buildName}\"."
+        }
+
+        // validate build vcsRevision
+        if (!build || !build['vcsRevision'] || build['vcsRevision'] != expectedVcsRevision) {
+            error "build vcsRevision \"${build['vcsRevision']}\" is not expected as \"${expectedVcsRevision}\"."
+        }
+
+        echo "[JFROG_ARTIFACTORY_TEST] getBuildInfo successfully"
+    }
+
+    /**
      * Should be able to download artifacts
      */
     stage('download') {
