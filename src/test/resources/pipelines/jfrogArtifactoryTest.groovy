@@ -139,6 +139,18 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to upload artifact
      */
     stage('upload') {
+        // get upload target artifact
+        def uploadTarget
+        try {
+            uploadTarget = jfrog.getArtifact("${snapshotArtifact}")
+        } catch (e) {
+            // ignore
+        }
+        if (uploadTarget && uploadTarget.containsKey('path')) {
+            // already exist, delete it
+            jfrog.delete(uploadTarget['path'])
+        }
+
         // prepare artifact
         sh "echo test > ${testLocalArtifact}"
 
@@ -163,18 +175,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Will use artifact uploaded from upload stage
      */
     stage('promote') {
-        // delete before promote
-
-        // get release target artifact
-        def releaseTarget
-        try {
-            releaseTarget = jfrog.getArtifact("${releaseFolder}${testRemoteArtifact}")
-        } catch (e) {
-            // ignore
-        }
-        if (releaseTarget && releaseTarget.containsKey('path')) {
-            jfrog.delete(releaseTarget['path'])
-        }
+        def ts = lib.Utils.getTimestamp()
+        releaseFolder += ts + '/'
 
         def result = jfrog.promote(snapshotArtifact, releaseFolder)
 

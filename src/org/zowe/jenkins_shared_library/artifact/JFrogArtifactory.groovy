@@ -687,14 +687,18 @@ class JFrogArtifactory implements ArtifactInterface {
         }
         */
         def resultJson = this.steps.readJSON text: resultText
-        Map result = ['success': 0, 'failure': 0]
         if (!resultJson || !resultJson['status'] || resultJson['status'] != 'success') {
             throw new ArtifactException("Failed to delete artifact(s): ${resultJson}")
         }
-        result['success'] = resultJson['totals']['success']
-        result['failure'] = resultJson['totals']['failure']
+        this.steps.echo "Artifact deletion result:\n" +
+            "- status  : ${resultJson['status']}\n" +
+            "- success : ${resultJson['totals']['success']}\n" +
+            "- failure : ${resultJson['totals']['failure']}"
 
-        this.steps.echo "${args['pattern']} deleted: ${result}"
+        Map result = [
+            'success': resultJson['totals']['success'],
+            'failure': resultJson['totals']['failure']
+        ]
 
         return result
     }
