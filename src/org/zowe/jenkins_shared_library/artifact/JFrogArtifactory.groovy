@@ -637,6 +637,78 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
+     * Delete an artifact
+     *
+     * @Note This method is implemented with jFrog CLI.
+     *
+     * @Example Delete {@code my-project.zip} from artifactory {@coode lib-snapshot-local} repository.
+     * <pre>
+     *     jfrog.delete(
+     *         pattern : 'build/result/of/my-project.zip'
+     *     )
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @param  pattern          pattern to locate the artifacts
+     * @return                  number of artifacts successfully or failed to delete
+     */
+    Map delete(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+        // init with arguments
+           if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!url) {
+            throw new InvalidArgumentException('url')
+        }
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+        if (!args['pattern']) {
+            throw new InvalidArgumentException('pattern')
+        }
+
+        this.steps.echo "Deleting artifact \"${args['pattern']}\" ..."
+
+        def resultText = this.steps.sh(
+            script: "jfrog rt delete --quiet \"${args['pattern']}\"",
+            returnStdout: true
+        ).trim()
+        // this.steps.echo "Raw rt delete result:\n${resultText}"
+        /*
+        Example result:
+        {
+            "status": "success",
+            "totals": {
+                "success": 1,
+                "failure": 0
+            }
+        }
+        */
+        def resultJson = this.steps.readJSON text: resultText
+        Map result = ['success': 0, 'failure': 0]
+        if (!resultJson || !resultJson['status'] || resultJson['status'] != 'success') {
+            throw new ArtifactException("Failed to delete artifact(s): ${resultJson}")
+        }
+        result['success'] = resultJson['totals']['success']
+        result['failure'] = resultJson['totals']['failure']
+
+        this.steps.echo "${args['pattern']} deleted: ${result}"
+
+        return result
+    }
+
+    /**
+     * Delete an artifact
+     *
+     * @see #upload(Map)
+     */
+    Map delete(String pattern) {
+        return this.delete(pattern: pattern)
+    }
+
+    /**
      * Promote artifact.
      *
      * <p><strong>Requires these environment variables:</strong><ul>

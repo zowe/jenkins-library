@@ -163,6 +163,19 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Will use artifact uploaded from upload stage
      */
     stage('promote') {
+        // delete before promote
+
+        // get release target artifact
+        def releaseTarget
+        try {
+            releaseTarget = jfrog.getArtifact("${releaseFolder}${testRemoteArtifact}")
+        } catch (e) {
+            // ignore
+        }
+        if (releaseTarget && releaseTarget.containsKey('path')) {
+            jfrog.delete(releaseTarget['path'])
+        }
+
         def result = jfrog.promote(snapshotArtifact, releaseFolder)
 
         if (result != "${releaseFolder}${testRemoteArtifact}") {
