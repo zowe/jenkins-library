@@ -123,26 +123,18 @@ class JFrogArtifactory implements ArtifactInterface {
     }
 
     /**
-     * Get detail information of an artifact
+     * Get list of artifacts match the criteria
      *
      * @Note This method is implemented with jFrog CLI.
-     *
-     * <p><strong>Example output:</strong><ul>
-     * <li>{@code path} - {@code "libs-snapshot-local/com/project/zowe/0.9.0-SNAPSHOT/zowe-0.9.0-20180918.163158-38.pax"}</li>
-     * <li>{@code build.name} - {@code "zowe-install-packaging :: master"}</li>
-     * <li>{@code build.number} - {@code "38"}</li>
-     * <li>{@code build.timestamp} - {@code "1537287202277"}</li>
-     * </ul></p>
      *
      * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param   pattern            path pattern to find the artifact. For example: {@code "lib-snapshot-local/path/to/artifacts/*.zip"}
      * @param   build-name         limit the search within this build name. Optional.
      * @param   build-number       limit the search within this build number. Optional.
-     * @return                     a Map with the artifact information. Must include {@code path} key.
-     * @throws ArtifactException   Cannot find or find more than one artifacts.
+     * @return                     a net.sf.json.JSONArray with the artifacts list
      */
-    Map getArtifact(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+    def getArtifacts(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
         if (args.size() > 0) {
             this.init(args)
@@ -154,8 +146,6 @@ class JFrogArtifactory implements ArtifactInterface {
         if (!usernamePasswordCredential) {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
-
-        Map result = [:]
 
         def searchOptions = ""
         def searchOptionText = ""
@@ -191,10 +181,43 @@ class JFrogArtifactory implements ArtifactInterface {
           }
         ]
         */
-        def resultJson = this.steps.readJSON text: resultText
+        def results = this.steps.readJSON text: resultText
+        def resultSize = results.size()
+
+        String readable = "Found ${resultSize} artifact(s):\n"
+        results.each { it ->
+            readable += "- ${it.path}\n"
+        }
+        this.steps.echo readable
+
+        return results
+    }
+
+    /**
+     * Get detail information of an artifact.
+     *
+     * @Note This method is implemented with jFrog CLI.
+     *
+     * <p><strong>Example output:</strong><ul>
+     * <li>{@code path} - {@code "libs-snapshot-local/com/project/zowe/0.9.0-SNAPSHOT/zowe-0.9.0-20180918.163158-38.pax"}</li>
+     * <li>{@code build.name} - {@code "zowe-install-packaging :: master"}</li>
+     * <li>{@code build.number} - {@code "38"}</li>
+     * <li>{@code build.timestamp} - {@code "1537287202277"}</li>
+     * </ul></p>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @param   pattern            path pattern to find the artifact. For example: {@code "lib-snapshot-local/path/to/artifacts/*.zip"}
+     * @param   build-name         limit the search within this build name. Optional.
+     * @param   build-number       limit the search within this build number. Optional.
+     * @return                     a Map with the artifact information. Must include {@code path} key.
+     * @throws ArtifactException   Cannot find or find more than one artifacts.
+     */
+    Map getArtifact(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+        def results = this.getArtifacts(args)
 
         // validate result size
-        def resultSize = resultJson.size()
+        def resultSize = results.size()
         if (resultSize < 1) {
             throw new ArtifactException("Cannot find artifact \"${args['pattern']}\"${searchOptionText}")
         } else if (resultSize > 1) {
@@ -202,12 +225,13 @@ class JFrogArtifactory implements ArtifactInterface {
         }
 
         // fetch the first artifact
-        def artifactInfo = resultJson.first()
-
+        def artifactInfo = results.first()
         // validate build info
         if (!artifactInfo || !artifactInfo.path) {
             throw new ArtifactException("Failed to find artifact information (path).")
         }
+
+        Map result = [:]
         result['path'] = artifactInfo.path
 
         // append artifact properties
@@ -239,6 +263,142 @@ class JFrogArtifactory implements ArtifactInterface {
     Map getArtifact(String pattern, String buildName = '', String buildNumber = '') {
         return getArtifact([
             'pattern'      : pattern,
+            'build-name'   : buildName,
+            'build-number' : buildNumber,
+        ])
+    }
+
+    /**
+     * Get build information from Artifactory.
+     *
+     * @Note This method is implemented with jFrog API call.
+     *
+     * @param   build-name         limit the search within this build name. Required.
+     * @param   build-number       limit the search within this build number. Required.
+     * @return                     full build information JSON object
+     * @throws ArtifactException   Cannot find the build or other API failures.
+     */
+    Map getBuildInfo(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!url) {
+            throw new InvalidArgumentException('url')
+        }
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+        if (!args['build-name']) {
+            throw new InvalidArgumentException('build-name')
+        }
+        if (!args['build-number']) {
+            throw new InvalidArgumentException('build-number')
+        }
+
+        // FIXME: this could be risky if build name including non-ASCII characters
+        def encodedBuildName = args['build-name'].replace('/', ' :: ').replace(' ', '%20')
+        this.steps.echo "Fetching build information of \"${encodedBuildName}/${args['build-number']}\" ..."
+
+        def resultText = null
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            resultText = this.steps.sh(
+                script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                        " \"${this.url}/api/build/${encodedBuildName}/${args['build-number']}\"",
+                returnStdout: true
+            ).trim()
+        }
+        if (!resultText) {
+            throw new ArtifactException("invalid Artifacory API response \"${resultText}\"")
+        }
+        // this.steps.echo "Raw search result:\n${resultText}"
+        /*
+        Example result:
+        {
+            "buildInfo" : {
+                "version" : "1.0.1",
+                "name" : "zowe-install-packaging :: staging",
+                "number" : "218",
+                "type" : "GENERIC",
+                "buildAgent" : {
+                    "name" : "Pipeline",
+                    "version" : ""
+                },
+                "agent" : {
+                    "name" : "Jenkins",
+                    "version" : "2.164.2"
+                },
+                "started" : "2019-09-19T16:19:28.927+0000",
+                "durationMillis" : 245379,
+                "principal" : "anonymous",
+                "artifactoryPrincipal" : "giza-jenkins",
+                "artifactoryPluginVersion" : "3.3.0",
+                "url" : "https://wash.zowe.org:8443/job/zowe-install-packaging/job/staging/218/",
+                "vcs" : [ {
+                    "revision" : "07bc1f8de018e86a3fe099710ecf7083cd690887",
+                    "url" : "https://github.com/zowe/jenkins-library.git",
+                    "empty" : false
+                }, {
+                    "revision" : "d6b2a3fe45de71434ad13a133dfb3f433ccb6473",
+                    "url" : "https://github.com/zowe/zowe-install-packaging.git",
+                    "empty" : false
+                } ],
+                "vcsRevision" : "d6b2a3fe45de71434ad13a133dfb3f433ccb6473",
+                "vcsUrl" : "https://github.com/zowe/zowe-install-packaging.git",
+                "modules" : [ {
+                    "id" : "zowe-install-packaging :: staging",
+                    "artifacts" : [ {
+                        "type" : "pax",
+                        "sha1" : "7390e4051add42a12d36db104c8d3afd59b6bb3a",
+                        "sha256" : "e384342f73b2de01dd6d6106349270697f35e7976b640bbb9393098b24afa799",
+                        "md5" : "738d03c75e44d417438f50e6682671fa",
+                        "name" : "zowe.pax"
+                    } ],
+                    "dependencies" : [ ]
+                } ],
+                "buildDependencies" : [ ]
+            },
+            "uri" : "https://gizaartifactory.jfrog.io/gizaartifactory/api/build/zowe-install-packaging%20::%20staging/218"
+        }
+        */
+        def result = this.steps.readJSON text: resultText
+        if (result && result.containsKey('errors')) {
+            /*
+            Example error response:
+            {
+                "errors" : [ {
+                    "status" : 404,
+                    "message" : "No build was found for build name: zowe-install-packaging :: staging1, build number: 2111 "
+                } ]
+            }
+            */
+           def firstError = result.errors.first()
+           if (firstError && firstError.message) {
+               throw new ArtifactException("Artifactory API error: ${firstError.message}")
+           } else {
+               throw new ArtifactException("Artifactory API error: ${firstError}")
+           }
+        } else if (result && result.containsKey('buildInfo')) {
+            return result['buildInfo']
+        } else {
+            throw new ArtifactException("Artifactory API error: result doesn't include buildInfo")
+        }
+    }
+
+    /**
+     * Get build information from Artifactory.
+     *
+     * @see #getBuildInfo(Map)
+     */
+    Map getBuildInfo(String buildName, String buildNumber) {
+        return getBuildInfo([
             'build-name'   : buildName,
             'build-number' : buildNumber,
         ])
@@ -474,6 +634,82 @@ class JFrogArtifactory implements ArtifactInterface {
      */
     void upload(String pattern, String target, Map properties = [:]) {
         this.upload(pattern: pattern, target: target, properties: properties)
+    }
+
+    /**
+     * Delete an artifact
+     *
+     * @Note This method is implemented with jFrog CLI.
+     *
+     * @Example Delete {@code my-project.zip} from artifactory {@coode lib-snapshot-local} repository.
+     * <pre>
+     *     jfrog.delete(
+     *         pattern : 'build/result/of/my-project.zip'
+     *     )
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @param  pattern          pattern to locate the artifacts
+     * @return                  number of artifacts successfully or failed to delete
+     */
+    Map delete(Map args = [:]) throws InvalidArgumentException, ArtifactException {
+        // init with arguments
+           if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!url) {
+            throw new InvalidArgumentException('url')
+        }
+        if (!usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+        if (!args['pattern']) {
+            throw new InvalidArgumentException('pattern')
+        }
+
+        this.steps.echo "Deleting artifact \"${args['pattern']}\" ..."
+
+        def resultText = this.steps.sh(
+            script: "jfrog rt delete --quiet \"${args['pattern']}\"",
+            returnStdout: true
+        ).trim()
+        // this.steps.echo "Raw rt delete result:\n${resultText}"
+        /*
+        Example result:
+        {
+            "status": "success",
+            "totals": {
+                "success": 1,
+                "failure": 0
+            }
+        }
+        */
+        def resultJson = this.steps.readJSON text: resultText
+        if (!resultJson || !resultJson['status'] || resultJson['status'] != 'success') {
+            throw new ArtifactException("Failed to delete artifact(s): ${resultJson}")
+        }
+        this.steps.echo "Artifact deletion result:\n" +
+            "- status  : ${resultJson['status']}\n" +
+            "- success : ${resultJson['totals']['success']}\n" +
+            "- failure : ${resultJson['totals']['failure']}"
+
+        Map result = [
+            'success': resultJson['totals']['success'],
+            'failure': resultJson['totals']['failure']
+        ]
+
+        return result
+    }
+
+    /**
+     * Delete an artifact
+     *
+     * @see #upload(Map)
+     */
+    Map delete(String pattern) {
+        return this.delete(pattern: pattern)
     }
 
     /**

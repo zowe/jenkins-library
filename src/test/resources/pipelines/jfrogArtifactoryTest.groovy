@@ -63,6 +63,36 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     }
 
     /**
+     * Should be able to get build information
+     */
+    stage('getBuildInfo') {
+        // this is parent build of `libs-release-local/org/zowe/1.0.0/zowe-1.0.0.pax`
+        String buildName           = 'zowe-install-packaging :: master'
+        String buildNumber         = '515'
+        String expectedVcsRevision = 'f11489d588321281a461eb7bc7883b495f16d882'
+
+        // get build
+        Map build = jfrog.getBuildInfo(buildName, buildNumber)
+
+        // validate resolved build name
+        if (!build || !build['name']) {
+            error "Failed to find \"${buildName}/${buildNumber}\""
+        }
+
+        // validate build name
+        if (!build || !build['name'] || build['name'] != buildName) {
+            error "build name \"${build['name']}\" is not expected as \"${buildName}\"."
+        }
+
+        // validate build vcsRevision
+        if (!build || !build['vcsRevision'] || build['vcsRevision'] != expectedVcsRevision) {
+            error "build vcsRevision \"${build['vcsRevision']}\" is not expected as \"${expectedVcsRevision}\"."
+        }
+
+        echo "[JFROG_ARTIFACTORY_TEST] getBuildInfo successfully"
+    }
+
+    /**
      * Should be able to download artifacts
      */
     stage('download') {
@@ -133,6 +163,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Will use artifact uploaded from upload stage
      */
     stage('promote') {
+        def ts = lib.Utils.getTimestamp()
+        releaseFolder += ts + '/'
+
         def result = jfrog.promote(snapshotArtifact, releaseFolder)
 
         if (result != "${releaseFolder}${testRemoteArtifact}") {
