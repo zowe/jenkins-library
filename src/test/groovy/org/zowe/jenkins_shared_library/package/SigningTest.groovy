@@ -24,7 +24,7 @@ import static groovy.test.GroovyAssert.*
  *
  * - start with parameter pointing to the library branch to test
  */
-class PaxTest extends IntegrationTest {
+class SigningTest extends IntegrationTest {
     @BeforeClass
     public static void setup() {
         def envVars = """CODE_SIGNING_KEY_PASSPHRASE=${System.getProperty('signing.key.passphrase')}
@@ -33,7 +33,7 @@ CODE_SIGNING_PRIVATE_KEY_FILE=${System.getProperty('signing.key.file')}
 
         initPipelineJob([
             'name'      : 'package-signing',
-            'pipeline'  : 'paxPackageTest',
+            'pipeline'  : 'packageSigningTest',
             'env-vars'  : envVars,
         ])
     }
