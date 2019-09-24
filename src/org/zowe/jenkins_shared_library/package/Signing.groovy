@@ -241,16 +241,17 @@ class Signing {
                 script: "gpg --verify ${signature} ${args['filename']} 2>&1 | tee ${tmp} && cat ${tmp} && rm -f ${tmp}",
                 returnStdout: true
             ).trim()
+            log.fine("gpg verify result:\n${result}")
 
             if (result.contains("Good signature from")) {
                 this.steps.echo "${func} - Valid"
+                return true
             } else {
-                log.fine("gpg verify result:\n${result}")
                 this.steps.echo "${func} - Invalid"
             }
         }
 
-        return !!result
+        return false
     } // end verifySignature
 
     /**
