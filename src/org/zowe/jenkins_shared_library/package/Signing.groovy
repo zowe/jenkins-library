@@ -91,7 +91,7 @@ class Signing {
      */
     Boolean gpgKeyExists(String key) {
         def checkKey = this.steps.sh(
-            script: "gpg --list-keys | grep ${key} 2>&1",
+            script: "gpg --list-keys | grep ${key} | true",
             returnStdout: true
         ).trim()
 
@@ -140,8 +140,8 @@ class Signing {
                 variable         : 'CODE_SIGNING_PRIVATE_FILE'
             )
         ]) {
-            this.steps.echo "CODE_SIGNING_KEY=\${CODE_SIGNING_KEY}"
-            this.steps.echo "CODE_SIGNING_PRIVATE_FILE=\${CODE_SIGNING_PRIVATE_FILE}"
+            this.steps.echo 'CODE_SIGNING_KEY=${CODE_SIGNING_KEY}'
+            this.steps.echo 'CODE_SIGNING_PRIVATE_FILE=${CODE_SIGNING_PRIVATE_FILE}'
             // imported key if not exist
             if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
                 this.steps.echo "${func} importing code signing key \${CODE_SIGNING_KEY} ..."
