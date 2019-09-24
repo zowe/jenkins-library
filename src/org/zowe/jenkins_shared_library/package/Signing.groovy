@@ -133,23 +133,19 @@ class Signing {
         this.steps.withCredentials([
             this.steps.usernamePassword(
                 credentialsId    : this.gpgKeyPassPhrase,
-                passwordVariable : 'CODE_SIGNING_PASSPHRASE',
-                usernameVariable : 'CODE_SIGNING_KEY'
+                passwordVariable : 'JC_KEY_PASSPHRASE',
+                usernameVariable : 'JC_KEY_ID'
             ),
             this.steps.file(
                 credentialsId    : this.gpgPrivateKey,
-                variable         : 'CODE_SIGNING_PRIVATE_FILE'
+                variable         : 'JC_PRIVATE_KEY'
             )
         ]) {
-            String signingKey = this.steps.sh(script: "echo \"\${CODE_SIGNING_KEY}\"", returnStdout: true).trim()
-            this.steps.echo "signingKey=${signingKey}"
-            this.steps.sh 'env'
-            this.steps.echo 'CODE_SIGNING_KEY=${CODE_SIGNING_KEY}'
-            this.steps.echo 'CODE_SIGNING_PRIVATE_FILE=${CODE_SIGNING_PRIVATE_FILE}'
+            String signingKey = this.steps.sh(script: "echo \"\${JC_KEY_ID}\"", returnStdout: true).trim()
             // imported key if not exist
             if (!gpgKeyExists(signingKey)) {
                 this.steps.echo "${func} importing code signing key ${signingKey} ..."
-                this.steps.sh "gpg --allow-secret-key-import --batch --passphrase \"\${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
+                this.steps.sh "gpg --allow-secret-key-import --batch --passphrase \"\${JC_KEY_PASSPHRASE}\"  --import \${JC_PRIVATE_KEY}"
                 if (!gpgKeyExists(signingKey)) {
                     throw new InvalidArgumentException('gpgKey', "Code signing key ${signingKey} is not imported correctly.")
                 }
@@ -161,7 +157,7 @@ class Signing {
 
             // sign the file
             this.steps.echo "${func} signing ${args['filename']} with key ${signingKey} ..."
-            this.steps.sh "echo \${CODE_SIGNING_PASSPHRASE} | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --local-user ${signingKey} --sign --armor --detach-sig ${args['filename']}"
+            this.steps.sh "echo \"\${JC_KEY_PASSPHRASE}\" | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --local-user ${signingKey} --sign --armor --detach-sig ${args['filename']}"
 
             if (!this.steps.fileExists(signature)) {
                 throw new PackageException("Signature file ${signature} is not created.")
@@ -196,6 +192,7 @@ class Signing {
            if (args.size() > 0) {
             this.init(args)
         }
+        this.steps.echo "args=[${args}]"
         // validate arguments
         if (!this.gpgKeyPassPhrase) {
             throw new InvalidArgumentException('gpgKeyPassPhrase')
@@ -213,6 +210,7 @@ class Signing {
         if (!args['signature']) {
             signature = args['signature']
         }
+        this.steps.echo "signature=[${signature}]"
         if (!this.steps.fileExists(signature)) {
             throw new PackageException("Signature file ${signature} doesn't exists.")
         }
@@ -220,20 +218,21 @@ class Signing {
         this.steps.withCredentials([
             this.steps.usernamePassword(
                 credentialsId    : this.gpgKeyPassPhrase,
-                passwordVariable : 'CODE_SIGNING_PASSPHRASE',
-                usernameVariable : 'CODE_SIGNING_KEY'
+                passwordVariable : 'JC_KEY_PASSPHRASE',
+                usernameVariable : 'JC_KEY_ID'
             ),
             this.steps.file(
                 credentialsId    : this.gpgPrivateKey,
-                variable         : 'CODE_SIGNING_PRIVATE_FILE'
+                variable         : 'JC_PRIVATE_KEY'
             )
         ]) {
+            String signingKey = this.steps.sh(script: "echo \"\${JC_KEY_ID}\"", returnStdout: true).trim()
             // imported key if not exist
-            if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
-                this.steps.echo "${func} importing code signing key \${CODE_SIGNING_KEY} ..."
-                this.steps.sh "gpg --allow-secret-key-import --batch --passphrase \"\${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
-                if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
-                    throw new InvalidArgumentException('gpgKey', "Code signing key \${CODE_SIGNING_KEY} is not imported correctly.")
+            if (!gpgKeyExists(signingKey)) {
+                this.steps.echo "${func} importing code signing key ${signingKey} ..."
+                this.steps.sh "gpg --allow-secret-key-import --batch --passphrase \"\${JC_KEY_PASSPHRASE}\"  --import \${JC_PRIVATE_KEY}"
+                if (!gpgKeyExists(signingKey)) {
+                    throw new InvalidArgumentException('gpgKey', "Code signing key ${signingKey} is not imported correctly.")
                 }
             }
 
