@@ -192,7 +192,6 @@ class Signing {
            if (args.size() > 0) {
             this.init(args)
         }
-        this.steps.echo "args=[${args}]"
         // validate arguments
         if (!this.gpgKeyPassPhrase) {
             throw new InvalidArgumentException('gpgKeyPassPhrase')
@@ -207,10 +206,9 @@ class Signing {
             throw new PackageException("File ${args['filename']} doesn't exists.")
         }
         def signature = "${args['filename']}.asc"
-        if (!args['signature']) {
+        if (args['signature']) {
             signature = args['signature']
         }
-        this.steps.echo "signature=[${signature}]"
         if (!this.steps.fileExists(signature)) {
             throw new PackageException("Signature file ${signature} doesn't exists.")
         }
