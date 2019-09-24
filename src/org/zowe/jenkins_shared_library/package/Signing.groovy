@@ -238,7 +238,7 @@ class Signing {
             this.steps.echo "${func} verifying ${args['filename']} ..."
             def tmp = ".tmp-${Utils.getTimestamp()}"
             def result = this.steps.sh(
-                script: "gpg --verify ${signature} ${args['filename']} |& tee ${tmp} && cat ${tmp} && rm -f ${tmp}",
+                script: "gpg --verify ${signature} ${args['filename']} 2>&1 | tee ${tmp} && cat ${tmp} && rm -f ${tmp}",
                 returnStdout: true
             ).trim()
 
