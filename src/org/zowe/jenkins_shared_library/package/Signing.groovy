@@ -145,7 +145,7 @@ class Signing {
             // imported key if not exist
             if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
                 this.steps.echo "${func} importing code signing key \${CODE_SIGNING_KEY} ..."
-                sh "gpg --allow-secret-key-import --batch --passphrase \"${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
+                sh "gpg --allow-secret-key-import --batch --passphrase \"\${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
                 if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
                     throw new InvalidArgumentException('gpgKey', "Code signing key \${CODE_SIGNING_KEY} is not imported correctly.")
                 }
