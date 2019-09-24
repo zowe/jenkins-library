@@ -140,6 +140,8 @@ class Signing {
                 variable         : 'CODE_SIGNING_PRIVATE_FILE'
             )
         ]) {
+            echo "CODE_SIGNING_KEY=${CODE_SIGNING_KEY}"
+            echo "CODE_SIGNING_PRIVATE_FILE=${CODE_SIGNING_PRIVATE_FILE}"
             // imported key if not exist
             if (!gpgKeyExists("${CODE_SIGNING_KEY}")) {
                 this.steps.echo "${func} importing code signing key ${CODE_SIGNING_KEY} ..."
