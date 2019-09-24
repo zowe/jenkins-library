@@ -141,15 +141,17 @@ class Signing {
                 variable         : 'CODE_SIGNING_PRIVATE_FILE'
             )
         ]) {
+            String signingKey = this.steps.sh(script: "echo \"\${CODE_SIGNING_KEY}\"", returnStdout: true).trim()
+            this.steps.echo "signingKey=${signingKey}"
             this.steps.sh 'env'
             this.steps.echo 'CODE_SIGNING_KEY=${CODE_SIGNING_KEY}'
             this.steps.echo 'CODE_SIGNING_PRIVATE_FILE=${CODE_SIGNING_PRIVATE_FILE}'
             // imported key if not exist
-            if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
-                this.steps.echo "${func} importing code signing key \${CODE_SIGNING_KEY} ..."
+            if (!gpgKeyExists(signingKey)) {
+                this.steps.echo "${func} importing code signing key ${signingKey} ..."
                 this.steps.sh "gpg --allow-secret-key-import --batch --passphrase \"\${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
-                if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
-                    throw new InvalidArgumentException('gpgKey', "Code signing key \${CODE_SIGNING_KEY} is not imported correctly.")
+                if (!gpgKeyExists(signingKey)) {
+                    throw new InvalidArgumentException('gpgKey', "Code signing key ${signingKey} is not imported correctly.")
                 }
             }
 
@@ -158,8 +160,8 @@ class Signing {
             }
 
             // sign the file
-            this.steps.echo "${func} signing ${args['filename']} with key \${CODE_SIGNING_KEY} ..."
-            this.steps.sh "echo \${CODE_SIGNING_PASSPHRASE} | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --local-user \${CODE_SIGNING_KEY} --sign --armor --detach-sig ${args['filename']}"
+            this.steps.echo "${func} signing ${args['filename']} with key ${signingKey} ..."
+            this.steps.sh "echo \${CODE_SIGNING_PASSPHRASE} | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --local-user ${signingKey} --sign --armor --detach-sig ${args['filename']}"
 
             if (!this.steps.fileExists(signature)) {
                 throw new PackageException("Signature file ${signature} is not created.")
