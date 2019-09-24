@@ -91,11 +91,12 @@ class Signing {
      */
     Boolean gpgKeyExists(String key) {
         def checkKey = this.steps.sh(
-            script: "gpg --list-keys | grep ${key} | true",
+            script: "gpg --list-keys",
             returnStdout: true
         ).trim()
+        log.fine("gpg keys list:\n${checkKey}")
 
-        return "${checkKey}" == "${key}"
+        return checkKey.contains(key)
     }
 
     /**
@@ -140,6 +141,7 @@ class Signing {
                 variable         : 'CODE_SIGNING_PRIVATE_FILE'
             )
         ]) {
+            this.steps.sh 'env'
             this.steps.echo 'CODE_SIGNING_KEY=${CODE_SIGNING_KEY}'
             this.steps.echo 'CODE_SIGNING_PRIVATE_FILE=${CODE_SIGNING_PRIVATE_FILE}'
             // imported key if not exist
@@ -225,11 +227,11 @@ class Signing {
             )
         ]) {
             // imported key if not exist
-            if (!gpgKeyExists("${CODE_SIGNING_KEY}")) {
-                this.steps.echo "${func} importing code signing key ${CODE_SIGNING_KEY} ..."
-                sh "gpg --allow-secret-key-import --batch --passphrase \"${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
-                if (!gpgKeyExists("${CODE_SIGNING_KEY}")) {
-                    throw new InvalidArgumentException('gpgKey', "Code signing key ${CODE_SIGNING_KEY} is not imported correctly.")
+            if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
+                this.steps.echo "${func} importing code signing key \${CODE_SIGNING_KEY} ..."
+                this.steps.sh "gpg --allow-secret-key-import --batch --passphrase \"\${CODE_SIGNING_PASSPHRASE}\"  --import \${CODE_SIGNING_PRIVATE_FILE}"
+                if (!gpgKeyExists("\${CODE_SIGNING_KEY}")) {
+                    throw new InvalidArgumentException('gpgKey', "Code signing key \${CODE_SIGNING_KEY} is not imported correctly.")
                 }
             }
 
