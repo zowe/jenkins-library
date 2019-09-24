@@ -248,6 +248,10 @@ class Signing {
                 this.steps.echo "${func} - Valid"
                 result = true
             } else {
+                this.steps.echo "${func} >>> original file ${args['filename']}"
+                this.steps.sh "cat ${args['filename']}"
+                this.steps.echo "${func} >>> signature file ${signature}"
+                this.steps.sh "cat ${signature}"
                 this.steps.echo "${func} - Invalid"
             }
         }
@@ -306,12 +310,14 @@ class Signing {
 
         // generate hash
         this.steps.echo "${func} generate hash for ${args['filename']} ..."
-        this.steps.sh [
-            "F_PATH=\$(dirname \"${args['filename']}\")",
-            "F_NAME=\$(basename \"${args['filename']}\")",
-            "cd \$F_PATH",
-            "gpg --print-md \"${algo}\" \"\${F_NAME}\" > \"${hashFile}\""
-        ].join("\n")
+        this.steps.sh(
+            [
+                "F_PATH=\$(dirname \"${args['filename']}\")",
+                "F_NAME=\$(basename \"${args['filename']}\")",
+                "cd \$F_PATH",
+                "gpg --print-md \"${algo}\" \"\${F_NAME}\" > \"${hashFile}\""
+            ].join("\n")
+        )
 
         if (!this.steps.fileExists(hashFile)) {
             throw new PackageException("Hash file ${hashFile} is not created.")

@@ -54,10 +54,6 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         def result = signing.verifySignature("${TEST_ASCII_FILE}")
 
         if (!result) {
-            echo ">>> original file ${TEST_ASCII_FILE}"
-            sh "cat ${TEST_ASCII_FILE}"
-            echo ">>> signature file ${TEST_ASCII_FILE}.asc"
-            sh "cat ${TEST_ASCII_FILE}.asc"
             error "Verifying signature failed."
         }
 
