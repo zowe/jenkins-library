@@ -187,6 +187,7 @@ class Signing {
      */
     Boolean verifySignature(Map args = [:]) throws InvalidArgumentException, PackageException {
         def func = '[Signing.verifySignature]'
+        def result = false
 
         // init with arguments
            if (args.size() > 0) {
@@ -237,21 +238,21 @@ class Signing {
             // verify the file
             this.steps.echo "${func} verifying ${args['filename']} ..."
             def tmp = ".tmp-${Utils.getTimestamp()}"
-            def result = this.steps.sh(
+            def verifyResult = this.steps.sh(
                 script: "gpg --verify ${signature} ${args['filename']} 2>&1 | tee ${tmp} && cat ${tmp} && rm -f ${tmp}",
                 returnStdout: true
             ).trim()
-            log.fine("gpg verify result:\n${result}")
+            log.fine("gpg verify result:\n${verifyResult}")
 
-            if (result.contains("Good signature from")) {
+            if (verifyResult.contains("Good signature from")) {
                 this.steps.echo "${func} - Valid"
-                return true
+                result = true
             } else {
                 this.steps.echo "${func} - Invalid"
             }
         }
 
-        return false
+        return result
     } // end verifySignature
 
     /**
