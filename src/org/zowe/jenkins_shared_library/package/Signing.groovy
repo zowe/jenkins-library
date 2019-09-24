@@ -91,7 +91,7 @@ class Signing {
      */
     Boolean gpgKeyExists(String key) {
         def checkKey = this.steps.sh(
-            script: "gpg --list-keys | grep ${key}",
+            script: "gpg --list-keys | grep ${key} 2>&1",
             returnStdout: true
         ).trim()
 
