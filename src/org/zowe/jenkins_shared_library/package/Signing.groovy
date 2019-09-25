@@ -303,27 +303,28 @@ class Signing {
         if (args['algo']) {
             algo = args['algo']
         }
-        def hashFile = "${args['filename']}.${algo.toLowerCase()}"
+        def filePath = this.steps.sh(
+            script: "dirname \"${args['filename']}\"",
+            returnStdout: true
+        ).trim()
+        def fileName = this.steps.sh(
+            script: "basename \"${args['filename']}\"",
+            returnStdout: true
+        ).trim()
+        def hashFile = "${fileName}.${algo.toLowerCase()}"
         if (this.steps.fileExists(hashFile)) {
-            this.steps.echo "${func}[Warning] Hash file ${hashFile} already exists, will be overwritten."
+            this.steps.echo "${func}[Warning] Hash file ${hashFile} already exists, will overwrite."
         }
 
         // generate hash
-        this.steps.echo "${func} generate hash for ${args['filename']} ..."
-        this.steps.sh(
-            [
-                "F_PATH=\$(dirname \"${args['filename']}\")",
-                "F_NAME=\$(basename \"${args['filename']}\")",
-                "cd \$F_PATH",
-                "gpg --print-md \"${algo}\" \"\${F_NAME}\" > \"${hashFile}\""
-            ].join("\n")
-        )
+        this.steps.echo "${func} generate hash for ${fileName} ..."
+        this.steps.sh("cd ${filePath} && gpg --print-md \"${algo}\" \"${fileName}\" > \"${hashFile}\"")
 
-        if (!this.steps.fileExists(hashFile)) {
+        if (!this.steps.fileExists("${filePath}/${hashFile}")) {
             throw new PackageException("Hash file ${hashFile} is not created.")
         }
 
-        return hashFile
+        return "${filePath}/${hashFile}"
     } // end hash()
 
     /**
