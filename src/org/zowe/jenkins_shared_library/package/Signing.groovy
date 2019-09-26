@@ -100,6 +100,40 @@ class Signing {
     }
 
     /**
+     * Return GnuPG signing key id
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @return                  signing key
+     */
+    String getSigningKey(Map args = [:]) throws InvalidArgumentException {
+        def func = '[Signing.getSigningKey]'
+        def signingKey
+
+        // init with arguments
+           if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!this.gpgKeyPassPhrase) {
+            throw new InvalidArgumentException('gpgKeyPassPhrase')
+        }
+
+        // imported key if not exist
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId    : this.gpgKeyPassPhrase,
+                passwordVariable : 'JC_KEY_PASSPHRASE',
+                usernameVariable : 'JC_KEY_ID'
+            )
+        ]) {
+            signingKey = this.steps.sh(script: "echo \"\${JC_KEY_ID}\"", returnStdout: true).trim()
+        }
+
+        return signingKey
+    } // end getSigningKey()
+
+    /**
      * GnuPG sign a package
      *
      * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
