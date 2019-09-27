@@ -340,7 +340,7 @@ class GradlePipeline extends GenericPipeline {
                     throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", arguments.name)
                 }
                 steps.withSonarQubeEnv(arguments.scannerServer) {
-                    def scannerParam = steps.readJSON text: steps.env.SONARQUBE_SCANNER_PARAMS
+                    def scannerParam = Utils.parseJsonString(steps.env.SONARQUBE_SCANNER_PARAMS)
                     if (!scannerParam || !scannerParam['sonar.host.url']) {
                         error "Unable to find sonar host url from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
                     }

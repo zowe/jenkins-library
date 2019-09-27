@@ -181,7 +181,7 @@ class JFrogArtifactory implements ArtifactInterface {
           }
         ]
         */
-        def results = this.steps.readJSON text: resultText
+        def results = Utils.parseJsonString(resultText)
         def resultSize = results.size()
 
         String readable = "Found ${resultSize} artifact(s):\n"
@@ -368,7 +368,7 @@ class JFrogArtifactory implements ArtifactInterface {
             "uri" : "https://gizaartifactory.jfrog.io/gizaartifactory/api/build/zowe-install-packaging%20::%20staging/218"
         }
         */
-        def result = this.steps.readJSON text: resultText
+        def result = Utils.parseJsonString(resultText)
         if (result && result.containsKey('errors')) {
             /*
             Example error response:
@@ -458,7 +458,7 @@ class JFrogArtifactory implements ArtifactInterface {
             returnStdout: true
         ).trim()
 
-        def downloadResultObject = this.steps.readJSON(text: downloadResult)
+        def downloadResultObject = Utils.parseJsonString(downloadResult)
         this.steps.echo "Artifact download result:\n" +
             "- status  : ${downloadResultObject['status']}\n" +
             "- success : ${downloadResultObject['totals']['success']}\n" +
@@ -531,7 +531,7 @@ class JFrogArtifactory implements ArtifactInterface {
             returnStdout: true
         ).trim()
 
-        def uploadResultObject = readJSON(text: uploadResult)
+        def uploadResultObject = Utils.parseJsonString(uploadResult)
         this.steps.echo "Artifact upload result:\n" +
             "- status  : ${uploadResultObject['status']}\n" +
             "- success : ${uploadResultObject['totals']['success']}\n" +
@@ -686,7 +686,7 @@ class JFrogArtifactory implements ArtifactInterface {
             }
         }
         */
-        def resultJson = this.steps.readJSON text: resultText
+        def resultJson = Utils.parseJsonString(resultText)
         if (!resultJson || !resultJson['status'] || resultJson['status'] != 'success') {
             throw new ArtifactException("Failed to delete artifact(s): ${resultJson}")
         }
@@ -809,7 +809,7 @@ class JFrogArtifactory implements ArtifactInterface {
         ).trim()
 
         // validate result
-        def promoteResultObject = this.steps.readJSON(text: promoteResult)
+        def promoteResultObject = Utils.parseJsonString(promoteResult)
         this.steps.echo "Artifact promoting result:\n" +
             "- status  : ${promoteResultObject['status']}\n" +
             "- success : ${promoteResultObject['totals']['success']}\n" +
@@ -841,7 +841,7 @@ class JFrogArtifactory implements ArtifactInterface {
             script: "jfrog rt set-props \"${targetFullPath}\" \"" + props.join(';') + "\"",
             returnStdout: true
         ).trim()
-        def setPropsResultObject = this.steps.readJSON(text: setPropsResult)
+        def setPropsResultObject = Utils.parseJsonString(setPropsResult)
         this.steps.echo "Artifact promoting result:\n" +
             "- status  : ${setPropsResultObject['status']}\n" +
             "- success : ${setPropsResultObject['totals']['success']}\n" +
@@ -1006,7 +1006,7 @@ class JFrogArtifactory implements ArtifactInterface {
     Map interpretArtifactDefinitions(Map definitions, Map defaults = [:]) {
         def result
         if (this.steps) {
-            result = this.steps.readJSON text: '{"files":[]}'
+            result = Utils.parseJsonString('{"files":[]}')
         } else {
             result = ['files': []]
         }

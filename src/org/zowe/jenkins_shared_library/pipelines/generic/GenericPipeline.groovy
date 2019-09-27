@@ -12,6 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic
 
 // import com.cloudbees.groovy.cps.NonCPS
 import groovy.util.logging.Log
+import groovy.json.JsonSlurper
 import java.util.regex.Pattern
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
 import org.zowe.jenkins_shared_library.package.Pax
@@ -1358,7 +1359,7 @@ class GenericPipeline extends Pipeline {
         }
 
         log.fine("Uploading artifacts ${artifacts} to ${baseTargetPath}")
-        Map uploadSpec = steps.readJSON text: '{"files":[]}'
+        Map uploadSpec = Utils.parseJsonString('{"files":[]}')
         Map<String, String> baseMacros = getBuildStringMacros()
         artifacts.each { artifact ->
             log.fine("- pattern ${artifact}")

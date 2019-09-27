@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library
 
+import java.nio.charset.StandardCharsets
 import java.net.URLEncoder
 import java.time.format.DateTimeFormatter
 import java.time.Instant
@@ -18,6 +19,9 @@ import java.util.logging.ConsoleHandler
 import java.util.logging.Handler
 import java.util.logging.Level
 import java.util.logging.Logger
+import java.io.File
+import java.nio.file.Files
+import groovy.json.JsonSlurper
 import org.apache.commons.lang3.StringEscapeUtils
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 
@@ -27,6 +31,63 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
  * @Note Any methods which getting complicated should be extracted as an independent Class.
  */
 class Utils {
+
+    private static _jsonSlurper = new JsonSlurper();
+
+    /**
+    * Parse JSON String
+    *
+    * @Example
+    * <pre>
+    *     Map json = Utils.parseJson('{ "number": 1, "list": [1,2,3]}')
+    *     json.number // 1 
+    *     json.list.size() // 3
+    * </pre>
+    *
+    * @param  path        path to the resource file
+    * @return             the file content
+    * @throws IOException if failed to read the file
+    */
+    static parseJsonString(String jsonString) {
+        return _jsonSlurper.parseText(jsonString);
+    }
+
+    /**
+    * Parse JSON File by File object
+    *
+    * @Example
+    * <pre>
+    *     Map json = Utils.parseJsonFile(new File("path/to/file.json"))
+    *     json.number // 1 
+    *     json.list.size() // 3
+    * </pre>
+    *
+    * @param  path        path to the resource file
+    * @return             the file content
+    * @throws IOException if failed to read the file
+    */
+    static parseJsonFile(File file){
+        return parseJsonString(file.getAbsolutePath());
+    }
+
+    /**
+    * Parse JSON file by file path
+    *
+    * @Example
+    * <pre>
+    *     Map json = Utils.parseJson("path/to/file.json")
+    *     json.number // 1 
+    *     json.list.size() // 3
+    * </pre>
+    *
+    * @param  path        path to the resource file
+    * @return             the file content
+    * @throws IOException if failed to read the file
+    */
+    static parseJsonFile(String fileLocation) {
+        return parseJsonString(Files.readString(fileLocation), StandardCharsets.UTF_8);
+    }
+
     /**
      * Read resource file
      *
