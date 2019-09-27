@@ -237,7 +237,7 @@ class Pipeline {
     Pipeline(steps) {
         this.steps = steps
 
-        this._email = new Email(steps)
+        // this._email = new Email(steps)
     }
 
     /**
@@ -894,7 +894,7 @@ class Pipeline {
                 bodyText += "</div></td></tr>"
                 bodyText += "</table>"
             }
-
+            /*
             try {
                 // send the email
                 this._email.send(
@@ -907,7 +907,7 @@ class Pipeline {
                 steps.echo "Exception encountered while attempting to send email!"
                 steps.echo emailException.toString()
                 steps.echo emailException.getStackTrace().join("\n")
-            }
+            }*/
         }
     }
 }
