@@ -49,6 +49,13 @@ class Constants {
     public static String DEFAULT_GITHUB_ROBOT_CREDENTIAL = 'zowe-robot-github'
 
     /**
+     * Default GitHub robot account Jenkins username/password credential ID
+     *
+     * @Default {@code "zowe-robot-github"}
+     */
+    public static String DEFAULT_LFJ_GITHUB_ROBOT_CREDENTIAL = 'zowe-github'
+
+    /**
      * Default Artifactory URL
      *
      * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}
@@ -61,6 +68,21 @@ class Constants {
      * @Default {@code "GizaArtifactory"}
      */
     public static String DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL = 'GizaArtifactory'
+
+    /**
+     * Default LF Artifactory URL
+     *
+     * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}
+     */
+    public static String DEFAULT_ARTIFACTORY_URL = 'https://zowe.jfrog.io/zowe'
+
+    /**
+     * Default LF Artifactory robot account Jenkins username/password credential ID
+     *
+     * @Default {@code "GizaArtifactory"}
+     */
+    public static String DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL = 'zowe.jfrog.io'
+
 
     /**
      * Default SonarQube server ID defined on Jenkins
