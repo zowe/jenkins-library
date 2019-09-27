@@ -74,14 +74,14 @@ class Constants {
      *
      * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}
      */
-    public static String DEFAULT_ARTIFACTORY_URL = 'https://zowe.jfrog.io/zowe'
+    public static String DEFAULT_LFJ_ARTIFACTORY_URL = 'https://zowe.jfrog.io/zowe'
 
     /**
      * Default LF Artifactory robot account Jenkins username/password credential ID
      *
      * @Default {@code "GizaArtifactory"}
      */
-    public static String DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL = 'zowe.jfrog.io'
+    public static String DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL = 'zowe.jfrog.io'
 
 
     /**
