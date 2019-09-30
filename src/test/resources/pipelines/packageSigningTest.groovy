@@ -67,12 +67,12 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         def result = signing.hash("${TEST_ASCII_FILE}")
         def algo = signing.getDEFAULT_HASH_ALGORITHM().toLowerCase()
 
-        if (result != "${TEST_ASCII_FILE}.${algo}") {
+        if (result != "./${TEST_ASCII_FILE}.${algo}") {
             error "Generating hash is not successful."
         }
 
         def hashContent = this.steps.sh(
-            script: "cat \"${TEST_ASCII_FILE}.${algo}\"",
+            script: "cat \"${result}\"",
             returnStdout: true
         ).trim()
         echo "Hash file content:\n${hashContent}"
