@@ -16,7 +16,7 @@ import org.zowe.jenkins_shared_library.integrationtest.*
 import static groovy.test.GroovyAssert.*
 
 /**
- * Test {@link org.zowe.jenkins_shared_library.artifact.JFrogArtifactory}
+ * Test {@link org.zowe.jenkins_shared_library.package.Signing}
  *
  * The test case will create a test Jenkins job and attach the current library to it.
  *
@@ -24,16 +24,16 @@ import static groovy.test.GroovyAssert.*
  *
  * - start with parameter pointing to the library branch to test
  */
-class JFrogArtifactoryTest extends IntegrationTest {
+class SigningTest extends IntegrationTest {
     @BeforeClass
     public static void setup() {
-        def envVars = """ARTIFACTORY_URL=${System.getProperty('artifactory.url')}
-ARTIFACTORY_CREDENTIAL=${System.getProperty('artifactory.credential')}
+        def envVars = """CODE_SIGNING_KEY_PASSPHRASE=${System.getProperty('signing.key.passphrase')}
+CODE_SIGNING_PRIVATE_KEY_FILE=${System.getProperty('signing.key.file')}
 """
 
         initPipelineJob([
-            'name'      : 'jfrog-artifactory',
-            'pipeline'  : 'jfrogArtifactoryTest',
+            'name'      : 'package-signing',
+            'pipeline'  : 'packageSigningTest',
             'env-vars'  : envVars,
         ])
     }
@@ -50,31 +50,21 @@ ARTIFACTORY_CREDENTIAL=${System.getProperty('artifactory.credential')}
 
     @Test
     void testInit() {
-        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] init successfully'))
+        assertThat('Build console log', buildLog, containsString('[PACKAGE_SIGNING_TEST] init successfully'))
     }
 
     @Test
-    void testGetArtifact() {
-        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] getArtifact successfully'))
+    void testSign() {
+        assertThat('Build console log', buildLog, containsString('[PACKAGE_SIGNING_TEST] sign successfully'))
     }
 
     @Test
-    void testGetBuildInfo() {
-        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] getBuildInfo successfully'))
+    void testVerifySignature() {
+        assertThat('Build console log', buildLog, containsString('[PACKAGE_SIGNING_TEST] verifySignature successfully'))
     }
 
     @Test
-    void testDownload() {
-        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] download successfully'))
-    }
-
-    @Test
-    void testUpload() {
-        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] upload successfully'))
-    }
-
-    @Test
-    void testPromote() {
-        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] promote successfully'))
+    void testHash() {
+        assertThat('Build console log', buildLog, containsString('[PACKAGE_SIGNING_TEST] hash successfully'))
     }
 }

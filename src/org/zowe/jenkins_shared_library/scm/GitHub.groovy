@@ -434,6 +434,23 @@ class GitHub {
     }
 
     /**
+     * Get last commit hash.
+     *
+     * @Example
+     * <pre>
+     *     def commitHash = github.getLastCommitHash()
+     * </pre>
+     *
+     * @param returnLong     return long or short hash
+     * @return               last commit hash
+     */
+    String getLastCommitHash(Boolean returnLong = true) {
+        Map result = this.getLastCommit(returnLong ? ['hash'] : ['shortHash'])
+
+        return result[returnLong ? 'hash' : 'shortHash']
+    }
+
+    /**
      * Push all local commits to remote.
      *
      * @Note Use similar parameters defined in {@link #init(Map)} method.
@@ -564,6 +581,19 @@ class GitHub {
         this.command('git config credential.helper store')
 
         this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
+    }
+
+    /**
+     * Tag the branch and push to remote.
+     *
+     * @Note Currently only support lightweighted tag.
+     *
+     * @param  tag           tag name to be created
+     *
+     * @see #tag(Map)
+     */
+    void tag(String tag) {
+        this.tag(['tag': tag])
     }
 
     /**

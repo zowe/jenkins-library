@@ -131,4 +131,18 @@ class Constants {
      * @Default {@code "GizaArtifactory"}
      */
     public static String DEFAULT_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'GizaArtifactory'
+
+    /**
+     * Default GnuPG Code Signing Key Passphrase Jenkins username/password credential
+     *
+     * @Default {@code "code-signing-key-passphrase-jack"}
+     */
+    public static String DEFAULT_GPG_CODE_SIGNING_KEY_PASSPHRASE = 'code-signing-key-passphrase-jack'
+
+    /**
+     * Default GnuPG Code Signing Private Key Jenkins Secret file credential
+     *
+     * @Default {@code "code-signing-key-private-jack"}
+     */
+    public static String DEFAULT_GPG_CODE_SIGNING_PRIVATE_KEY_FILE = 'code-signing-key-private-jack'
 }
