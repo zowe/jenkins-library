@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library.npm
 
 import groovy.util.logging.Log
+import java.nio.file.Paths
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.Utils
@@ -208,8 +209,7 @@ class Registry {
         Map info = [:]
 
         if (this.packageJsonFile && this.steps.fileExists(this.packageJsonFile)) {
-            this.steps.echo packageJsonFile
-            def pkg = Utils.parseJsonFile(this.packageJsonFile)
+            def pkg = Utils.parseJsonFile(Paths.get(this.steps.pwd(), this.packageJsonFile))
             if (pkg) {
                 if (pkg['name']) {
                     info['name'] = pkg['name']
