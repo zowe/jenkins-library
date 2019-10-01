@@ -209,7 +209,7 @@ class Registry {
         Map info = [:]
 
         if (this.packageJsonFile && this.steps.fileExists(this.packageJsonFile)) {
-            def pkg = Utils.parseJsonFile(Paths.get(this.steps.pwd(), this.packageJsonFile))
+            def pkg = Utils.parseJsonFile(Paths.get(this.steps.pwd(), this.packageJsonFile).toString())
             if (pkg) {
                 if (pkg['name']) {
                     info['name'] = pkg['name']
