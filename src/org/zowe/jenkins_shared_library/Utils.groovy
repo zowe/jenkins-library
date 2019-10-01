@@ -68,6 +68,7 @@ class Utils {
     * @throws IOException if failed to read the file
     */
     static parseJsonFile(File file){
+        System.out.println("JSON File Path:" + file.getPath());
         return parseJsonString(file.getText('UTF-8'));
     }
 
