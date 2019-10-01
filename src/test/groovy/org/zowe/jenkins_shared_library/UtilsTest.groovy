@@ -13,6 +13,7 @@ import org.hamcrest.collection.IsMapContaining
 import org.junit.*
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.Utils
+import java.nio.file.Paths
 import static groovy.test.GroovyAssert.*
 import static org.hamcrest.CoreMatchers.*;
 
@@ -33,6 +34,29 @@ class UtilsTest {
         // init logger
         logger = Utils.getLogger(Class.getSimpleName())
     }
+
+    @Test
+    void testParseJsonString() {
+        def testOutput = Utils.parseJsonString('{ "field": "value", "array": [ 1, 2, 3 ], "map": { "field": 1, "array": [ 1, 2] } }"');
+        assertThat(testOutput.field, equalTo("value"));
+        assertEquals(testOutput.array.size(), 3);
+        assertEquals(testOutput.array[0], 1);
+        assertEquals(testOutput.map.size(), 2);
+        assertThat(testOutput.map.field, equalTo(1));
+        assertEquals(testOutput.map.array.size(), 2);
+    }        
+
+    @Test
+    void testParseJsonFiles() {
+        def manifestPath = Paths.get("src","test","resources","json","manifest.json").toString();
+        def packageJsonPath=  Paths.get("src","test","resources","json","package.json").toString();
+
+        def manifestJsonFromFile = Utils.parseJsonFile(new File(manifestPath));
+        def manifestJsonFromStr = Utils.parseJsonFile(manifestPath);
+
+        assertThat(manifestJsonFromFile, equalTo(manifestJsonFromStr))
+    }
+
 
     @Test
     void testSanitizeBranchName() {

@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library
 
+import java.nio.file.Paths
 import java.nio.charset.StandardCharsets
 import java.net.URLEncoder
 import java.time.format.DateTimeFormatter
@@ -67,7 +68,7 @@ class Utils {
     * @throws IOException if failed to read the file
     */
     static parseJsonFile(File file){
-        return parseJsonString(file.getAbsolutePath());
+        return parseJsonString(file.getText('UTF-8'));
     }
 
     /**
@@ -85,7 +86,7 @@ class Utils {
     * @throws IOException if failed to read the file
     */
     static parseJsonFile(String fileLocation) {
-        return parseJsonString(Files.readString(fileLocation), StandardCharsets.UTF_8);
+        return parseJsonFile(new File(fileLocation));
     }
 
     /**

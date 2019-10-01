@@ -1,0 +1,211 @@
+{
+    "name": "@zowe/imperative",
+    "version": "4.4.1",
+    "description": "framework for building configurable CLIs",
+    "author": "Broadcom",
+    "license": "EPL-2.0",
+    "homepage": "https://github.com/zowe/imperative#readme",
+    "bugs": {
+      "url": "https://github.com/zowe/imperative/issues"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/zowe/imperative.git"
+    },
+    "keywords": [
+      "CLI",
+      "framework",
+      "zowe"
+    ],
+    "files": [
+      "lib",
+      "web-help/dist"
+    ],
+    "publishConfig": {
+      "registry": "https://zowe.jfrog.io/zowe/api/npm/npm-local-release/"
+    },
+    "main": "lib/index.js",
+    "typings": "lib/index.d.ts",
+    "scripts": {
+      "audit:public": "npm audit --registry https://registry.npmjs.org/",
+      "build:packages": "gulp build && npm run build:webHelp && npm run browserify",
+      "build": "npm run build:packages",
+      "postbuild": "gulp build:install-all-cli-dependencies && gulp build:all-clis && npm run checkTestsCompile",
+      "checkTestsCompile": "echo \"Checking that test source compiles\" && tsc --noEmit -p tsconfig-tests.json",
+      "test": "npm run test:unit && npm run test:integration",
+      "test:unit": "env-cmd ./__tests__/config/unit/.env.js --no-override jest -c ./__tests__/config/unit/jest.config.json",
+      "pretest:integration": "gulp test:installSampleClis",
+      "test:integration": "env-cmd ./__tests__/config/integration/.env.js --no-override jest -c ./__tests__/config/integration/jest.config.json --runInBand",
+      "posttest:integration": "gulp test:uninstallSampleClis",
+      "lint": "npm run lint:packages && npm run lint:tests",
+      "lint:packages": "tslint --format stylish -c ./tslint-packages.json \"packages/**/*.ts\"",
+      "lint:tests": "tslint --format stylish -c ./tslint-tests.json \"**/__tests__/**/*.ts\"",
+      "watch": "gulp watch",
+      "build:webHelp": "cd web-help && tsc",
+      "watch:webHelp": "cd web-help && tsc -w",
+      "browserify": "gulp browserify"
+    },
+    "dependencies": {
+      "@types/lodash-deep": "^2.0.0",
+      "@types/yargs": "8.0.2",
+      "@zowe/perf-timing": "1.0.3",
+      "chalk": "2.4.2",
+      "cli-table3": "0.5.1",
+      "dataobject-parser": "1.2.1",
+      "deepmerge": "3.0.0",
+      "find-up": "2.1.0",
+      "fs-extra": "8.1.0",
+      "glob": "7.1.1",
+      "js-yaml": "3.13.1",
+      "jsonfile": "4.0.0",
+      "jsonschema": "1.1.1",
+      "levenshtein": "1.0.5",
+      "lodash-deep": "^2.0.0",
+      "log4js": "3.0.5",
+      "marked": "^0.7.0",
+      "mkdirp": "0.5.1",
+      "moment": "2.20.1",
+      "mustache": "2.3.0",
+      "opener": "1.5.1",
+      "prettyjson": "1.2.1",
+      "progress": "2.0.0",
+      "readline-sync": "1.4.9",
+      "rimraf": "2.6.3",
+      "semver": "5.7.0",
+      "stack-trace": "0.0.10",
+      "wrap-ansi": "3.0.1",
+      "yamljs": "0.3.0",
+      "yargs": "8.0.2"
+    },
+    "devDependencies": {
+      "@types/body-parser": "1.16.4",
+      "@types/bootstrap": "4.3.0",
+      "@types/chai": "4.0.1",
+      "@types/chai-string": "1.1.30",
+      "@types/chalk": "0.4.31",
+      "@types/clipboard": "2.0.1",
+      "@types/find-up": "2.1.1",
+      "@types/fs-extra": "5.1.0",
+      "@types/glob": "5.0.35",
+      "@types/jest": "^24.0.15",
+      "@types/jquery": "3.3.30",
+      "@types/js-base64": "2.3.1",
+      "@types/jsonfile": "4.0.1",
+      "@types/jstree": "3.3.37",
+      "@types/keytar": "4.0.1",
+      "@types/mustache": "0.8.29",
+      "@types/node": "8.0.28",
+      "@types/progress": "2.0.0",
+      "@types/stack-trace": "0.0.28",
+      "@types/tmp": "0.0.33",
+      "balloon-css": "1.0.0",
+      "bootstrap": "4.3.1",
+      "browserify": "16.3.0",
+      "browserify-css": "0.15.0",
+      "chai": "4.1.2",
+      "chai-string": "1.4.0",
+      "clear-require": "2.0.0",
+      "clipboard": "2.0.4",
+      "codepage": "1.12.2",
+      "cowsay": "1.2.1",
+      "deep-diff": "0.3.8",
+      "dependency-tree": "6.1.1",
+      "env-cmd": "^8.0.2",
+      "get-function-arguments": "1.0.0",
+      "github-markdown-css": "3.0.1",
+      "gulp": "4.0.0",
+      "gulp-cli": "2.0.1",
+      "gulp-debug": "3.1.0",
+      "gulp-plumber": "1.1.0",
+      "gulp-replace": "0.6.1",
+      "gulp-util": "3.0.8",
+      "is-url": "1.2.3",
+      "jest": "^24.8.0",
+      "jest-html-reporter": "2.5.0",
+      "jest-junit": "6.3.0",
+      "jest-sonar-reporter": "2.0.0",
+      "jest-stare": "1.11.1",
+      "jquery": "3.4.1",
+      "jsdoc": "^3.6.2",
+      "jstree": "3.3.8",
+      "keytar": "^4.11.0",
+      "madge": "3.0.0",
+      "node-pty": "^0.8.1",
+      "popper.js": "1.15.0",
+      "prompt": "1.0.0",
+      "scroll-into-view-if-needed": "2.2.20",
+      "shebang-regex": "2.0.0",
+      "split.js": "1.5.11",
+      "through2": "^2.0.5",
+      "ts-jest": "^24.0.2",
+      "ts-node": "7.0.1",
+      "tslint": "5.10.0",
+      "typescript": "3.2.2",
+      "uuid": "3.2.1",
+      "yargs-parser": "9.0.2"
+    },
+    "engines": {
+      "node": ">=6.0.0"
+    },
+    "jest-html-reporter": {
+      "pageTitle": "Imperative CLI Tests",
+      "outputPath": "__tests__/__results__/unit/results.html"
+    },
+    "jest-junit": {
+      "output": "./__tests__/__results__/junit/junit.xml"
+    },
+    "jestSonar": {
+      "reportPath": "__tests__/__results__/jest-sonar"
+    },
+    "jest-stare": {
+      "resultDir": "__tests__/__results__/jest-stare",
+      "additionalResultsProcessors": [
+        "jest-junit",
+        "jest-html-reporter",
+        "jest-sonar-reporter"
+      ],
+      "coverageLink": "../unit/coverage/lcov-report/index.html"
+    },
+    "jest": {
+      "globals": {
+        "ts-jest": {
+          "diagnostics": false,
+          "disableSourceMapSupport": true
+        }
+      },
+      "watchPathIgnorePatterns": [
+        ".*jest-stare.*\\.js"
+      ],
+      "modulePathIgnorePatterns": [
+        "__tests__/__snapshots__/"
+      ],
+      "setupFilesAfterEnv": [
+        "./__tests__/__integration__/imperative/__tests__/beforeTests.js"
+      ],
+      "testResultsProcessor": "jest-stare",
+      "testRegex": "__tests__.*\\.(spec|test)\\.ts$",
+      "moduleFileExtensions": [
+        "ts",
+        "js"
+      ],
+      "testEnvironment": "node",
+      "transform": {
+        ".(ts)": "ts-jest"
+      },
+      "collectCoverageFrom": [
+        "packages/**/*.ts",
+        "!**/__tests__/**",
+        "!packages/**/doc/I*.ts",
+        "!**/main.ts"
+      ],
+      "collectCoverage": false,
+      "coverageReporters": [
+        "json",
+        "lcov",
+        "text",
+        "cobertura"
+      ],
+      "coverageDirectory": "<rootDir>/__tests__/__results__/unit/coverage"
+    }
+  }
+  
