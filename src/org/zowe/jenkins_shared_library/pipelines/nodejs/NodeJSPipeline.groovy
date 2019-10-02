@@ -339,7 +339,7 @@ class NodeJSPipeline extends GenericPipeline {
                     steps.sh "npm install --no-audit"
                 } else {
                     if (steps.fileExists('package-lock.json')) {
-                        steps.sh "echo $PATH"
+                        steps.sh "echo \$PATH"
                         steps.sh "cat /etc/os-release"
                         // if we have package-lock.json, try to use everything defined in that file
                         steps.sh "npm ci"
