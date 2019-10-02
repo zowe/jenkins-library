@@ -340,7 +340,7 @@ class NodeJSPipeline extends GenericPipeline {
                 } else {
                     if (steps.fileExists('package-lock.json')) {
                         steps.sh "echo \$PATH"
-                        steps.sh "echo \$0"
+                        steps.sh "ps -p \$\$"
                         steps.sh "cat /etc/os-release"
                         // if we have package-lock.json, try to use everything defined in that file
                         steps.sh "npm ci"
