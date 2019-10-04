@@ -11,6 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.base
 
 import groovy.util.logging.Log
+import groovy.lang.MissingPropertyException
 import java.util.concurrent.TimeUnit
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
@@ -849,10 +850,10 @@ class Pipeline {
             buildStatus = "${((FlowInterruptedException) firstFailingStage.exception).result}"
 
             if (buildStatus == "ABORTED") {
-                if (firstFailingStage.exception.causes[0].hasProperty(user)) {
+                try {
                     emailText = "Aborted by ${((FlowInterruptedException) firstFailingStage.exception).causes[0]?.user}"
                 }
-                else{
+                catch(MissingPropertyException e) {
                     emailText = "Aborted due to ${((FlowInterruptedException) firstFailingStage.exception).causes[0]}"
                 }
             } else {
