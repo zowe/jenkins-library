@@ -238,7 +238,7 @@ class Pipeline {
     Pipeline(steps) {
         this.steps = steps
 
-        // this._email = new Email(steps)
+        this._email = new Email(steps)
     }
 
     /**
