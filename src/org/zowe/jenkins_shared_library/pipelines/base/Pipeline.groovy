@@ -849,7 +849,12 @@ class Pipeline {
             buildStatus = "${((FlowInterruptedException) firstFailingStage.exception).result}"
 
             if (buildStatus == "ABORTED") {
-                emailText = "Aborted by ${((FlowInterruptedException) firstFailingStage.exception).causes[0]?.user}"
+                if (firstFailingStage.exception.causes[0].hasProperty(user)) {
+                    emailText = "Aborted by ${((FlowInterruptedException) firstFailingStage.exception).causes[0]?.user}"
+                }
+                else{
+                    emailText = "Aborted due to ${((FlowInterruptedException) firstFailingStage.exception).causes[0]}"
+                }
             } else {
                 emailText = buildStatus
             }
@@ -894,7 +899,7 @@ class Pipeline {
                 bodyText += "</div></td></tr>"
                 bodyText += "</table>"
             }
-            /*
+            
             try {
                 // send the email
                 this._email.send(
@@ -907,7 +912,7 @@ class Pipeline {
                 steps.echo "Exception encountered while attempting to send email!"
                 steps.echo emailException.toString()
                 steps.echo emailException.getStackTrace().join("\n")
-            }*/
+            }
         }
     }
 }
