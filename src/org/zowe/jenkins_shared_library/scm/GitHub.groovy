@@ -661,6 +661,10 @@ class GitHub {
         tf.deleteOnExit()
         this.steps.writeJSON file: tf.absolutePath, json: pullRequest
 
+        // debug purpose
+        def prJson = readFile tf.absolutePath
+        log.finer("content of ${tf.absolutePath}:\n${prJson}")
+
         def result
 
         this.steps.withCredentials([
@@ -675,7 +679,7 @@ class GitHub {
                         " --data-binary '@${tf.absolutePath}'" +
                         " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls\""
             log.finer("github api curl: ${cmd}")
-            def resultText = this.steps.sh(script: cmd, returnStdout: true).trim()
+            def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
 
             log.finer("creating pull request on ${this.repository} response:\n${resultText}")
 
@@ -742,7 +746,7 @@ class GitHub {
                         " -X GET" +
                         " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
             log.finer("github api curl: ${cmd}")
-            def resultText = this.steps.sh(script: cmd, returnStdout: true).trim()
+            def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
 
             log.finer("fetching pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
 
@@ -823,7 +827,7 @@ class GitHub {
                         " --data '{\"state\":\"close\"}'" +
                         " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
             log.finer("github api curl: ${cmd}")
-            def resultText = this.steps.sh(script: cmd, returnStdout: true).trim()
+            def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
 
             log.finer("closing pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
 
