@@ -670,13 +670,12 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            def resultText = this.steps.sh(
-                script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+            def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X POST" +
                         " --data-binary '@${tf.absolutePath}'" +
-                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls\"",
-                returnStdout: true
-            ).trim()
+                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls\""
+            log.finer("github api curl: ${cmd}")
+            def resultText = this.steps.sh(script: cmd, returnStdout: true).trim()
 
             log.finer("creating pull request on ${this.repository} response:\n${resultText}")
 
@@ -739,12 +738,11 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            def resultText = this.steps.sh(
-                script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+            def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X GET" +
-                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\"",
-                returnStdout: true
-            ).trim()
+                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
+            log.finer("github api curl: ${cmd}")
+            def resultText = this.steps.sh(script: cmd, returnStdout: true).trim()
 
             log.finer("fetching pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
 
@@ -820,15 +818,14 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            def resultText = this.steps.sh(
-                script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+            def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X PATCH" +
                         " --data '{\"state\":\"close\"}'" +
-                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\"",
-                returnStdout: true
-            ).trim()
+                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
+            log.finer("github api curl: ${cmd}")
+            def resultText = this.steps.sh(script: cmd, returnStdout: true).trim()
 
-            log.finer("creating pull request on ${this.repository} response:\n${resultText}")
+            log.finer("closing pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
 
             result = this.steps.readJSON text: resultText
         }
