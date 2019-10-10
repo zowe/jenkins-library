@@ -28,6 +28,8 @@ def ARTIFACTORY_CREDENTIAL = 'GizaArtifactory'
 def PAX_SERVER_HOST        = 'zzow01.zowe.marist.cloud'
 def PAX_SERVER_PORT        = 22
 def PAX_SERVER_CREDENTIAL  = 'ssh-marist-server-zzow01'
+def SIGNING_KEY_PASSPHRASE = 'code-signing-key-passphrase-jack'
+def SIGNING_KEY_FILE       = 'code-signing-key-private-jack'
 
 def opts = []
 // keep last 20 builds for regular branches, no keep for pull requests
@@ -90,7 +92,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                    " -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}'" +
                    " -Ppax.server.host='${PAX_SERVER_HOST}'" +
                    " -Ppax.server.port='${PAX_SERVER_PORT}'" +
-                   " -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'"
+                   " -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'"+
+                   " -Psigning.key.passphrase='${SIGNING_KEY_PASSPHRASE}'"+
+                   " -Psigning.key.file='${SIGNING_KEY_FILE}'"
             }
         } catch (e) {
             throw e

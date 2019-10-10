@@ -114,7 +114,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         // prepare the test branch
         def testBranch = "test/pr_${lib.Utils.getTimestamp()}".toString()
         github.checkout(testBranch)
-        sh "echo \"${testBranch}\" > branch-name"
+        sh "echo \"${testBranch}\" > ${CLONE_DIRECTORY}/branch-name"
         github.commit("test commit for creating pr on branch ${testBranch}")
         github.push()
 
