@@ -292,7 +292,7 @@ class GenericPipeline extends Pipeline {
      * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return               true or false
      */
-    protected Boolean isReleaseBranch(String branch = '') {
+    public Boolean isReleaseBranch(String branch = '') {
         // use BRANCH_NAME as default value
         if (!branch && steps.env && steps.env.BRANCH_NAME) {
             branch = steps.env.BRANCH_NAME
@@ -320,7 +320,7 @@ class GenericPipeline extends Pipeline {
      * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return               true or false
      */
-    protected Boolean isFormalReleaseBranch(String branch = '') {
+    public Boolean isFormalReleaseBranch(String branch = '') {
         // use BRANCH_NAME as default value
         if (!branch && steps.env && steps.env.BRANCH_NAME) {
             branch = steps.env.BRANCH_NAME
@@ -344,7 +344,7 @@ class GenericPipeline extends Pipeline {
      *
      * @return            true or false
      */
-    protected Boolean isPerformingRelease() {
+    public Boolean isPerformingRelease() {
         if (steps && steps.params && steps.params[BUILD_PARAMETER_PERFORM_RELEASE]) {
             return true
         } else {
@@ -360,7 +360,7 @@ class GenericPipeline extends Pipeline {
      *
      * @return            the pre-release string, or empty if not set.
      */
-    protected String getPreReleaseString() {
+    public String getPreReleaseString() {
         if (steps && steps.params && steps.params[BUILD_PARAMETER_PERFORM_RELEASE] &&
             steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]) {
             return steps.params[BUILD_PARAMETER_PRE_RELEASE_STRING]
@@ -375,7 +375,7 @@ class GenericPipeline extends Pipeline {
      * @param  branch     the branch name to check. By default, empty string will check current branch
      * @return            tag of the branch
      */
-    protected String getBranchTag(String branch = '') {
+    public String getBranchTag(String branch = '') {
         // use BRANCH_NAME as default value
         if (!branch && steps.env && steps.env.BRANCH_NAME) {
             branch = steps.env.BRANCH_NAME
@@ -1205,6 +1205,27 @@ class GenericPipeline extends Pipeline {
      */
     protected void packaging(Map arguments) {
         packagingGeneric(arguments)
+    }
+
+    /**
+     * Get real publish target path
+     *
+     * @param  publishTargetPath   overwrite default publish path pattern
+     * @return                     parsed target publish path
+     */
+    String getPublishTargetPath(Map arguments = [:]) {
+        def baseTargetPath = arguments.publishTargetPath ?: artifactoryUploadTargetPath
+
+        if (!baseTargetPath.endsWith('/')) {
+            baseTargetPath += '/'
+        }
+
+        log.fine("Uploading target path is: ${baseTargetPath}")
+        Map<String, String> macros = getBuildStringMacros()
+        String targetPath = _parseString(baseTargetPath, macros)
+        log.fine("Uploading target path after parsed is: ${targetPath}")
+
+        return targetPath
     }
 
     /**
