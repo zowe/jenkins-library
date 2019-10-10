@@ -118,8 +118,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         github.commit("test commit for creating pr on branch ${testBranch}")
         github.push()
 
-        // create pull request
-        def prId = github.createPullRequest(testBranch, "Test pull request on branch ${testBranch}")
+        // create pull request against master
+        def prId = github.createPullRequest('master', "Test pull request on branch ${testBranch}")
 
         if (!prId || prId <= 0) {
             error 'Pull request is not created.'

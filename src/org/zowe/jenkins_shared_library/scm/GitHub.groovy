@@ -677,7 +677,7 @@ class GitHub {
             def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X POST" +
                         " --data-binary '@${tf.absolutePath}'" +
-                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls\""
+                        " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls\""
             log.finer("github api curl: ${cmd}")
             def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
 
@@ -744,7 +744,7 @@ class GitHub {
         ]) {
             def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X GET" +
-                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
+                        " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
             log.finer("github api curl: ${cmd}")
             def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
 
@@ -825,7 +825,7 @@ class GitHub {
             def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X PATCH" +
                         " --data '{\"state\":\"close\"}'" +
-                        " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
+                        " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
             log.finer("github api curl: ${cmd}")
             def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
 
