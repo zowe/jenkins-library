@@ -662,7 +662,7 @@ class GitHub {
         this.steps.writeJSON file: tf.absolutePath, json: pullRequest
 
         // debug purpose
-        def prJson = readFile tf.absolutePath
+        def prJson = this.steps.readFile tf.absolutePath
         log.finer("content of ${tf.absolutePath}:\n${prJson}")
 
         def result
