@@ -670,7 +670,7 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            resultText = this.steps.sh(
+            def resultText = this.steps.sh(
                 script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X POST" +
                         " --data-binary '@${tf.absolutePath}'" +
@@ -739,7 +739,7 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            resultText = this.steps.sh(
+            def resultText = this.steps.sh(
                 script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X GET" +
                         " \"${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\"",
@@ -820,7 +820,7 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            resultText = this.steps.sh(
+            def resultText = this.steps.sh(
                 script: "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X PATCH" +
                         " --data '{\"state\":\"close\"}'" +
