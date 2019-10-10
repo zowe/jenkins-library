@@ -106,4 +106,30 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
         echo "[GITHUB_TEST] tag successfully"
     }
+
+    /**
+     * Should be able to create pull request
+     */
+    stage('pull-request') {
+        // prepare the test branch
+        def testBranch = "test/pr_${lib.Utils.getTimestamp()}".toString()
+        github.checkout(testBranch, true)
+        sh "echo '- ${env.JOB_NAME}#${env.BUILD_NUMBER}: on branch ${testBranch}' >> '${CLONE_DIRECTORY}/test-commit.txt'"
+        github.commit("test commit for creating pr on branch ${testBranch}")
+        github.push()
+
+        // create pull request against master
+        def prId = github.createPullRequest('master', "Test pull request on branch ${testBranch}")
+
+        if (!prId || prId <= 0) {
+            error 'Pull request is not created.'
+        }
+        echo "Pull request #${prId} is created."
+
+        // closing after test
+        github.closePullRequest(prId)
+        github.deleteRemoteBranch()
+
+        echo "[GITHUB_TEST] creating pull request successfully"
+    }
 }

@@ -109,6 +109,11 @@ class GitHub {
     String repository
 
     /**
+     * Remote name
+     */
+    String remote
+
+    /**
      * Github branch to checkout
      */
     String branch
@@ -151,6 +156,12 @@ class GitHub {
     void init(Map args = [:]) {
         if (args['repository']) {
             this.repository = args['repository']
+        }
+        if (args['remote']) {
+            this.remote = args['remote']
+        }
+        if (!this.remote) {
+            this.remote = DEFAULT_REMOTE
         }
         if (args['branch']) {
             this.branch = args['branch']
@@ -340,6 +351,54 @@ class GitHub {
     }
 
     /**
+     * Checkout a new branch
+     *
+     * @Note After checkout, the
+     *
+     * @Example
+     * <pre>
+     *     github.checkout('feature/test')
+     * </pre>
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
+     *
+     * @param  branch       branch name
+     * @oaram  isNew        if we need to create this new branch
+     */
+    void checkout(Map args = [:]) throws InvalidArgumentException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+        if (!args.containsKey('branch') || !args['branch']) {
+            throw new InvalidArgumentException('branch')
+        }
+
+        def createCmdOption = ''
+        if (args.containsKey('isNew') && args['isNew']) {
+            createCmdOption = ' -b'
+        }
+        this.command("git checkout${createCmdOption} \"${args['branch']}\"")
+        this.branch = args['branch']
+    }
+
+    /**
+     * Checkout a new branch
+     *
+     * @see #checkout(Map)
+     */
+    void checkout(String branch, Boolean isNew = false) {
+        this.checkout(['branch': branch, 'isNew': isNew])
+    }
+
+    /**
      * Commit all the changes.
      *
      * @Note This method will include all local changes, even though they are not staged.
@@ -461,7 +520,21 @@ class GitHub {
             this.init(args)
         }
 
-        this.command("git push origin ${this.branch}")
+        this.command("git push -u \"${this.remote}\" \"${this.branch}\"")
+    }
+
+    /**
+     * Delete remote branch.
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
+     */
+    void deleteRemoteBranch(Map args = [:]) throws InvalidArgumentException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        this.command("git push \"${this.remote}\" --delete \"${this.branch}\"")
     }
 
     /**
@@ -518,12 +591,11 @@ class GitHub {
             this.init(args)
         }
 
-        String remote = args['remote'] ? args['remote'] : DEFAULT_REMOTE
         // update remote
-        this.command("git fetch ${remote}")
+        this.command("git fetch ${this.remote}")
         // get last hash
         String localHash = this.command("git rev-parse ${this.branch}")
-        String remoteHash = this.command("git rev-parse ${remote}/${this.branch}")
+        String remoteHash = this.command("git rev-parse ${this.remote}/${this.branch}")
 
         def res = localHash == remoteHash
 
@@ -551,8 +623,247 @@ class GitHub {
             this.init(args)
         }
 
-        String remote = args['remote'] ? args['remote'] : DEFAULT_REMOTE
-        this.command("git fetch \"${remote}\" && git reset --hard ${remote}/${this.branch}")
+        this.command("git fetch \"${this.remote}\" && git reset --hard ${this.remote}/${this.branch}")
+    }
+
+    /**
+     * Create pull request based on current branch
+     *
+     * @Note The branch must be synced with remote. Otherwise please push all
+     *       changes or reset to remote before creating pull request.
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
+     *
+     * @param  title           pull request title to be created
+     * @param  base            base branch
+     * @param  body            pull request body message
+     * @param  draft           boolean, if this is a draft pull request
+     * @return                 pull request ID if it's successfully
+     */
+    Integer createPullRequest(Map args = [:]) throws InvalidArgumentException, ScmException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        def repoSplit = this.repository.split('/')
+        if (repoSplit.size() !=  2) {
+            throw new InvalidArgumentException('repository', 'Repository should be in username/project format.')
+        }
+        if (!this.branch) {
+            throw new InvalidArgumentException('branch')
+        }
+        if (!args['title']) {
+            throw new InvalidArgumentException('title')
+        }
+        if (!args['base']) {
+            throw new InvalidArgumentException('base')
+        }
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+
+        if (!isSynced(args)) {
+            throw new ScmException('Working folder is not synced with remote')
+        }
+
+        Map pullRequest = this.steps.readJSON text: '{}'
+        pullRequest['title'] = "${args['title']}".toString()
+        pullRequest['head'] = "${repoSplit[0]}:${this.branch}".toString()
+        pullRequest['base'] = "${args['base']}".toString()
+
+        if (args.containsKey('body') && args['body']) {
+            pullRequest['body'] = "${args['body']}".toString()
+        }
+        if (args.containsKey('draft')) {
+            pullRequest['draft'] = !!args.containsKey('draft')
+        }
+
+        log.fine("creating pull request on ${this.repository}:\n${pullRequest}")
+
+        File tf = File.createTempFile("jenkins-github-",".tmp")
+        // it's ok the tmp file is not deleted, we are running in container
+        tf.deleteOnExit()
+        this.steps.writeJSON file: tf.absolutePath, json: pullRequest
+
+        // debug purpose
+        def prJson = this.steps.readFile tf.absolutePath
+        log.finer("content of ${tf.absolutePath}:\n${prJson}")
+
+        def result
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Creating pull request on ${this.repository} ...\n${prJson}\n"
+
+            def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                        " -X POST" +
+                        " --data-binary '@${tf.absolutePath}'" +
+                        " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls\""
+            log.finer("github api curl: ${cmd}")
+            def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
+
+            log.finer("creating pull request on ${this.repository} response:\n${resultText}")
+
+            result = this.steps.readJSON text: resultText
+        }
+        if (!result || !result.containsKey('number')) {
+            throw new ScmException("Invalid Github API response \"${resultText}\"")
+        }
+
+        return result['number']
+    }
+
+    /**
+     * Create pull request based on current branch
+     *
+     * @see #createPullRequest(Map)
+     */
+    Integer createPullRequest(String base, String title, String body = '') {
+        return this.createPullRequest([
+            'base'  : base,
+            'title' : title,
+            'body'  : body
+        ])
+    }
+
+    /**
+     * Return infomation of a pull request
+     *
+     * @see https://developer.github.com/v3/pulls/#response-1
+     *
+     * @param  pr           pull request id
+     * @return              pull request object
+     */
+    Map getPullRequest(Map args = [:]) throws InvalidArgumentException, ScmException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        def repoSplit = this.repository.split('/')
+        if (repoSplit.size() !=  2) {
+            throw new InvalidArgumentException('repository', 'Repository should be in username/project format.')
+        }
+        if (!args.containsKey('pr') || !args['pr']) {
+            throw new InvalidArgumentException('pr')
+        }
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+
+        Map result
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Fetching pull request ${this.repository}#${args['pr']} ..."
+
+            def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                        " -X GET" +
+                        " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
+            log.finer("github api curl: ${cmd}")
+            def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
+
+            log.finer("fetching pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
+
+            result = this.steps.readJSON text: resultText
+        }
+        if (!result || !result.containsKey('id')) {
+            throw new ScmException("Invalid Github API response \"${resultText}\"")
+        }
+
+        return result
+    }
+
+    /**
+     * Return infomation of a pull request
+     *
+     * @see #getPullRequest(Map)
+     */
+    Map getPullRequest(Integer pr) {
+        return this.getPullRequest(['pr': pr])
+    }
+
+    /**
+     * Close pull request
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
+     *
+     * @param  pr              pull request id
+     * @return                 true if succeed
+     */
+    Boolean closePullRequest(Map args = [:]) throws InvalidArgumentException, ScmException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        def repoSplit = this.repository.split('/')
+        if (repoSplit.size() !=  2) {
+            throw new InvalidArgumentException('repository', 'Repository should be in username/project format.')
+        }
+        if (!args['pr']) {
+            throw new InvalidArgumentException('pr')
+        }
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+
+        def result
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Closing pull request ${this.repository}#${args['pr']} ..."
+
+            def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                        " -X PATCH" +
+                        " --data '{\"state\":\"close\"}'" +
+                        " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
+            log.finer("github api curl: ${cmd}")
+            def resultText = this.steps.sh(script: cmd + ' 2>&1', returnStdout: true).trim()
+
+            log.finer("closing pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
+
+            result = this.steps.readJSON text: resultText
+        }
+        if (!result || !result.containsKey('number')) {
+            throw new ScmException("Invalid Github API response \"${resultText}\"")
+        }
+
+        return true
+    }
+
+    /**
+     * Return infomation of a pull request
+     *
+     * @see #getPullRequest(Map)
+     */
+    Boolean closePullRequest(Integer pr) {
+        return this.closePullRequest(['pr': pr])
     }
 
     /**
@@ -580,7 +891,7 @@ class GitHub {
         // using https repository, indicate git push to check ~/.git-credentials
         this.command('git config credential.helper store')
 
-        this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
+        this.command("git tag \"${args['tag']}\" && git push ${this.remote} \"${args['tag']}\"")
     }
 
     /**

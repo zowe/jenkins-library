@@ -81,4 +81,9 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
     void testTag() {
         assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] tag successfully'))
     }
+
+    @Test
+    void testPullRequest() {
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] creating pull request successfully'))
+    }
 }
