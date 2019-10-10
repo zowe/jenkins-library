@@ -113,7 +113,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
     stage('pull-request') {
         // prepare the test branch
         def testBranch = "test/pr_${lib.Utils.getTimestamp()}".toString()
-        github.checkout(testBranch)
+        github.checkout(testBranch, true)
         sh "echo \"${testBranch}\" > ${CLONE_DIRECTORY}/branch-name"
         github.commit("test commit for creating pr on branch ${testBranch}")
         github.push()
@@ -128,7 +128,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
 
         // closing after test
         github.closePullRequest(prId)
-        // TODO: delete test branch
+        github.deleteRemoteBranch()
 
         echo "[GITHUB_TEST] creating pull request successfully"
     }

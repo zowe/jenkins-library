@@ -109,6 +109,11 @@ class GitHub {
     String repository
 
     /**
+     * Remote name
+     */
+    String remote
+
+    /**
      * Github branch to checkout
      */
     String branch
@@ -151,6 +156,12 @@ class GitHub {
     void init(Map args = [:]) {
         if (args['repository']) {
             this.repository = args['repository']
+        }
+        if (args['remote']) {
+            this.remote = args['remote']
+        }
+        if (!this.remote) {
+            this.remote = DEFAULT_REMOTE
         }
         if (args['branch']) {
             this.branch = args['branch']
@@ -352,6 +363,7 @@ class GitHub {
      * @Note Use similar parameters defined in {@link #init(Map)} method and with these extra parameters:
      *
      * @param  branch       branch name
+     * @oaram  isNew        if we need to create this new branch
      */
     void checkout(Map args = [:]) throws InvalidArgumentException {
         // init with arguments
@@ -369,7 +381,11 @@ class GitHub {
             throw new InvalidArgumentException('branch')
         }
 
-        this.command("git checkout -b \"${args['branch']}\"")
+        def createCmdOption = ''
+        if (args.containsKey('isNew') && args['isNew']) {
+            createCmdOption = ' -b'
+        }
+        this.command("git checkout${createCmdOption} \"${args['branch']}\"")
         this.branch = args['branch']
     }
 
@@ -378,8 +394,8 @@ class GitHub {
      *
      * @see #checkout(Map)
      */
-    void checkout(String branch) {
-        this.checkout(['branch': branch])
+    void checkout(String branch, Boolean isNew = false) {
+        this.checkout(['branch': branch, 'isNew': isNew])
     }
 
     /**
@@ -504,7 +520,21 @@ class GitHub {
             this.init(args)
         }
 
-        this.command("git push -u origin ${this.branch}")
+        this.command("git push -u \"${this.remote}\" \"${this.branch}\"")
+    }
+
+    /**
+     * Delete remote branch.
+     *
+     * @Note Use similar parameters defined in {@link #init(Map)} method.
+     */
+    void deleteRemoteBranch(Map args = [:]) throws InvalidArgumentException {
+        // init with arguments
+        if (args.size() > 0) {
+            this.init(args)
+        }
+
+        this.command("git push \"${this.remote}\" --delete \"${this.branch}\"")
     }
 
     /**
@@ -561,12 +591,11 @@ class GitHub {
             this.init(args)
         }
 
-        String remote = args['remote'] ? args['remote'] : DEFAULT_REMOTE
         // update remote
-        this.command("git fetch ${remote}")
+        this.command("git fetch ${this.remote}")
         // get last hash
         String localHash = this.command("git rev-parse ${this.branch}")
-        String remoteHash = this.command("git rev-parse ${remote}/${this.branch}")
+        String remoteHash = this.command("git rev-parse ${this.remote}/${this.branch}")
 
         def res = localHash == remoteHash
 
@@ -594,8 +623,7 @@ class GitHub {
             this.init(args)
         }
 
-        String remote = args['remote'] ? args['remote'] : DEFAULT_REMOTE
-        this.command("git fetch \"${remote}\" && git reset --hard ${remote}/${this.branch}")
+        this.command("git fetch \"${this.remote}\" && git reset --hard ${this.remote}/${this.branch}")
     }
 
     /**
@@ -674,6 +702,8 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
+            this.steps.echo "Creating pull request on ${this.repository} ...\n${prJson}\n"
+
             def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X POST" +
                         " --data-binary '@${tf.absolutePath}'" +
@@ -742,6 +772,8 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
+            this.steps.echo "Fetching pull request ${this.repository}#${args['pr']} ..."
+
             def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X GET" +
                         " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/pulls/${args['pr']}\""
@@ -796,23 +828,6 @@ class GitHub {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
 
-        Map pr = getPullRequest(args['pr'])
-        // Map prUpdate = this.steps.readJSON text: '{}'
-        // prUpdate['title'] = "${args['title']}".toString()
-        // prUpdate['head'] = "${repoSplit[0]}:${this.branch}".toString()
-        // prUpdate['base'] = "${pr['base']}".toString()
-
-        // prUpdate['title'] = "${pr['title']}".toString()
-        // prUpdate['body'] = "${pr['body']}".toString()
-        // prUpdate['state'] = 'close'
-
-        // log.fine("creating pull request on ${this.repository}:\n${prUpdate}")
-
-        // File tf = File.createTempFile("jenkins-github-",".tmp")
-        // // it's ok the tmp file is not deleted, we are running in container
-        // tf.deleteOnExit()
-        // writeJSON file: tf.absolutePath, json: pullRequest
-
         def result
 
         this.steps.withCredentials([
@@ -822,6 +837,8 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
+            this.steps.echo "Closing pull request ${this.repository}#${args['pr']} ..."
+
             def cmd = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                         " -X PATCH" +
                         " --data '{\"state\":\"close\"}'" +
@@ -837,7 +854,7 @@ class GitHub {
             throw new ScmException("Invalid Github API response \"${resultText}\"")
         }
 
-        return result['number']
+        return true
     }
 
     /**
@@ -874,7 +891,7 @@ class GitHub {
         // using https repository, indicate git push to check ~/.git-credentials
         this.command('git config credential.helper store')
 
-        this.command("git tag \"${args['tag']}\" && git push origin \"${args['tag']}\"")
+        this.command("git tag \"${args['tag']}\" && git push ${this.remote} \"${args['tag']}\"")
     }
 
     /**
