@@ -659,7 +659,7 @@ class GitHub {
         File tf = File.createTempFile("jenkins-github-",".tmp")
         // it's ok the tmp file is not deleted, we are running in container
         tf.deleteOnExit()
-        writeJSON file: tf.absolutePath, json: pullRequest
+        this.steps.writeJSON file: tf.absolutePath, json: pullRequest
 
         def result
 
