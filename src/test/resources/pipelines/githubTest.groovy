@@ -124,6 +124,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         if (!prId || prId <= 0) {
             error 'Pull request is not created.'
         }
+        echo "Pull request #${prId} is created."
 
         // closing after test
         github.closePullRequest(prId)

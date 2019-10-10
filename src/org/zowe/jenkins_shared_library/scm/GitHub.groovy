@@ -841,6 +841,15 @@ class GitHub {
     }
 
     /**
+     * Return infomation of a pull request
+     *
+     * @see #getPullRequest(Map)
+     */
+    Boolean closePullRequest(Integer pr) {
+        return this.closePullRequest(['pr': pr])
+    }
+
+    /**
      * Tag the branch and push to remote.
      *
      * @Note Currently only support lightweighted tag.
