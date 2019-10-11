@@ -173,6 +173,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             jfrog.download(specContent: spec, expected: expected)
         } catch (e) {
             err = "${e}".toString()
+            echo "Catched error: ${err}"
         }
 
         if (!err.contains(expectFailure)) {
