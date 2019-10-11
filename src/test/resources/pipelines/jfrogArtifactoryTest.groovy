@@ -140,6 +140,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      */
     stage('expected-download') {
         String downloadFolder = ".tmp-artifacts"
+        // clean up from last stage
+        sh "rm -fr ${downloadFolder} || true"
         String spec = """{
     "files": [
         {
