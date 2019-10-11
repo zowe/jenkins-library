@@ -69,6 +69,11 @@ ARTIFACTORY_CREDENTIAL=${System.getProperty('artifactory.credential')}
     }
 
     @Test
+    void testExpectedDownload() {
+        assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] expected-download successfully'))
+    }
+
+    @Test
     void testUpload() {
         assertThat('Build console log', buildLog, containsString('[JFROG_ARTIFACTORY_TEST] upload successfully'))
     }
