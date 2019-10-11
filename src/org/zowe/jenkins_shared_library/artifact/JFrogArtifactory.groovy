@@ -450,7 +450,7 @@ class JFrogArtifactory implements ArtifactInterface {
         if (args.containsKey('specContent')) {
             this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
         }
-        def expectedArtifacts = args.containsKey('expected') ? args['expected'] : -1
+        Integer expectedArtifacts = args.containsKey('expected') ? (args['expected'] as Integer) : -1
 
         // download
         def downloadResult = this.steps.sh(
@@ -467,11 +467,11 @@ class JFrogArtifactory implements ArtifactInterface {
         // validate download result
         if (downloadResultObject['status'] != 'success' || downloadResultObject['totals']['failure'] != 0) {
             throw new ArtifactException("Artifact downloading has failure(s) or not successful.")
+        }
 
-            if (expectedArtifacts > 0) {
-                if (downloadResultObject['totals']['success'] != expectedArtifacts) {
-                    throw new ArtifactException("Expected ${expectedArtifacts} artifact(s) to be downloaded but only got ${downloadResultObject['totals']['success']}.")
-                }
+        if (expectedArtifacts > 0) {
+            if ((downloadResultObject['totals']['success'] as Integer) != expectedArtifacts) {
+                throw new ArtifactException("Expected ${expectedArtifacts} artifact(s) to be downloaded but only got ${downloadResultObject['totals']['success']}.")
             }
         }
 

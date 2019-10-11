@@ -129,10 +129,67 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             returnStdout: true
         ).trim()
         if (downloaded != "${expected}") {
-            error "Failed to download expected artifacts."
+            error "Failed to download expected artifacts: downloaded=${downloaded}, expected=${expected}."
         }
 
         echo "[JFROG_ARTIFACTORY_TEST] download successfully"
+    }
+
+    /**
+     * Should be able to check expected downloads
+     */
+    stage('expected-download') {
+        String downloadFolder = ".tmp-artifacts"
+        // clean up from last stage
+        sh "rm -fr ${downloadFolder} || true"
+        String spec = """{
+    "files": [
+        {
+            "pattern": "libs-release-local/org/zowe/explorer-jes/0.0.*/explorer-jes-0.0.*.pax",
+            "target": "${downloadFolder}/",
+            "flat": "true",
+            "sortBy": ["created"],
+            "sortOrder": "desc",
+            "limit": 1
+        },
+        {
+            "pattern": "libs-release-local/org/zowe/explorer-mvs/0.0.*/does-not-exists-0.0.*.pax.Z",
+            "target": "${downloadFolder}/",
+            "flat": "true",
+            "sortBy": ["created"],
+            "sortOrder": "desc",
+            "limit": 1
+        }
+    ]
+}
+"""
+        Integer expected = 2
+        Integer realExpected = 1
+        String expectFailure = "Expected ${expected} artifact(s) to be downloaded but only got ${realExpected}.".toString()
+
+        // download the artifacts
+        String err = ''
+        try {
+            jfrog.download(specContent: spec, expected: expected)
+        } catch (e) {
+            err = "${e}".toString()
+            echo "Catched error: ${err}"
+        }
+
+        if (!err.contains(expectFailure)) {
+            error "Failed to validate expected artifacts."
+        }
+
+        // verify downloaded files
+        def downloaded = sh(
+            script: "ls -1 ${downloadFolder} | wc -l",
+            returnStdout: true
+        ).trim()
+        if (downloaded != "${realExpected}") {
+            error "Failed to download expected artifacts: downloaded=${downloaded}, realExpected=${realExpected}."
+        }
+
+        echo "[JFROG_ARTIFACTORY_TEST] expected-download successfully"
     }
 
     /**
