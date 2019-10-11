@@ -129,7 +129,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             returnStdout: true
         ).trim()
         if (downloaded != "${expected}") {
-            error "Failed to download expected artifacts."
+            error "Failed to download expected artifacts: downloaded=${downloaded}, expected=${expected}."
         }
 
         echo "[JFROG_ARTIFACTORY_TEST] download successfully"
@@ -183,7 +183,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             returnStdout: true
         ).trim()
         if (downloaded != "${realExpected}") {
-            error "Failed to download expected artifacts."
+            error "Failed to download expected artifacts: downloaded=${downloaded}, realExpected=${realExpected}."
         }
 
         echo "[JFROG_ARTIFACTORY_TEST] expected-download successfully"
