@@ -345,7 +345,10 @@ class GradlePipeline extends GenericPipeline {
                         error "Unable to find sonar host url from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
                     }
                     // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                    steps.sh "./gradlew --info sonarqube -Psonar.host.url=${scannerParam['sonar.host.url']}"
+                    steps.sh "./gradlew --info sonarqube " +
+                            "-Psonar.host.url=${scannerParam['sonar.host.url']} " +
+                            "-Psonar.login=${scannerParam['sonar.login']}" +
+                            "-Psonar.links.ci=${steps.env.BUILD_URL}"
                 }
             }
         }
