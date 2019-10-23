@@ -54,6 +54,19 @@ class SonarScanStageArguments extends GenericStageArguments {
     String scannerServer
 
     /**
+     * If the SonarQube server support branch scan.
+     *
+     * @Note If enable branch scan on a SonarQube server which doesn't support,
+     *       you may receive failure build with error "To use the property
+     *       "sonar.branch.name", the branch plugin is required but not
+    *        installed. See the documentation of branch support:
+    *        https://redirect.sonarsource.com/doc/branches.html."
+     *
+     * @default {@code false}
+     */
+    Boolean allowBranchScan = false
+
+    /**
      * Fail build on quality gate failure
      *
      * @default {@code false}

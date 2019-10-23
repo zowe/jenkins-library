@@ -1025,22 +1025,26 @@ class GenericPipeline extends Pipeline {
 
                 def configExists = steps.fileExists(args.sonarProjectFile)
                 if (configExists) {
-                    steps.echo "Found ${args.sonarProjectFile}, adjust branch settings ..."
-                    // comment out sonar.branch.name and sonar.branch.target if exist
-                    steps.sh "rm -f ${args.sonarProjectFile}.tmp && " +
-                        "sed " +
-                        "-e '/sonar.branch.name=/ s/^#*/#/' " +
-                        "-e '/sonar.branch.target=/ s/^#*/#/' " +
-                        "${args.sonarProjectFile} > ${args.sonarProjectFile}.tmp"
-                    steps.sh "echo >> ${args.sonarProjectFile}.tmp"
-                    // append new sonar.branch.name and sonar.branch.target value
-                    if (this.changeInfo.isPullRequest) {
-                        steps.sh "echo sonar.branch.name=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
-                        steps.sh "echo sonar.branch.target=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"
-                    } else {
-                        steps.sh "echo sonar.branch.name=${this.changeInfo.branchName} >> ${args.sonarProjectFile}.tmp"
+                    steps.echo "Found ${args.sonarProjectFile}"
+
+                    if (args.allowBranchScan) {
+                        steps.echo "Adjust branch settings ..."
+                        // comment out sonar.branch.name and sonar.branch.target if exist
+                        steps.sh "rm -f ${args.sonarProjectFile}.tmp && " +
+                            "sed " +
+                            "-e '/sonar.branch.name=/ s/^#*/#/' " +
+                            "-e '/sonar.branch.target=/ s/^#*/#/' " +
+                            "${args.sonarProjectFile} > ${args.sonarProjectFile}.tmp"
+                        steps.sh "echo >> ${args.sonarProjectFile}.tmp"
+                        // append new sonar.branch.name and sonar.branch.target value
+                        if (this.changeInfo.isPullRequest) {
+                            steps.sh "echo sonar.branch.name=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
+                            steps.sh "echo sonar.branch.target=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"
+                        } else {
+                            steps.sh "echo sonar.branch.name=${this.changeInfo.branchName} >> ${args.sonarProjectFile}.tmp"
+                        }
+                        steps.sh "[ -f ${args.sonarProjectFile}.tmp ] && mv ${args.sonarProjectFile}.tmp ${args.sonarProjectFile}"
                     }
-                    steps.sh "[ -f ${args.sonarProjectFile}.tmp ] && mv ${args.sonarProjectFile}.tmp ${args.sonarProjectFile}"
 
                     steps.echo 'SonarQube project properties:'
                     steps.sh "cat ${args.sonarProjectFile} && echo"
