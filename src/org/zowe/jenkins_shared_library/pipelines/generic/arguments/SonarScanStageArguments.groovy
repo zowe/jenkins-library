@@ -23,7 +23,7 @@ class SonarScanStageArguments extends GenericStageArguments {
      *
      * @default 5 Minute
      */
-    StageTimeout timeout = [time: 5, unit: TimeUnit.MINUTES]
+    StageTimeout timeout = [time: 1, unit: TimeUnit.HOURS]
 
     /**
      * The name of the SonarQube Scan step.
@@ -31,6 +31,13 @@ class SonarScanStageArguments extends GenericStageArguments {
      * @default {@code (empty)}
      */
     String name = ""
+
+    /**
+     * The file name of the SonarQube project.properties file.
+     *
+     * @default {@code "sonar-project.properties"}
+     */
+    String sonarProjectFile = 'sonar-project.properties'
 
     /**
      * SonarQube scanner tool name defined in Jenkins.
@@ -45,4 +52,11 @@ class SonarScanStageArguments extends GenericStageArguments {
      * @Note This argument is required if {@link #operation} is not provided.
      */
     String scannerServer
+
+    /**
+     * Fail build on quality gate failure
+     *
+     * @default {@code false}
+     */
+    Boolean failBuild = false
 }
