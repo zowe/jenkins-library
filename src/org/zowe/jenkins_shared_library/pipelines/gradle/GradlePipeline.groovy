@@ -336,19 +336,45 @@ class GradlePipeline extends GenericPipeline {
     void sonarScanGradle(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                if (!arguments.scannerServer) {
+                SonarScanStageArguments args = arguments as SonarScanStageArguments
+
+                if (!args.scannerServer) {
                     throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", arguments.name)
                 }
-                steps.withSonarQubeEnv(arguments.scannerServer) {
+                steps.withSonarQubeEnv(args.scannerServer) {
                     def scannerParam = steps.readJSON text: steps.env.SONARQUBE_SCANNER_PARAMS
                     if (!scannerParam || !scannerParam['sonar.host.url']) {
                         error "Unable to find sonar host url from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
                     }
+                    if (!scannerParam || !scannerParam['sonar.login']) {
+                        error "Unable to find sonar authentication from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
+                    }
+
+                    def gradleParams = " -Psonar.host.url=${scannerParam['sonar.host.url']}" +
+                                       " -Psonar.login=${scannerParam['sonar.login']}" +
+                                       " -Psonar.links.ci=${steps.env.BUILD_URL}"
+
+                    if (args.allowBranchScan) {
+                        // pass branch information
+                        if (this.changeInfo.isPullRequest) {
+                            gradleParams = gradleParams + " -Psonar.branch.name=${this.changeInfo.changeBranch}"
+                            gradleParams = gradleParams + " -Psonar.branch.target=${this.changeInfo.baseBranch}"
+                        } else {
+                            gradleParams = gradleParams + " -Psonar.branch.name=${this.changeInfo.branchName}"
+                        }
+                    }
+
+                    // REF: https://github.com/jbocc/sonar-build-breaker#configuration-parameters
+                    if (args.failBuild) {
+                        // to enable this, sonar-build-breaker plugin is required
+                        gradleParams = gradleParams + " -Psonar.buildbreaker.skip=false"
+                    } else {
+                        // sonar.buildbreaker.skip by default (false) will break build
+                        gradleParams = gradleParams + " -Psonar.buildbreaker.skip=true"
+                    }
+
                     // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                    steps.sh "./gradlew --info sonarqube " +
-                            "-Psonar.host.url=${scannerParam['sonar.host.url']} " +
-                            "-Psonar.login=${scannerParam['sonar.login']}" +
-                            "-Psonar.links.ci=${steps.env.BUILD_URL}"
+                    steps.sh "./gradlew --info sonarqube ${gradleParams}"
                 }
             }
         }
