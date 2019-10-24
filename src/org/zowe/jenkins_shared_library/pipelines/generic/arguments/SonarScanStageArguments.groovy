@@ -23,7 +23,7 @@ class SonarScanStageArguments extends GenericStageArguments {
      *
      * @default 5 Minute
      */
-    StageTimeout timeout = [time: 5, unit: TimeUnit.MINUTES]
+    StageTimeout timeout = [time: 1, unit: TimeUnit.HOURS]
 
     /**
      * The name of the SonarQube Scan step.
@@ -31,6 +31,13 @@ class SonarScanStageArguments extends GenericStageArguments {
      * @default {@code (empty)}
      */
     String name = ""
+
+    /**
+     * The file name of the SonarQube project.properties file.
+     *
+     * @default {@code "sonar-project.properties"}
+     */
+    String sonarProjectFile = 'sonar-project.properties'
 
     /**
      * SonarQube scanner tool name defined in Jenkins.
@@ -45,4 +52,24 @@ class SonarScanStageArguments extends GenericStageArguments {
      * @Note This argument is required if {@link #operation} is not provided.
      */
     String scannerServer
+
+    /**
+     * If the SonarQube server support branch scan.
+     *
+     * @Note If enable branch scan on a SonarQube server which doesn't support,
+     *       you may receive failure build with error "To use the property
+     *       "sonar.branch.name", the branch plugin is required but not
+    *        installed. See the documentation of branch support:
+    *        https://redirect.sonarsource.com/doc/branches.html."
+     *
+     * @default {@code false}
+     */
+    Boolean allowBranchScan = false
+
+    /**
+     * Fail build on quality gate failure
+     *
+     * @default {@code false}
+     */
+    Boolean failBuild = false
 }

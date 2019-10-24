@@ -1023,15 +1023,49 @@ class GenericPipeline extends Pipeline {
                     throw new SonarScanStageException("arguments.scannerTool is not defined for sonarScanGeneric", args.name)
                 }
 
-                def configExists = steps.fileExists('sonar-project.properties')
+                def configExists = steps.fileExists(args.sonarProjectFile)
                 if (configExists) {
-                    steps.echo 'Found sonar-project.properties, will perform SonarQube scanning ...'
+                    steps.echo "Found ${args.sonarProjectFile}"
+
+                    if (args.allowBranchScan) {
+                        steps.echo "Adjust branch settings ..."
+                        // comment out sonar.branch.name and sonar.branch.target if exist
+                        steps.sh "rm -f ${args.sonarProjectFile}.tmp && " +
+                            "sed " +
+                            "-e '/sonar.branch.name=/ s/^#*/#/' " +
+                            "-e '/sonar.branch.target=/ s/^#*/#/' " +
+                            "${args.sonarProjectFile} > ${args.sonarProjectFile}.tmp"
+                        steps.sh "echo >> ${args.sonarProjectFile}.tmp"
+                        // append new sonar.branch.name and sonar.branch.target value
+                        if (this.changeInfo.isPullRequest) {
+                            steps.sh "echo sonar.branch.name=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
+                            steps.sh "echo sonar.branch.target=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"
+                        } else {
+                            steps.sh "echo sonar.branch.name=${this.changeInfo.branchName} >> ${args.sonarProjectFile}.tmp"
+                        }
+                        steps.sh "[ -f ${args.sonarProjectFile}.tmp ] && mv ${args.sonarProjectFile}.tmp ${args.sonarProjectFile}"
+                    }
+
+                    steps.echo 'SonarQube project properties:'
+                    steps.sh "cat ${args.sonarProjectFile} && echo"
+
+                    steps.echo 'Perform SonarQube scanning ...'
                     def scannerHome = this.steps.tool args.scannerTool
                     this.steps.withSonarQubeEnv(args.scannerServer) {
                         this.steps.sh "${scannerHome}/bin/sonar-scanner"
                     }
+
+                    if (args.failBuild) {
+                        // fail build on quality gate failure
+                        steps.timeout(time: 1, unit: 'HOURS') {
+                            def qg = steps.waitForQualityGate()
+                            if (qg.status != 'OK') {
+                                steps.error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                            }
+                        }
+                    }
                 } else {
-                    steps.echo 'Not found sonar-project.properties, no SonarQube scan performed.'
+                    steps.echo "Not found ${args.sonarProjectFile}, no SonarQube scan performed."
                 }
             }
         }
