@@ -365,17 +365,63 @@ class GradlePipeline extends GenericPipeline {
                         }
                     }
 
-                    // REF: https://github.com/jbocc/sonar-build-breaker#configuration-parameters
-                    if (args.failBuild) {
-                        // to enable this, sonar-build-breaker plugin is required
-                        gradleParams = gradleParams + " -Psonar.buildbreaker.skip=false"
-                    } else {
-                        // sonar.buildbreaker.skip by default (false) will break build
-                        gradleParams = gradleParams + " -Psonar.buildbreaker.skip=true"
-                    }
-
                     // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
                     steps.sh "./gradlew --info sonarqube ${gradleParams}"
+
+                    // check build status
+                    if (args.failBuild) {
+                        // get task id
+                        def sonarTaskId = this.steps.sh(
+                            script: 'cat build/sonar/report-task.txt | grep \'ceTaskId=\' | awk -F= \'{print $2;}\'',
+                            returnStdout: true
+                        ).trim()
+                        if (!sonarTaskId) {
+                            steps.error 'Failed to find Sonar scan task ID.'
+                        }
+                        String sonarTaskUrl = "${scannerParam['sonar.host.url']}/api/ce/task?id=${sonarTaskId}".toString()
+
+                        // check task status
+                        def sonarTaskStatus = "PENDING"
+                        def sonarTaskJson = null
+                        while (sonarTaskStatus == "PENDING" || sonarTaskStatus == "IN_PROGRESS") {
+                            steps.echo "[QualityGate] Requesting task status from URL: " + sonarTaskUrl)
+                            sonarTaskJson = this.steps.sh(
+                                script: "curl -s '${sonarTaskUrl}'",
+                                returnStdout: true
+                            ).trim()
+                            sonarTaskStatus = this.steps.sh(
+                                script: "echo ${sonarTaskJson} | jq -r '.task.status'",
+                                returnStdout: true
+                            ).trim()
+                            steps.echo "[QualityGate] Current status is ${sonarTaskStatus}."
+                            steps.sleep(1000)
+                        }
+
+                        if (sonarTaskStatus == "FAILED" || sonarTaskStatus == "CANCELED") {
+                            steps.error "[QualityGate] Task failed or was canceled."
+                        } else if (sonarTaskStatus == "SUCCESS") {
+                            String analysisId = this.steps.sh(
+                                script: "echo ${sonarTaskJson} | jq -r '.task.analysisId'",
+                                returnStdout: true
+                            ).trim()
+                            // once the task is finished on the server we can check the result
+                            String analysisUrl = "${scannerParam['sonar.host.url']}/api/qualitygates/project_status?analysisId=${analysisId}".toString()
+                            steps.echo "[QualityGate] Task finished, checking the result at ${analysisUrl}"
+                            def sonarProjectStatus = this.steps.sh(
+                                script: "curl -s '${analysisUrl}' | jq -r '.projectStatus.status'",
+                                returnStdout: true
+                            ).trim()
+                            if (sonarProjectStatus == "OK") {
+                                steps.echo "[QualityGate] Analysis passed the quality gate."
+                            } else if (sonarProjectStatus == "ERROR") {
+                                steps.error "[QualityGate] Analysis did not pass the quality gate."
+                            } else {
+                                steps.error "[QualityGate] Unknown quality gate status: '${sonarProjectStatus}'"
+                            }
+                        } else {
+                            steps.error "[QualityGate] Unknown task status '${statusonarTaskStatuss}. Aborting."
+                        }
+                    }
                 }
             }
         }
