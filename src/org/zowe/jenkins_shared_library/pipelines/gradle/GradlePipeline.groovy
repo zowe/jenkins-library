@@ -376,6 +376,8 @@ class GradlePipeline extends GenericPipeline {
                             returnStdout: true
                         ).trim()
                         if (!sonarTaskId) {
+                            steps.echo "Files in build folder:"
+                            steps.sh 'find build'
                             steps.error 'Failed to find Sonar scan task ID.'
                         }
                         steps.echo 'Sonar scan task ID is ${sonarTaskId}.'
