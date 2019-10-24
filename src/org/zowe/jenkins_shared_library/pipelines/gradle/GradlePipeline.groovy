@@ -384,7 +384,7 @@ class GradlePipeline extends GenericPipeline {
                         def sonarTaskStatus = "PENDING"
                         def sonarTaskJson = null
                         while (sonarTaskStatus == "PENDING" || sonarTaskStatus == "IN_PROGRESS") {
-                            steps.echo "[QualityGate] Requesting task status from URL: " + sonarTaskUrl)
+                            steps.echo "[QualityGate] Requesting task status from URL: ${sonarTaskUrl}"
                             sonarTaskJson = this.steps.sh(
                                 script: "curl -s '${sonarTaskUrl}'",
                                 returnStdout: true
