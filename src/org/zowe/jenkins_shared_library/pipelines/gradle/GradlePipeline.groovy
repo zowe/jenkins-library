@@ -390,7 +390,7 @@ class GradlePipeline extends GenericPipeline {
                                 returnStdout: true
                             ).trim()
                             steps.echo "[QualityGate] Current status is ${sonarTaskStatus}."
-                            steps.sleep(1000)
+                            steps.sleep(1)
                         }
 
                         if (sonarTaskStatus == "FAILED" || sonarTaskStatus == "CANCELED") {
