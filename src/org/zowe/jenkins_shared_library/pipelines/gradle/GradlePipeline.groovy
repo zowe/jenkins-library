@@ -378,6 +378,7 @@ class GradlePipeline extends GenericPipeline {
                         if (!sonarTaskId) {
                             steps.error 'Failed to find Sonar scan task ID.'
                         }
+                        steps.echo 'Sonar scan task ID is ${sonarTaskId}.'
                         String sonarTaskUrl = "${scannerParam['sonar.host.url']}/api/ce/task?id=${sonarTaskId}".toString()
 
                         // check task status
@@ -399,6 +400,7 @@ class GradlePipeline extends GenericPipeline {
                                 script: "curl -s '${sonarTaskUrl}' | jq -r '.task.analysisId'",
                                 returnStdout: true
                             ).trim()
+                            steps.echo "[QualityGate] Task analysis id is ${analysisId}."
                             // once the task is finished on the server we can check the result
                             String analysisUrl = "${scannerParam['sonar.host.url']}/api/qualitygates/project_status?analysisId=${analysisId}".toString()
                             steps.echo "[QualityGate] Task finished, checking the result at ${analysisUrl}"
@@ -406,6 +408,7 @@ class GradlePipeline extends GenericPipeline {
                                 script: "curl -s '${analysisUrl}' | jq -r '.projectStatus.status'",
                                 returnStdout: true
                             ).trim()
+                            steps.echo "[QualityGate] Project analysis result is ${sonarProjectStatus}."
                             if (sonarProjectStatus == "OK") {
                                 steps.echo "[QualityGate] Analysis passed the quality gate."
                             } else if (sonarProjectStatus == "ERROR") {
