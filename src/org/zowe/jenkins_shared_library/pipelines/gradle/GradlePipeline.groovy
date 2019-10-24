@@ -20,6 +20,7 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import org.zowe.jenkins_shared_library.pipelines.Build
 import org.zowe.jenkins_shared_library.pipelines.Constants
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.ReleaseStageArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
 import org.zowe.jenkins_shared_library.pipelines.gradle.arguments.*
