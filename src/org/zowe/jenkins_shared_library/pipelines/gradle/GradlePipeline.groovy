@@ -371,7 +371,7 @@ class GradlePipeline extends GenericPipeline {
                     // check build status
                     if (args.failBuild) {
                         // get task id
-                        def sonarTaskId = this.steps.sh(
+                        String sonarTaskId = this.steps.sh(
                             script: 'cat build/sonar/report-task.txt | grep \'ceTaskId=\' | awk -F= \'{print $2;}\'',
                             returnStdout: true
                         ).trim()
@@ -381,16 +381,11 @@ class GradlePipeline extends GenericPipeline {
                         String sonarTaskUrl = "${scannerParam['sonar.host.url']}/api/ce/task?id=${sonarTaskId}".toString()
 
                         // check task status
-                        def sonarTaskStatus = "PENDING"
-                        def sonarTaskJson = null
+                        String sonarTaskStatus = "PENDING"
                         while (sonarTaskStatus == "PENDING" || sonarTaskStatus == "IN_PROGRESS") {
                             steps.echo "[QualityGate] Requesting task status from URL: ${sonarTaskUrl}"
-                            sonarTaskJson = this.steps.sh(
-                                script: "curl -s '${sonarTaskUrl}'",
-                                returnStdout: true
-                            ).trim()
                             sonarTaskStatus = this.steps.sh(
-                                script: "echo ${sonarTaskJson} | jq -r '.task.status'",
+                                script: "curl -s '${sonarTaskUrl}' | jq -r '.task.status'",
                                 returnStdout: true
                             ).trim()
                             steps.echo "[QualityGate] Current status is ${sonarTaskStatus}."
@@ -401,13 +396,13 @@ class GradlePipeline extends GenericPipeline {
                             steps.error "[QualityGate] Task failed or was canceled."
                         } else if (sonarTaskStatus == "SUCCESS") {
                             String analysisId = this.steps.sh(
-                                script: "echo ${sonarTaskJson} | jq -r '.task.analysisId'",
+                                script: "curl -s '${sonarTaskUrl}' | jq -r '.task.analysisId'",
                                 returnStdout: true
                             ).trim()
                             // once the task is finished on the server we can check the result
                             String analysisUrl = "${scannerParam['sonar.host.url']}/api/qualitygates/project_status?analysisId=${analysisId}".toString()
                             steps.echo "[QualityGate] Task finished, checking the result at ${analysisUrl}"
-                            def sonarProjectStatus = this.steps.sh(
+                            String sonarProjectStatus = this.steps.sh(
                                 script: "curl -s '${analysisUrl}' | jq -r '.projectStatus.status'",
                                 returnStdout: true
                             ).trim()
