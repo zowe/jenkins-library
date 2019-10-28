@@ -1058,9 +1058,8 @@ class GenericPipeline extends Pipeline {
                     if (arguments.failBuild) {
                         // fail build on quality gate failure
                         steps.timeout(time: 1, unit: 'HOURS') {
-                            def qg = steps.waitForQualityGate()
-                            if (qg.status != 'OK') {
-                                steps.error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                            this.steps.withSonarQubeEnv(arguments.scannerServer) {
+                                this.steps.waitForQualityGate abortPipeline: true
                             }
                         }
                     }
