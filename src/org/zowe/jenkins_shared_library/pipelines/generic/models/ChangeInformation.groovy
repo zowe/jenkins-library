@@ -20,6 +20,11 @@ class ChangeInformation {
     final boolean isPullRequest
 
     /**
+     * Pull request ID
+     */
+    final Integer pullRequestId
+
+    /**
      * The branch name reported by the build.
      *
      * <p>If it's a pull request, it will be PR-&lt;id&gt;.</p>
@@ -55,6 +60,7 @@ class ChangeInformation {
             isPullRequest = true
             baseBranch = steps.env.CHANGE_TARGET
             changeBranch = steps.env.CHANGE_BRANCH
+            pullRequestId = steps.env.CHANGE_ID
         } else {
             isPullRequest = false
             baseBranch = null
