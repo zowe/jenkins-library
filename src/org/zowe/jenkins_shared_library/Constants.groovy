@@ -132,9 +132,9 @@ class Constants {
      * Default if pipeline should use gradle SonarQube plugin to run SonarQube
      * scan on LF SonarCloud.
      *
-     * @Default {@code true}
+     * @Default {@code false}
      */
-    public static Boolean DEFAULT_LFJ_DISABLE_SONARQUBE_GRADLE_PLUGIN = true
+    public static Boolean DEFAULT_LFJ_DISABLE_SONARQUBE_GRADLE_PLUGIN = false
 
     /**
      * Default PAX Packaging server host name
