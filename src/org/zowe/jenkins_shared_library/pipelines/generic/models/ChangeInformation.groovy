@@ -60,7 +60,7 @@ class ChangeInformation {
             isPullRequest = true
             baseBranch = steps.env.CHANGE_TARGET
             changeBranch = steps.env.CHANGE_BRANCH
-            pullRequestId = steps.env.CHANGE_ID
+            pullRequestId = steps.env.CHANGE_ID.toInteger()
         } else {
             isPullRequest = false
             baseBranch = null
