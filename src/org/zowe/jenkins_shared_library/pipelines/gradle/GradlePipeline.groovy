@@ -320,21 +320,21 @@ class GradlePipeline extends GenericPipeline {
      * Creates a stage that will execute SonarQube code scan on your application.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments} class.</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.GradleSonarScanStageArguments} class.</p>
      *
      * <p>The stage will be created with the
      * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#sonarScanGeneric(java.util.Map)} method and will
      * have the following additional operations: <ul>
-     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments#operation} is not
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.GradleSonarScanStageArguments#operation} is not
      *     provided, this method will default to executing {@code ./gradlew sonarqube}. You can disable this behavior by passing
-     *     {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments#disableSonarGradlePlugin} as {@code true}.</li>
+     *     {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.GradleSonarScanStageArguments#disableSonarGradlePlugin} as {@code true}.</li>
      * </ul>
      * </p>
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.GradleSonarScanStageArguments} used to define
      *                  the stage.
      */
-    void sonarScanGradle(SonarScanStageArguments arguments) {
+    void sonarScanGradle(GradleSonarScanStageArguments arguments) throws SonarScanStageException {
         if (!arguments.operation && !arguments.disableSonarGradlePlugin) {
             arguments.operation = {
                 if (!arguments.scannerServer) {
@@ -432,11 +432,11 @@ class GradlePipeline extends GenericPipeline {
     /**
      * Creates a stage that will execute SonarQube code scan on your application.
      *
-     * @param arguments A map that can be instantiated as {@link SonarScanStageArguments}
-     * @see #sonarScanGradle(SonarScanStageArguments)
+     * @param arguments A map that can be instantiated as {@link GradleSonarScanStageArguments}
+     * @see #sonarScanGradle(GradleSonarScanStageArguments)
      */
     void sonarScanGradle(Map arguments = [:]) {
-        sonarScanGradle(arguments as SonarScanStageArguments)
+        sonarScanGradle(arguments as GradleSonarScanStageArguments)
     }
 
     /**

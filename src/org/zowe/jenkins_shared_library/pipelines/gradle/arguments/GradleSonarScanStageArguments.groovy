@@ -11,14 +11,14 @@
 package org.zowe.jenkins_shared_library.pipelines.gradle.arguments
 
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
-import org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments as GenericSonarScanStageArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments
 
 /**
  * Arguments available to the
  * {@link jenkins_shared_library.pipelines.Gradle.GradlePipeline#sonarScanGradle(jenkins_shared_library.pipelines.Gradle.arguments.SonarScanStageArguments)}
  * method.
  */
-class SonarScanStageArguments extends GenericSonarScanStageArguments {
+class GradleSonarScanStageArguments extends SonarScanStageArguments {
     /**
      * If disable usage of SonarQube Gradle Plugin.
      *

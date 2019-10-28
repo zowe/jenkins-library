@@ -1027,6 +1027,8 @@ class GenericPipeline extends Pipeline {
                 if (configExists) {
                     steps.echo "Found ${args.sonarProjectFile}"
 
+                                       " -Psonar.links.ci=${steps.env.BUILD_URL}"
+
                     if (args.allowBranchScan) {
                         steps.echo "Adjust branch settings ..."
                         // comment out sonar.branch.name and sonar.branch.target if exist
