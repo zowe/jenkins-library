@@ -327,7 +327,8 @@ class GradlePipeline extends GenericPipeline {
      * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#sonarScanGeneric(java.util.Map)} method and will
      * have the following additional operations: <ul>
      *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#operation} is not
-     *     provided, this method will default to executing {@code ./gradlew sonarqube}.</li>
+     *     provided, this method will default to executing {@code ./gradlew sonarqube}. You can disable this behavior by passing
+     *     {@code "arguments.disableSonarGradlePlugin = true"}.</li>
      * </ul>
      * </p>
      *
@@ -335,7 +336,12 @@ class GradlePipeline extends GenericPipeline {
      *                  the stage.
      */
     void sonarScanGradle(Map arguments = [:]) {
-        if (!arguments.operation) {
+        Boolean disableSonarGradlePlugin = false
+        if (arguments.containsKey('disableSonarGradlePlugin') && arguments.disableSonarGradlePlugin) {
+            disableSonarGradlePlugin = true
+        }
+
+        if (!arguments.operation && !disableSonarGradlePlugin) {
             arguments.operation = {
                 SonarScanStageArguments args = arguments as SonarScanStageArguments
 
@@ -356,6 +362,7 @@ class GradlePipeline extends GenericPipeline {
                                        " -Psonar.links.ci=${steps.env.BUILD_URL}"
 
                     if (args.allowBranchScan) {
+                        steps.echo "[WARNING] SonarQube gradle plugin doesn't support branch/pull request scanning, you should set disableSonarGradlePlugin to true and provide sonar-project.properties."
                         // pass branch information
                         if (this.changeInfo.isPullRequest) {
                             gradleParams = gradleParams + " -Psonar.pullrequest.key=${this.changeInfo.pullRequestId}"

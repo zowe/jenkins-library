@@ -1034,11 +1034,18 @@ class GenericPipeline extends Pipeline {
                             "sed " +
                             "-e '/sonar.branch.name=/ s/^#*/#/' " +
                             "-e '/sonar.branch.target=/ s/^#*/#/' " +
+                            "-e '/sonar.pullrequest.key=/ s/^#*/#/' " +
+                            "-e '/sonar.pullrequest.branch=/ s/^#*/#/' " +
+                            "-e '/sonar.pullrequest.base=/ s/^#*/#/' " +
                             "${args.sonarProjectFile} > ${args.sonarProjectFile}.tmp"
                         steps.sh "echo >> ${args.sonarProjectFile}.tmp"
                         // append new sonar.branch.name and sonar.branch.target value
                         if (this.changeInfo.isPullRequest) {
                             steps.sh "echo sonar.pullrequest.key=${this.changeInfo.pullRequestId} >> ${args.sonarProjectFile}.tmp"
+                            // we may see warnings like these
+                            //  WARN: Parameter 'sonar.pullrequest.branch' can be omitted because the project on SonarCloud is linked to the source repository.
+                            //  WARN: Parameter 'sonar.pullrequest.base' can be omitted because the project on SonarCloud is linked to the source repository.
+                            // if we provide parameters below
                             steps.sh "echo sonar.pullrequest.branch=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
                             steps.sh "echo sonar.pullrequest.base=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"
                         } else {
@@ -1066,7 +1073,11 @@ class GenericPipeline extends Pipeline {
                         }
                     }
                 } else {
-                    steps.echo "Not found ${args.sonarProjectFile}, no SonarQube scan performed."
+                    if (args.failBuild) {
+                        steps.error "Not found ${args.sonarProjectFile}, no SonarQube scan performed."
+                    } else {
+                        steps.echo "Not found ${args.sonarProjectFile}, no SonarQube scan performed."
+                    }
                 }
             }
         }
