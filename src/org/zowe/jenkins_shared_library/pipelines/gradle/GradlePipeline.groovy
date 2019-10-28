@@ -20,7 +20,6 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import org.zowe.jenkins_shared_library.pipelines.Build
 import org.zowe.jenkins_shared_library.pipelines.Constants
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.ReleaseStageArguments
-import org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline
 import org.zowe.jenkins_shared_library.pipelines.gradle.arguments.*
@@ -321,34 +320,27 @@ class GradlePipeline extends GenericPipeline {
      * Creates a stage that will execute SonarQube code scan on your application.
      *
      * <p>Arguments passed to this function will map to the
-     * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} class.</p>
+     * {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments} class.</p>
      *
      * <p>The stage will be created with the
      * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#sonarScanGeneric(java.util.Map)} method and will
      * have the following additional operations: <ul>
-     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#operation} is not
+     *     <li>If {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments#operation} is not
      *     provided, this method will default to executing {@code ./gradlew sonarqube}. You can disable this behavior by passing
-     *     {@code "arguments.disableSonarGradlePlugin = true"}.</li>
+     *     {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments#disableSonarGradlePlugin} as {@code true}.</li>
      * </ul>
      * </p>
      *
-     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} used to define
+     * @param arguments A map of arguments to be applied to the {@link org.zowe.jenkins_shared_library.pipelines.gradle.arguments.SonarScanStageArguments} used to define
      *                  the stage.
      */
-    void sonarScanGradle(Map arguments = [:]) {
-        Boolean disableSonarGradlePlugin = false
-        if (arguments.containsKey('disableSonarGradlePlugin') && arguments.disableSonarGradlePlugin) {
-            disableSonarGradlePlugin = true
-        }
-
-        if (!arguments.operation && !disableSonarGradlePlugin) {
+    void sonarScanGradle(SonarScanStageArguments arguments) {
+        if (!arguments.operation && !arguments.disableSonarGradlePlugin) {
             arguments.operation = {
-                SonarScanStageArguments args = arguments as SonarScanStageArguments
-
-                if (!args.scannerServer) {
+                if (!arguments.scannerServer) {
                     throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", arguments.name)
                 }
-                steps.withSonarQubeEnv(args.scannerServer) {
+                steps.withSonarQubeEnv(arguments.scannerServer) {
                     def scannerParam = steps.readJSON text: steps.env.SONARQUBE_SCANNER_PARAMS
                     if (!scannerParam || !scannerParam['sonar.host.url']) {
                         error "Unable to find sonar host url from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
@@ -361,7 +353,7 @@ class GradlePipeline extends GenericPipeline {
                                        " -Psonar.login=${scannerParam['sonar.login']}" +
                                        " -Psonar.links.ci=${steps.env.BUILD_URL}"
 
-                    if (args.allowBranchScan) {
+                    if (arguments.allowBranchScan) {
                         steps.echo "[WARNING] SonarQube gradle plugin doesn't support branch/pull request scanning, you should set disableSonarGradlePlugin to true and provide sonar-project.properties."
                         // pass branch information
                         if (this.changeInfo.isPullRequest) {
@@ -377,7 +369,7 @@ class GradlePipeline extends GenericPipeline {
                     steps.sh "./gradlew --info sonarqube ${gradleParams}"
 
                     // check build status
-                    if (args.failBuild) {
+                    if (arguments.failBuild) {
                         // get task id
                         String sonarTaskId = this.steps.sh(
                             script: 'cat build/sonar/report-task.txt | grep \'ceTaskId=\' | awk -F= \'{print $2;}\'',
@@ -438,11 +430,21 @@ class GradlePipeline extends GenericPipeline {
     }
 
     /**
+     * Creates a stage that will execute SonarQube code scan on your application.
+     *
+     * @param arguments A map that can be instantiated as {@link SonarScanStageArguments}
+     * @see #sonarScanGradle(SonarScanStageArguments)
+     */
+    void sonarScanGradle(Map arguments = [:]) {
+        sonarScanGradle(arguments as SonarScanStageArguments)
+    }
+
+    /**
      * Pseudo sonarScan method, should be overridden by inherited classes
      * @param arguments The arguments for the sonarScan step.
      */
     @Override
-    protected void sonarScan(Map arguments) {
+    protected void sonarScan(Map arguments = [:]) {
         sonarScanGradle(arguments)
     }
 
