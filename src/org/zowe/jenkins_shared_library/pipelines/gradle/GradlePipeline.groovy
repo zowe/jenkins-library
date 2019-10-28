@@ -388,7 +388,7 @@ class GradlePipeline extends GenericPipeline {
                         while (sonarTaskStatus == "PENDING" || sonarTaskStatus == "IN_PROGRESS") {
                             steps.echo "[QualityGate] Requesting task status from URL: ${sonarTaskUrl}"
                             sonarTaskStatus = this.steps.sh(
-                                script: "curl -s '${sonarTaskUrl}' | jq -r '.task.status'",
+                                script: "curl -s -u '${scannerParam['sonar.login']}:' '${sonarTaskUrl}' | jq -r '.task.status'",
                                 returnStdout: true
                             ).trim()
                             steps.echo "[QualityGate] Current status is ${sonarTaskStatus}."
@@ -399,7 +399,7 @@ class GradlePipeline extends GenericPipeline {
                             steps.error "[QualityGate] Task failed or was canceled."
                         } else if (sonarTaskStatus == "SUCCESS") {
                             String analysisId = this.steps.sh(
-                                script: "curl -s '${sonarTaskUrl}' | jq -r '.task.analysisId'",
+                                script: "curl -s -u '${scannerParam['sonar.login']}:' '${sonarTaskUrl}' | jq -r '.task.analysisId'",
                                 returnStdout: true
                             ).trim()
                             steps.echo "[QualityGate] Task analysis id is ${analysisId}."
@@ -407,7 +407,7 @@ class GradlePipeline extends GenericPipeline {
                             String analysisUrl = "${scannerParam['sonar.host.url']}/api/qualitygates/project_status?analysisId=${analysisId}".toString()
                             steps.echo "[QualityGate] Task finished, checking the result at ${analysisUrl}"
                             String sonarProjectStatus = this.steps.sh(
-                                script: "curl -s '${analysisUrl}' | jq -r '.projectStatus.status'",
+                                script: "curl -s -u '${scannerParam['sonar.login']}:' '${analysisUrl}' | jq -r '.projectStatus.status'",
                                 returnStdout: true
                             ).trim()
                             steps.echo "[QualityGate] Project analysis result is ${sonarProjectStatus}."
@@ -419,7 +419,7 @@ class GradlePipeline extends GenericPipeline {
                                 steps.error "[QualityGate] Unknown quality gate status: '${sonarProjectStatus}'"
                             }
                         } else {
-                            steps.error "[QualityGate] Unknown task status '${statusonarTaskStatuss}. Aborting."
+                            steps.error "[QualityGate] Unknown task status ${sonarTaskStatus}. Aborting."
                         }
                     }
                 }
