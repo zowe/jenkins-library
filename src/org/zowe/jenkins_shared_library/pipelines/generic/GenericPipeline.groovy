@@ -985,26 +985,16 @@ class GenericPipeline extends Pipeline {
      * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} used to define
      *                  the stage.
      */
-    void sonarScanGeneric(Map arguments = [:]) {
-        if (!arguments) {
-            // can be empty
-            arguments = [:]
-        }
-
-        // Force build to only happen on success, this cannot be overridden
-        arguments.resultThreshold = ResultEnum.SUCCESS
-
-        SonarScanStageArguments args = arguments as SonarScanStageArguments
-
+    void sonarScanGeneric(SonarScanStageArguments arguments) {
         SonarScanStageException preSetupException
 
-        if (args.stage) {
-            preSetupException = new SonarScanStageException("arguments.stage is an invalid option for sonarScanGeneric", args.name)
+        if (arguments.stage) {
+            preSetupException = new SonarScanStageException("arguments.stage is an invalid option for sonarScanGeneric", arguments.name)
         }
 
-        args.name = "SonarQube Scan${arguments.name ? ": ${arguments.name}" : ""}"
+        arguments.name = "SonarQube Scan${arguments.name ? ": ${arguments.name}" : ""}"
 
-        args.stage = { String stageName ->
+        arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
@@ -1012,60 +1002,60 @@ class GenericPipeline extends Pipeline {
             }
 
             // execute operation Closure if provided
-            if (args.operation) {
-                args.operation(stageName)
+            if (arguments.operation) {
+                arguments.operation(stageName)
             } else {
-                if (!args.scannerServer) {
-                    throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", args.name)
+                if (!arguments.scannerServer) {
+                    throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", arguments.name)
                 }
                 // scannerTool is required for default operation
-                if (!args.scannerTool) {
-                    throw new SonarScanStageException("arguments.scannerTool is not defined for sonarScanGeneric", args.name)
+                if (!arguments.scannerTool) {
+                    throw new SonarScanStageException("arguments.scannerTool is not defined for sonarScanGeneric", arguments.name)
                 }
 
-                def configExists = steps.fileExists(args.sonarProjectFile)
+                def configExists = steps.fileExists(arguments.sonarProjectFile)
                 if (configExists) {
-                    steps.echo "Found ${args.sonarProjectFile}"
+                    steps.echo "Found ${arguments.sonarProjectFile}"
 
                                        " -Psonar.links.ci=${steps.env.BUILD_URL}"
 
-                    if (args.allowBranchScan) {
+                    if (arguments.allowBranchScan) {
                         steps.echo "Adjust branch settings ..."
                         // comment out sonar.branch.name and sonar.branch.target if exist
-                        steps.sh "rm -f ${args.sonarProjectFile}.tmp && " +
+                        steps.sh "rm -f ${arguments.sonarProjectFile}.tmp && " +
                             "sed " +
                             "-e '/sonar.branch.name=/ s/^#*/#/' " +
                             "-e '/sonar.branch.target=/ s/^#*/#/' " +
                             "-e '/sonar.pullrequest.key=/ s/^#*/#/' " +
                             "-e '/sonar.pullrequest.branch=/ s/^#*/#/' " +
                             "-e '/sonar.pullrequest.base=/ s/^#*/#/' " +
-                            "${args.sonarProjectFile} > ${args.sonarProjectFile}.tmp"
-                        steps.sh "echo >> ${args.sonarProjectFile}.tmp"
+                            "${arguments.sonarProjectFile} > ${arguments.sonarProjectFile}.tmp"
+                        steps.sh "echo >> ${arguments.sonarProjectFile}.tmp"
                         // append new sonar.branch.name and sonar.branch.target value
                         if (this.changeInfo.isPullRequest) {
-                            steps.sh "echo sonar.pullrequest.key=${this.changeInfo.pullRequestId} >> ${args.sonarProjectFile}.tmp"
+                            steps.sh "echo sonar.pullrequest.key=${this.changeInfo.pullRequestId} >> ${arguments.sonarProjectFile}.tmp"
                             // we may see warnings like these
                             //  WARN: Parameter 'sonar.pullrequest.branch' can be omitted because the project on SonarCloud is linked to the source repository.
                             //  WARN: Parameter 'sonar.pullrequest.base' can be omitted because the project on SonarCloud is linked to the source repository.
                             // if we provide parameters below
-                            steps.sh "echo sonar.pullrequest.branch=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
-                            steps.sh "echo sonar.pullrequest.base=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"
+                            steps.sh "echo sonar.pullrequest.branch=${this.changeInfo.changeBranch} >> ${arguments.sonarProjectFile}.tmp"
+                            steps.sh "echo sonar.pullrequest.base=${this.changeInfo.baseBranch} >> ${arguments.sonarProjectFile}.tmp"
                         } else {
-                            steps.sh "echo sonar.branch.name=${this.changeInfo.branchName} >> ${args.sonarProjectFile}.tmp"
+                            steps.sh "echo sonar.branch.name=${this.changeInfo.branchName} >> ${arguments.sonarProjectFile}.tmp"
                         }
-                        steps.sh "[ -f ${args.sonarProjectFile}.tmp ] && mv ${args.sonarProjectFile}.tmp ${args.sonarProjectFile}"
+                        steps.sh "[ -f ${arguments.sonarProjectFile}.tmp ] && mv ${arguments.sonarProjectFile}.tmp ${arguments.sonarProjectFile}"
                     }
 
                     steps.echo 'SonarQube project properties:'
-                    steps.sh "cat ${args.sonarProjectFile} && echo"
+                    steps.sh "cat ${arguments.sonarProjectFile} && echo"
 
                     steps.echo 'Perform SonarQube scanning ...'
-                    def scannerHome = this.steps.tool args.scannerTool
-                    this.steps.withSonarQubeEnv(args.scannerServer) {
+                    def scannerHome = this.steps.tool arguments.scannerTool
+                    this.steps.withSonarQubeEnv(arguments.scannerServer) {
                         this.steps.sh "${scannerHome}/bin/sonar-scanner"
                     }
 
-                    if (args.failBuild) {
+                    if (arguments.failBuild) {
                         // fail build on quality gate failure
                         steps.timeout(time: 1, unit: 'HOURS') {
                             def qg = steps.waitForQualityGate()
@@ -1075,10 +1065,10 @@ class GenericPipeline extends Pipeline {
                         }
                     }
                 } else {
-                    if (args.failBuild) {
-                        steps.error "Not found ${args.sonarProjectFile}, no SonarQube scan performed."
+                    if (arguments.failBuild) {
+                        steps.error "Not found ${arguments.sonarProjectFile}, no SonarQube scan performed."
                     } else {
-                        steps.echo "Not found ${args.sonarProjectFile}, no SonarQube scan performed."
+                        steps.echo "Not found ${arguments.sonarProjectFile}, no SonarQube scan performed."
                     }
                 }
             }
@@ -1089,6 +1079,16 @@ class GenericPipeline extends Pipeline {
         if (!_control.sonarScan) {
             _control.sonarScan = sonarScan
         }
+    }
+
+    /**
+     * Creates a stage that will execute SonarQube code scan on your application.
+     *
+     * @param arguments A map that can be instantiated as {@link SonarScanStageArguments}
+     * @see #sonarScanGradle(SonarScanStageArguments)
+     */
+    void sonarScanGeneric(Map arguments = [:]) {
+        sonarScanGeneric(arguments as SonarScanStageArguments)
     }
 
     /**
