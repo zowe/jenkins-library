@@ -77,6 +77,34 @@ class Constants {
     public static String DEFAULT_SONARQUBE_SCANNER_TOOL = 'sonar-scanner-3.2.0'
 
     /**
+     * Default if SonarQube server supports branch scanning
+     *
+     * @Default {@code false}
+     */
+    public static Boolean DEFAULT_SONARQUBE_ALLOW_BRANCH = false
+
+    /**
+     * Default SonarCloud server ID defined on Jenkins
+     *
+     * @Default {@code "sonarcloud-server"}
+     */
+    public static String DEFAULT_LFJ_SONARCLOUD_SERVER = 'sonarcloud-server'
+
+    /**
+     * Default SonarCloud scanner tool ID defined on Jenkins
+     *
+     * @Default {@code "sonar-scanner-4.0.0"}
+     */
+    public static String DEFAULT_LFJ_SONARCLOUD_SCANNER_TOOL = 'sonar-scanner-4.0.0'
+
+    /**
+     * Default if SonarCloud server supports branch scanning
+     *
+     * @Default {@code true}
+     */
+    public static Boolean DEFAULT_LFJ_SONARCLOUD_ALLOW_BRANCH = true
+
+    /**
      * Default PAX Packaging server host name
      *
      * @Default {@code "zzow01.zowe.marist.cloud"}
