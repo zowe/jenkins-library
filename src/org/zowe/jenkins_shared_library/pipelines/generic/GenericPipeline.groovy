@@ -1038,8 +1038,6 @@ class GenericPipeline extends Pipeline {
                         steps.sh "echo >> ${args.sonarProjectFile}.tmp"
                         // append new sonar.branch.name and sonar.branch.target value
                         if (this.changeInfo.isPullRequest) {
-                            steps.sh "echo sonar.branch.name=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
-                            steps.sh "echo sonar.branch.target=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"
                             steps.sh "echo sonar.pullrequest.key=${this.changeInfo.pullRequestId} >> ${args.sonarProjectFile}.tmp"
                             steps.sh "echo sonar.pullrequest.branch=${this.changeInfo.changeBranch} >> ${args.sonarProjectFile}.tmp"
                             steps.sh "echo sonar.pullrequest.base=${this.changeInfo.baseBranch} >> ${args.sonarProjectFile}.tmp"

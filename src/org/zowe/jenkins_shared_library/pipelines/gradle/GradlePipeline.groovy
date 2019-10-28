@@ -358,8 +358,6 @@ class GradlePipeline extends GenericPipeline {
                     if (args.allowBranchScan) {
                         // pass branch information
                         if (this.changeInfo.isPullRequest) {
-                            gradleParams = gradleParams + " -Psonar.branch.name=${this.changeInfo.changeBranch}"
-                            gradleParams = gradleParams + " -Psonar.branch.target=${this.changeInfo.baseBranch}"
                             gradleParams = gradleParams + " -Psonar.pullrequest.key=${this.changeInfo.pullRequestId}"
                             gradleParams = gradleParams + " -Psonar.pullrequest.branch=${this.changeInfo.changeBranch}"
                             gradleParams = gradleParams + " -Psonar.pullrequest.base=${this.changeInfo.baseBranch}"
