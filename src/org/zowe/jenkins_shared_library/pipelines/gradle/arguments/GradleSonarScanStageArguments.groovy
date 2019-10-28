@@ -22,10 +22,6 @@ class GradleSonarScanStageArguments extends SonarScanStageArguments {
     /**
      * If disable usage of SonarQube Gradle Plugin.
      *
-     * @Note SonarQube gradle plugin doesn't support branch/pull request scanning, so
-     *       if you want to {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments#allowBranchScan},
-     *       you should set this to true and provide sonar-project.properties.
-     *
      * @default {@code false}
      */
     Boolean disableSonarGradlePlugin = false

@@ -354,7 +354,6 @@ class GradlePipeline extends GenericPipeline {
                                        " -Psonar.links.ci=${steps.env.BUILD_URL}"
 
                     if (arguments.allowBranchScan) {
-                        steps.echo "[WARNING] SonarQube gradle plugin doesn't support branch/pull request scanning, you should set disableSonarGradlePlugin to true and provide sonar-project.properties."
                         // pass branch information
                         if (this.changeInfo.isPullRequest) {
                             gradleParams = gradleParams + " -Psonar.pullrequest.key=${this.changeInfo.pullRequestId}"
