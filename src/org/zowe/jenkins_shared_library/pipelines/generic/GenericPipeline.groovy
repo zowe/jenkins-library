@@ -1075,7 +1075,7 @@ class GenericPipeline extends Pipeline {
         }
 
         // Create the stage and ensure that the first one is the stage of reference
-        Stage sonarScan = createStage(args)
+        Stage sonarScan = createStage(arguments)
         if (!_control.sonarScan) {
             _control.sonarScan = sonarScan
         }
