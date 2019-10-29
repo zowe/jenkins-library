@@ -1017,7 +1017,20 @@ class GenericPipeline extends Pipeline {
                 if (configExists) {
                     steps.echo "Found ${arguments.sonarProjectFile}"
 
-                                       " -Psonar.links.ci=${steps.env.BUILD_URL}"
+                    def version = this.getVersion()
+                    steps.echo "Adjust project settings ..."
+                    // comment out sonar.branch.name and sonar.branch.target if exist
+                    steps.sh "rm -f ${arguments.sonarProjectFile}.tmp && " +
+                        "sed " +
+                        "-e '/sonar.projectVersion=/ s/^#*/#/' " +
+                        "-e '/sonar.links.ci=/ s/^#*/#/' " +
+                        "${arguments.sonarProjectFile} > ${arguments.sonarProjectFile}.tmp"
+                    steps.sh "echo >> ${arguments.sonarProjectFile}.tmp"
+                    if (version) {
+                        steps.sh "echo sonar.projectVersion=${version} >> ${arguments.sonarProjectFile}.tmp"
+                    }
+                    steps.sh "echo sonar.links.ci=${steps.env.BUILD_URL} >> ${arguments.sonarProjectFile}.tmp"
+                    steps.sh "[ -f ${arguments.sonarProjectFile}.tmp ] && mv ${arguments.sonarProjectFile}.tmp ${arguments.sonarProjectFile}"
 
                     if (arguments.allowBranchScan) {
                         steps.echo "Adjust branch settings ..."
@@ -1056,6 +1069,7 @@ class GenericPipeline extends Pipeline {
                             this.steps.sh "${scannerHome}/bin/sonar-scanner"
                         }
                         if (arguments.failBuild) {
+                            steps.sh 'env'
                             // fail build on quality gate failure
                             // FIXME: waitForQualityGate has bug:
                             // https://community.sonarsource.com/t/need-a-sleep-between-withsonarqubeenv-and-waitforqualitygate-or-it-spins-in-in-progress/2265/18
