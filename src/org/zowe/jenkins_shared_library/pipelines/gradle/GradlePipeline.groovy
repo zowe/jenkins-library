@@ -379,7 +379,7 @@ class GradlePipeline extends GenericPipeline {
                             steps.sh 'find build'
                             steps.error 'Failed to find Sonar scan task ID.'
                         }
-                        steps.echo 'Sonar scan task ID is ${sonarTaskId}.'
+                        steps.echo "Sonar scan task ID is ${sonarTaskId}."
                         String sonarTaskUrl = "${scannerParam['sonar.host.url']}/api/ce/task?id=${sonarTaskId}".toString()
 
                         // check task status
