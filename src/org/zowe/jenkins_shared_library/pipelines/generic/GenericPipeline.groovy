@@ -1050,13 +1050,13 @@ class GenericPipeline extends Pipeline {
                     steps.sh "cat ${arguments.sonarProjectFile} && echo"
 
                     steps.echo 'Perform SonarQube scanning ...'
-                    def scannerHome = this.steps.tool arguments.scannerTool
-                    this.steps.withSonarQubeEnv(arguments.scannerServer) {
-                        this.steps.sh "${scannerHome}/bin/sonar-scanner"
+                    steps.timeout(time: 1, unit: 'HOURS') {
+                        def scannerHome = this.steps.tool arguments.scannerTool
+                        this.steps.withSonarQubeEnv(arguments.scannerServer) {
+                            this.steps.sh "${scannerHome}/bin/sonar-scanner"
 
-                        if (arguments.failBuild) {
-                            // fail build on quality gate failure
-                            steps.timeout(time: 1, unit: 'HOURS') {
+                            if (arguments.failBuild) {
+                                // fail build on quality gate failure
                                 // FIXME: waitForQualityGate has bug:
                                 // https://community.sonarsource.com/t/need-a-sleep-between-withsonarqubeenv-and-waitforqualitygate-or-it-spins-in-in-progress/2265/18
                                 this.steps.sleep(10)
