@@ -77,6 +77,66 @@ class Constants {
     public static String DEFAULT_SONARQUBE_SCANNER_TOOL = 'sonar-scanner-3.2.0'
 
     /**
+     * Default if SonarQube server supports branch scanning
+     *
+     * @Default {@code false}
+     */
+    public static Boolean DEFAULT_SONARQUBE_ALLOW_BRANCH = false
+
+    /**
+     * Default if pipeline should fail the build if code doesn't meet Sonar Scan
+     * Quality Gate.
+     *
+     * @Default {@code false}
+     */
+    public static Boolean DEFAULT_SONARQUBE_FAIL_BUILD = false
+
+    /**
+     * Default if pipeline should use gradle SonarQube plugin to run SonarQube
+     * scan.
+     *
+     * @Default {@code false}
+     */
+    public static Boolean DEFAULT_DISABLE_SONARQUBE_GRADLE_PLUGIN = false
+
+    /**
+     * Default SonarCloud server ID defined on Jenkins
+     *
+     * @Default {@code "sonarcloud-server"}
+     */
+    public static String DEFAULT_LFJ_SONARCLOUD_SERVER = 'sonarcloud-server'
+
+    /**
+     * Default SonarCloud scanner tool ID defined on Jenkins
+     *
+     * @Default {@code "sonar-scanner-4.0.0"}
+     */
+    public static String DEFAULT_LFJ_SONARCLOUD_SCANNER_TOOL = 'sonar-scanner-4.0.0'
+
+    /**
+     * Default if SonarCloud server supports branch scanning
+     *
+     * @Default {@code true}
+     */
+    public static Boolean DEFAULT_LFJ_SONARCLOUD_ALLOW_BRANCH = true
+
+    /**
+     * Default if pipeline should fail the build if code doesn't meet SonarCloud
+     * Scan Quality Gate.
+     *
+     * @Default {@code true}
+     */
+    public static Boolean DEFAULT_LFJ_SONARCLOUD_FAIL_BUILD = true
+
+    /**
+     * Default if pipeline should use gradle SonarQube plugin to run SonarQube
+     * scan on LF SonarCloud.
+     *
+     * @Default {@code false}
+     */
+    public static Boolean DEFAULT_LFJ_DISABLE_SONARQUBE_GRADLE_PLUGIN = false
+
+    /**
      * Default PAX Packaging server host name
      *
      * @Default {@code "zzow01.zowe.marist.cloud"}
