@@ -1067,18 +1067,75 @@ class GenericPipeline extends Pipeline {
                         def scannerHome = this.steps.tool arguments.scannerTool
                         this.steps.withSonarQubeEnv(arguments.scannerServer) {
                             this.steps.sh "${scannerHome}/bin/sonar-scanner"
-                        }
-                        if (arguments.failBuild) {
-                            // fail build on quality gate failure
-                            // FIXME: waitForQualityGate has bug:
-                            // https://community.sonarsource.com/t/need-a-sleep-between-withsonarqubeenv-and-waitforqualitygate-or-it-spins-in-in-progress/2265/18
-                            this.steps.sleep(10)
-                            this.steps.withSonarQubeEnv(arguments.scannerServer) {
-                                steps.sh 'env'
-                                this.steps.waitForQualityGate abortPipeline: true
-                            }
-                        }
-                    }
+
+                            if (arguments.failBuild) {
+                                // fail build on quality gate failure
+                                // FIXME: waitForQualityGate has bug:
+                                // https://community.sonarsource.com/t/need-a-sleep-between-withsonarqubeenv-and-waitforqualitygate-or-it-spins-in-in-progress/2265/18
+                                // this.steps.waitForQualityGate abortPipeline: true
+
+                                def scannerParam = steps.readJSON text: steps.env.SONARQUBE_SCANNER_PARAMS
+                                if (!scannerParam || !scannerParam['sonar.host.url']) {
+                                    error "Unable to find sonar host url from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
+                                }
+                                if (!scannerParam || !scannerParam['sonar.login']) {
+                                    error "Unable to find sonar authentication from SONARQUBE_SCANNER_PARAMS: ${scannerParam}"
+                                }
+
+                                // get task id
+                                String sonarTaskId = this.steps.sh(
+                                    script: 'cat .scannerwork/report-task.txt | grep \'ceTaskId=\' | awk -F= \'{print $2;}\'',
+                                    returnStdout: true
+                                ).trim()
+                                if (!sonarTaskId) {
+                                    steps.echo "Files in build folder:"
+                                    steps.sh 'find build'
+                                    steps.error 'Failed to find Sonar scan task ID.'
+                                }
+                                steps.echo 'Sonar scan task ID is ${sonarTaskId}.'
+                                String sonarTaskUrl = "${scannerParam['sonar.host.url']}/api/ce/task?id=${sonarTaskId}".toString()
+
+                                // check task status
+                                String sonarTaskStatus = "PENDING"
+                                while (sonarTaskStatus == "PENDING" || sonarTaskStatus == "IN_PROGRESS") {
+                                    steps.echo "[QualityGate] Requesting task status from URL: ${sonarTaskUrl}"
+                                    sonarTaskStatus = this.steps.sh(
+                                        script: "curl -s -u '${scannerParam['sonar.login']}:' '${sonarTaskUrl}' | jq -r '.task.status'",
+                                        returnStdout: true
+                                    ).trim()
+                                    steps.echo "[QualityGate] Current status is ${sonarTaskStatus}."
+                                    steps.sleep(1)
+                                }
+
+                                if (sonarTaskStatus == "FAILED" || sonarTaskStatus == "CANCELED") {
+                                    steps.error "[QualityGate] Task failed or was canceled."
+                                } else if (sonarTaskStatus == "SUCCESS") {
+                                    String analysisId = this.steps.sh(
+                                        script: "curl -s -u '${scannerParam['sonar.login']}:' '${sonarTaskUrl}' | jq -r '.task.analysisId'",
+                                        returnStdout: true
+                                    ).trim()
+                                    steps.echo "[QualityGate] Task analysis id is ${analysisId}."
+                                    // once the task is finished on the server we can check the result
+                                    String analysisUrl = "${scannerParam['sonar.host.url']}/api/qualitygates/project_status?analysisId=${analysisId}".toString()
+                                    steps.echo "[QualityGate] Task finished, checking the result at ${analysisUrl}"
+                                    String sonarProjectStatus = this.steps.sh(
+                                        script: "curl -s -u '${scannerParam['sonar.login']}:' '${analysisUrl}' | jq -r '.projectStatus.status'",
+                                        returnStdout: true
+                                    ).trim()
+                                    steps.echo "[QualityGate] Project analysis result is ${sonarProjectStatus}."
+                                    if (sonarProjectStatus == "OK") {
+                                        steps.echo "[QualityGate] Analysis passed the quality gate."
+                                    } else if (sonarProjectStatus == "ERROR") {
+                                        steps.error "[QualityGate] Analysis did not pass the quality gate."
+                                    } else {
+                                        steps.error "[QualityGate] Unknown quality gate status: '${sonarProjectStatus}'"
+                                    }
+                                } else {
+                                    steps.error "[QualityGate] Unknown task status ${sonarTaskStatus}. Aborting."
+                                }
+                            } // end of failBuild
+                        } // end of withSonarQubeEnv
+                    } // end of timeout
                 } else {
                     if (arguments.failBuild) {
                         steps.error "Not found ${arguments.sonarProjectFile}, no SonarQube scan performed."
