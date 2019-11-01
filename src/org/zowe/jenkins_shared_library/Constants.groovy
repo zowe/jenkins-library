@@ -63,6 +63,20 @@ class Constants {
     public static String DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL = 'GizaArtifactory'
 
     /**
+     * Default Artifactory URL provided by LF
+     *
+     * @Default {@code "https://zowe.jfrog.io/zowe"}
+     */
+    public static String DEFAULT_LFJ_ARTIFACTORY_URL = 'https://zowe.jfrog.io/zowe'
+
+    /**
+     * Default LF Artifactory robot account Jenkins username/password credential ID
+     *
+     * @Default {@code "ZoweArtifactory"}
+     */
+    public static String DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL = 'ZoweArtifactory'
+
+    /**
      * Default SonarQube server ID defined on Jenkins
      *
      * @Default {@code "sonar-default-server"}
