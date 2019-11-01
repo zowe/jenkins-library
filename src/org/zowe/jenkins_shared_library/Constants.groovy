@@ -49,6 +49,13 @@ class Constants {
     public static String DEFAULT_GITHUB_ROBOT_CREDENTIAL = 'zowe-robot-github'
 
     /**
+     * Default GitHub robot account LF enkins username/password credential ID
+     *
+     * @Default {@code "zowe-github"}
+     */
+    public static String DEFAULT_LFJ_GITHUB_ROBOT_CREDENTIAL = 'zowe-github'
+
+    /**
      * Default Artifactory URL
      *
      * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}
@@ -205,6 +212,34 @@ class Constants {
      * @Default {@code "GizaArtifactory"}
      */
     public static String DEFAULT_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'GizaArtifactory'
+
+    /**
+     * Default NPM private registry url for npm install
+     *
+     * @Default {@code "https://zowe.jfrog.io/zowe/api/npm/npm-release/"}
+     */
+    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_INSTALL = 'https://zowe.jfrog.io/zowe/api/npm/npm-release/'
+
+    /**
+     * Default NPM private registry url for npm publish
+     *
+     * @Default {@code "https://zowe.jfrog.io/zowe/api/npm/npm-local-release/"}
+     */
+    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_PUBLISH = 'https://zowe.jfrog.io/zowe/api/npm/npm-local-release/'
+
+    /**
+     * Default NPM private registry robot account email
+     *
+     * @Default {@code "jack-tiefeng.jia@ibm.com"}
+     */
+    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_EMAIL = 'jack-tiefeng.jia@ibm.com'
+
+    /**
+     * Default NPM private registry robot account credential on Jenkins
+     *
+     * @Default {@code "ZoweArtifactory"}
+     */
+    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'ZoweArtifactory'
 
     /**
      * Default GnuPG Code Signing Key Passphrase Jenkins username/password credential
