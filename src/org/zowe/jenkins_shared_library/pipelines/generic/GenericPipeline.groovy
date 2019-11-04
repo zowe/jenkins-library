@@ -589,7 +589,7 @@ class GenericPipeline extends Pipeline {
             if (arguments.github) {
                 this.steps.echo "Init github configurations ..."
                 this.github.init(arguments.github)
-            } else {
+            } else if (!arguments.disableGithub) {
                 this.steps.echo "Init github configurations with default ..."
                 this.github.init([
                     email                      : GlobalConstants.DEFAULT_GITHUB_ROBOT_EMAIL,
@@ -599,7 +599,7 @@ class GenericPipeline extends Pipeline {
             if (arguments.artifactory) {
                 this.steps.echo "Init artifactory configurations ..."
                 this.artifactory.init(arguments.artifactory)
-            } else {
+            } else if (!arguments.disableArtifactory) {
                 this.steps.echo "Init artifactory configurations with default ..."
                 this.artifactory.init([
                     url                        : GlobalConstants.DEFAULT_ARTIFACTORY_URL,
@@ -609,7 +609,7 @@ class GenericPipeline extends Pipeline {
             if (arguments.pax) {
                 this.steps.echo "Init pax packaging server configurations ..."
                 this.pax.init(arguments.pax)
-            } else {
+            } else if (!arguments.disablePax) {
                 this.steps.echo "Init artifactory configurations with default ..."
                 this.pax.init([
                     sshHost                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_HOST,

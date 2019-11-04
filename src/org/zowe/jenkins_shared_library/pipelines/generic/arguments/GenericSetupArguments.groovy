@@ -38,22 +38,55 @@ class GenericSetupArguments extends SetupArguments {
      * Github configurations
      *
      * <p>Use configurations defined at {@link jenkins_shared_library.scm.GitHub#init(Map)}.</p>
+     *
+     * @Note If this value is not provide, the library will try to init a GitHub object with default configurations.
      */
     Map github
+
+    /**
+     * If the pipeline doesn't need {@link #github} at all.
+     *
+     * @Note Set this to {@code true} to prevent the library to load default GitHub configurations.
+     *
+     * @default {@code false}
+     */
+    Boolean disableGithub = false
 
     /**
      * Artifactory configurations
      *
      * <p>Use configurations defined at {@link jenkins_shared_library.artifact.JFrogArtifactory#init(Map)}.</p>
+     *
+     * @Note If this value is not provide, the library will try to init a Artifactory object with default configurations.
      */
     Map artifactory
+
+    /**
+     * If the pipeline doesn't need {@link #artifactory} at all.
+     *
+     * @Note Set this to {@code true} to prevent the library to load default Artifactory configurations.
+     *
+     * @default {@code false}
+     */
+    Boolean disableArtifactory = false
 
     /**
      * PAX server configurations
      *
      * <p>Use configurations defined at {@link jenkins_shared_library.package.Pax#init(Map)}.</p>
+     *
+     * @Note If this value is not provide, the library will try to init a Pax object with default configurations.
      */
     Map pax
+
+    /**
+     * If the pipeline doesn't need {@link #pax} at all.
+     *
+     * @Note Set this to {@code true} to prevent the library to load default Pax configurations.
+     *
+     * @default {@code false}
+     */
+    Boolean disablePax = false
 
     /**
      * Extra init operations
