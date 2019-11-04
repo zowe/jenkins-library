@@ -20,11 +20,13 @@ import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.base.enums.StageStatus
 import org.zowe.jenkins_shared_library.pipelines.base.models.Stage
 import org.zowe.jenkins_shared_library.pipelines.base.Pipeline
+import org.zowe.jenkins_shared_library.pipelines.Constants as PipelineConstants
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.generic.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.generic.models.*
 import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.scm.ScmException
+import org.zowe.jenkins_shared_library.Constants as GlobalConstants
 import org.zowe.jenkins_shared_library.Utils
 
 /**
@@ -381,7 +383,7 @@ class GenericPipeline extends Pipeline {
             branch = steps.env.BRANCH_NAME
         }
 
-        String result = branch ?: Constants.DEFAULT_BRANCH_RELEASE_TAG
+        String result = branch ?: PipelineConstants.DEFAULT_BRANCH_RELEASE_TAG
 
         if (branch) {
             def branchProps = branches.getByPattern(branch)
@@ -577,7 +579,7 @@ class GenericPipeline extends Pipeline {
             // This checks for the [ci skip] text. If found, the status code is 0
             def result = steps.sh returnStatus: true, script: "git log -1 | grep '.*\\[ci skip\\].*'"
             if (result == 0) {
-                steps.echo "\"${Constants.CI_SKIP}\" spotted in the git commit. Aborting."
+                steps.echo "\"${PipelineConstants.CI_SKIP}\" spotted in the git commit. Aborting."
                 _shouldSkipRemainingStages = true
                 setResult(ResultEnum.NOT_BUILT)
             }
@@ -587,14 +589,34 @@ class GenericPipeline extends Pipeline {
             if (arguments.github) {
                 this.steps.echo "Init github configurations ..."
                 this.github.init(arguments.github)
+            } else {
+                this.steps.echo "Init github configurations with default ..."
+                this.github.init([
+                    email                      : GlobalConstants.DEFAULT_GITHUB_ROBOT_EMAIL,
+                    usernamePasswordCredential : GlobalConstants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
+                ])
             }
             if (arguments.artifactory) {
                 this.steps.echo "Init artifactory configurations ..."
                 this.artifactory.init(arguments.artifactory)
+            } else {
+                this.steps.echo "Init artifactory configurations with default ..."
+                this.artifactory.init([
+                    url                        : GlobalConstants.DEFAULT_ARTIFACTORY_URL,
+                    usernamePasswordCredential : GlobalConstants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
+                ])
             }
             if (arguments.pax) {
                 this.steps.echo "Init pax packaging server configurations ..."
                 this.pax.init(arguments.pax)
+            } else {
+                this.steps.echo "Init artifactory configurations with default ..."
+                this.pax.init([
+                    sshHost                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_HOST,
+                    sshPort                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_PORT,
+                    sshCredential              : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL,
+                    remoteWorkspace            : GlobalConstants.DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE,
+                ])
             }
 
             if (arguments.extraInit) {
