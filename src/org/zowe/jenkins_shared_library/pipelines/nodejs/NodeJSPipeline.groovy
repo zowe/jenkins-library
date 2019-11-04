@@ -376,9 +376,7 @@ ${gitStatus}
             createStage(
                 name: 'Lint',
                 stage: {
-                    steps.ansiColor('xterm') {
-                        steps.sh 'npm run lint'
-                    }
+                    steps.sh 'npm run lint'
                 },
                 timeout: arguments.lint,
                 shouldExecute: {
@@ -449,9 +447,7 @@ ${gitStatus}
     void buildNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.ansiColor('xterm') {
-                    steps.sh "npm run build"
-                }
+                steps.sh "npm run build"
             }
         }
 
@@ -489,9 +485,7 @@ ${gitStatus}
     void testNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.ansiColor('xterm') {
-                    steps.sh "npm run test"
-                }
+                steps.sh "npm run test"
             }
         }
 
