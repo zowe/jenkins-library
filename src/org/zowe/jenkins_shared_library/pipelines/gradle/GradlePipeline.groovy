@@ -250,10 +250,8 @@ class GradlePipeline extends GenericPipeline {
     void buildGradle(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.ansiColor('xterm') {
-                    // assemble doesn't include running test
-                    steps.sh "./gradlew assemble"
-                }
+                // assemble doesn't include running test
+                steps.sh "./gradlew assemble"
             }
         }
 
@@ -290,15 +288,13 @@ class GradlePipeline extends GenericPipeline {
     void testGradle(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.ansiColor('xterm') {
-                    // check is the next further step than test
-                    if (this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('coverage')) {
-                        steps.echo 'gradle coverage task is defined.'
-                        steps.sh "./gradlew coverage"
-                    } else {
-                        steps.echo 'gradle coverage task is not defined, will run check instead.'
-                        steps.sh "./gradlew check"
-                    }
+                // check is the next further step than test
+                if (this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('coverage')) {
+                    steps.echo 'gradle coverage task is defined.'
+                    steps.sh "./gradlew coverage"
+                } else {
+                    steps.echo 'gradle coverage task is not defined, will run check instead.'
+                    steps.sh "./gradlew check"
                 }
             }
         }
@@ -467,10 +463,8 @@ class GradlePipeline extends GenericPipeline {
     void packagingGradle(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = {
-                steps.ansiColor('xterm') {
-                    // jar task actually has been executed becuase it's pre-task for assemble
-                    steps.sh "./gradlew jar"
-                }
+                // jar task actually has been executed becuase it's pre-task for assemble
+                steps.sh "./gradlew jar"
             }
         }
 

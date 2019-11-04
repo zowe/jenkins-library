@@ -41,4 +41,12 @@ class PublishStageArguments extends GenericStageArguments {
      * @Default {@code false}
      */
     Boolean allowPublishPreReleaseFromFormalReleaseBranch = false
+
+    /**
+     * If we allow publishing if the pipeline doesn't define any test stages.
+     *
+     * @Note Set this to `true` to bypass the error {@code "At least one test stage must be defined"}.
+     * @Default {@code false}
+     */
+    Boolean allowPublishWithoutTest = false
 }
