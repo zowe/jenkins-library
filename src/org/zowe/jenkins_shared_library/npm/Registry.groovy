@@ -407,9 +407,7 @@ class Registry {
             this.steps.sh "mv ${NPMRC_FILE} ${NPMRC_FILE}.bak || exit 0"
         }
         try {
-            this.steps.ansiColor('xterm') {
-                this.steps.sh "npm audit"
-            }
+            this.steps.sh "npm audit"
         } catch (e) {
             throw e
         } finally {
