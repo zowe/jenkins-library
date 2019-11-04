@@ -1418,7 +1418,7 @@ class GenericPipeline extends Pipeline {
                 throw new PublishStageException("Build must be successful to publish", args.name)
             } else if (_control.prePublishTests && _control.prePublishTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
                 throw new PublishStageException("All test stages before publish must be successful or skipped!", args.name)
-            } else if (_control.prePublishTests.size() == 0) {
+            } else if (!args.allowPublishWithoutTest && _control.prePublishTests.size() == 0) {
                 throw new PublishStageException("At least one test stage must be defined", args.name)
             }
             Boolean _isReleaseBranch = this.isReleaseBranch()
