@@ -930,6 +930,9 @@ class JFrogArtifactory implements ArtifactInterface {
         if (definition.containsKey('explode')) {
             result['explode'] = definition['explode'] as String
         }
+        if (definition.containsKey('excludePatterns')) {
+            result['excludePatterns'] = definition['excludePatterns']
+        }
         // always flat
         result['flat'] = 'true'
         result['pattern'] = ''
