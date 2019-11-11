@@ -352,8 +352,11 @@ class Registry {
 
         this.within {
             this.tags.each {
-                def fullImageName = this.tag(it)
-                this.steps.sh "docker push \"${fullImageName}\""
+                def tag = it.trim()
+                if (tag) {
+                    def fullImageName = this.tag(it)
+                    this.steps.sh "docker push \"${fullImageName}\""
+                }
             }
         }
     }

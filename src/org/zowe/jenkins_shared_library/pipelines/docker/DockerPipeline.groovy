@@ -144,7 +144,8 @@ class DockerPipeline extends GenericPipeline {
                 buildHistory       : 20,
                 allowRelease       : true,
                 allowFormalRelease : true,
-                releaseTag         : 'v$1,v$1,v$1.$2,v$1.$2.$3',
+                // formal version tags are attached automatically
+                // releaseTag         : 'v$1,v$1.$2,v$1.$2.$3',
             ],
             [
                 name               : 'staging',
@@ -158,7 +159,7 @@ class DockerPipeline extends GenericPipeline {
                 isProtected        : true,
                 buildHistory       : 20,
                 allowRelease       : true,
-                releaseTag         : 'v$1-dev,v$1-dev,v$1.$2-dev,v$1.$2.$3-dev',
+                releaseTag         : 'v$1-dev,v$1.$2-dev,v$1.$2.$3-dev',
             ],
         ])
     }
@@ -270,6 +271,12 @@ class DockerPipeline extends GenericPipeline {
     /**
      * Publish a Docker image.
      *
+     * <p>Default behavior of publish stage:<ul>
+     * <li>A non-release build or a build on a non-release branch will publish the image with tag {@code snapshot}.</li>
+     * <li>A release build on a release branch with pre-release string will generate a tag of {@code version-pre-release-string}. For example, {@code v1.2.3-RC1}.</li>
+     * <li>A formal release build on a formal release branch without pre-release string will generate serial version tags. For example, {@code "v1"} {@code "v1.2"} and {@code "v1.2.3"}.</li>
+     * </ul></p>
+     *
      * <p>Arguments passed to this function will map to the
      * {@link org.zowe.jenkins_shared_library.pipelines.generic.arguments.PublishStageArguments} class.</p>
      *
@@ -294,11 +301,30 @@ class DockerPipeline extends GenericPipeline {
                 String imageName = arguments.image ?: this.registry.getImage()
 
                 Boolean _isReleaseBranch = this.isReleaseBranch()
+                Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
                 Boolean _isPerformingRelease = this.isPerformingRelease()
+                String _preReleaseString = this.getPreReleaseString()
 
                 String tags = ''
                 if (_isReleaseBranch && _isPerformingRelease) {
                     tags = this.getBranchTag()
+
+                    // attach version tags
+                    String version = this.getVersion()
+                    if (version) {
+                        Map versionTrunks = Utils.parseSemanticVersion(version)
+
+                        // this is real formal release
+                        if (_isFormalReleaseBranch && !_preReleaseString) {
+                            tags = (tags ? tags + ',' : '') +
+                                "v${versionTrunks['major']}," +
+                                "v${versionTrunks['major']}.${versionTrunks['minor']}," +
+                                "v${versionTrunks['major']}.${versionTrunks['minor']}.${versionTrunks['patch']}"
+                        } else if (_preReleaseString) {
+                            tags = (tags ? tags + ',' : '') +
+                                "v${versionTrunks['major']}.${versionTrunks['minor']}.${versionTrunks['patch']}-${_preReleaseString}"
+                        }
+                    }
                 }
                 if (!tags) {
                     tags = Constants.DEFAULT_DOCKER_NON_RELEASE_TAG
