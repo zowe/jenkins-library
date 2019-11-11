@@ -150,17 +150,21 @@ class Registry {
         }
         // try to extract version from Dockerfile
         if (origDockerFile != this.dockerFile || !this.version) {
-            this.version = this.steps.sh(
-                    script: "cat \"${this.dockerFile}\" | " +
-                            "grep -i -e 'label\\s\\+version=' | " +
-                            "awk -F= '{print \$2};' | " +
-                            "sed \"s/[^0-9\\.']/ /g\"",
-                    returnStdout: true
-                ).trim()
-            if (this.version) {
-                this.steps.echo "Found version defined in ${this.dockerFile}: ${this.version}."
+            if (this.steps.fileExists(this.dockerFile)) {
+                this.version = this.steps.sh(
+                        script: "cat \"${this.dockerFile}\" | " +
+                                "grep -i -e 'label\\s\\+version=' | " +
+                                "awk -F= '{print \$2};' | " +
+                                "sed \"s/[^0-9\\.']/ /g\"",
+                        returnStdout: true
+                    ).trim()
+                if (this.version) {
+                    this.steps.echo "Found version defined in ${this.dockerFile}: ${this.version}."
+                } else {
+                    throw new InvalidArgumentException('dockerFile', "Cannot find version label in ${this.dockerFile}")
+                }
             } else {
-                throw new InvalidArgumentException('dockerFile', "Cannot find version label in ${this.dockerFile}")
+                this.steps.echo "[WARNING] Cannot find ${this.dockerFile}, version is not extracted."
             }
         }
 
