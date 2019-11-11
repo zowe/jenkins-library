@@ -10,13 +10,23 @@
 
 package org.zowe.jenkins_shared_library.pipelines.docker.arguments
 
+import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.PublishStageArguments
+
+import java.util.concurrent.TimeUnit
 
 /**
  * Represents the arguments available to the
  * {@link jenkins_shared_library.pipelines.docker.DockerPipeline#publishDocker(java.util.Map)} method.
  */
 class DockerPublishArguments extends PublishStageArguments {
+    /**
+     * Amount of time allowed for the Docker publish stage
+     *
+     * @default 10 Minutes
+     */
+    StageTimeout timeout = [time: 10, unit: TimeUnit.MINUTES]
+
     /**
      * The name of the publishing step.
      *
