@@ -12,11 +12,20 @@ package org.zowe.jenkins_shared_library.pipelines.docker.arguments
 
 import org.zowe.jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments
 
+import java.util.concurrent.TimeUnit
+
 /**
  * Represents the arguments available to the
  * {@link jenkins_shared_library.pipelines.docker.DockerPipeline#buildDocker(java.util.Map)} method.
  */
 class DockerBuildArguments extends BuildStageArguments {
+    /**
+     * Amount of time allowed for the Docker build stage
+     *
+     * @default 1 Hour
+     */
+    StageTimeout timeout = [time: 1, unit: TimeUnit.HOURS]
+
     /**
      * The name of the build step.
      *
