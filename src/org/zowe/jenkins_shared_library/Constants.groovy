@@ -254,4 +254,25 @@ class Constants {
      * @Default {@code "code-signing-key-private-jack"}
      */
     public static String DEFAULT_GPG_CODE_SIGNING_PRIVATE_KEY_FILE = 'code-signing-key-private-jack'
+
+    /**
+     * Default Docker registry url
+     *
+     * @Default {@code ""}
+     */
+    public static String DEFAULT_DOCKER_REGISTRY_URL = ''
+
+    /**
+     * Default Docker registry robot account credential on Jenkins
+     *
+     * @Default {@code "jackjia-docker-access-token"}
+     */
+    public static String DEFAULT_DOCKER_REGISTRY_CREDENTIAL = 'jackjia-docker-access-token'
+
+    /**
+     * Default Docker image prefix
+     *
+     * @Default {@code "jackjiaibm"}
+     */
+    public static String DEFAULT_DOCKER_IMAGE_PREFIX = 'jackjiaibm'
 }

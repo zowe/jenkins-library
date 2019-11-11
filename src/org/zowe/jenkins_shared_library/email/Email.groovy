@@ -10,6 +10,8 @@
 
 package org.zowe.jenkins_shared_library.email
 
+import org.codehaus.groovy.runtime.InvokerHelper
+
 /**
  * Class to send email notifications.
  *
@@ -79,10 +81,14 @@ class Email {
     /**
      * Send an email.
      *
-     * @param args A map that can be instantiated as {@link EmailArguments}.
+     * @param arguments A map that can be instantiated as {@link EmailArguments}.
      * @see #send(EmailArguments)
      */
-    void send(Map args) {
-        send(args as EmailArguments)
+    void send(Map arguments) {
+        // if the Arguments class is not base class, the {@code "arguments as SomeStageArguments"} statement
+        // has problem to set values of properties defined in super class.
+        EmailArguments args = new EmailArguments()
+        InvokerHelper.setProperties(args, arguments)
+        send(args)
     }
 }

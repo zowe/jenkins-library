@@ -102,6 +102,9 @@ test {
         'pax.server.crdential',
         'signing.key.passphrase',
         'signing.key.file',
+        'docker.registry',
+        'docker.credential',
+        'docker.imageprefix'
     ]) {
         systemProperty prop, project.getProperty(prop)
     }

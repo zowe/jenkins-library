@@ -12,6 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.base
 
 import groovy.util.logging.Log
 import java.util.concurrent.TimeUnit
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
@@ -530,7 +531,11 @@ class Pipeline {
      */
     final Stage createStage(Map arguments) {
         // Call the overloaded method
-        return createStage(arguments as StageArguments)
+        // if the Arguments class is not base class, the {@code "arguments as SomeStageArguments"} statement
+        // has problem to set values of properties defined in super class.
+        StageArguments args = new StageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        return createStage(args)
     }
 
     /**
@@ -588,7 +593,7 @@ class Pipeline {
      *
      * @param arguments The arguments for the added stages.
      */
-    void setupBase(SetupArguments arguments) {
+    void setupBase(SetupStageArguments arguments) {
         // init package name/version if provided
         if (arguments.packageName) {
             this.packageName = arguments.packageName
@@ -638,24 +643,26 @@ class Pipeline {
     /**
      * Initialize the pipeline.
      *
-     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.SetupArguments}
-     * @see #setupBase(SetupArguments)
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.SetupStageArguments}
+     * @see #setupBase(SetupStageArguments)
      */
     void setupBase(Map arguments = [:]) {
-        setupBase(arguments as SetupArguments)
+        SetupStageArguments args = new SetupStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        setupBase(args)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
      * @param arguments The arguments for the added stages.
      */
-    protected void setup(SetupArguments arguments) {
+    protected void setup(SetupStageArguments arguments) {
         setupBase(arguments)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.SetupArguments}
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.SetupStageArguments}
      */
     protected void setup(Map arguments = [:]) {
         setupBase(arguments)
@@ -777,11 +784,13 @@ class Pipeline {
     /**
      * Signal that no more stages will be added and begin pipeline execution.
      *
-     * @param args A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.EndArguments}.
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.EndArguments}.
      * @see #endBase(EndArguments)
      */
-    final void endBase(Map args = [:]) {
-        endBase(args as EndArguments)
+    final void endBase(Map arguments = [:]) {
+        EndArguments args = new EndArguments()
+        InvokerHelper.setProperties(args, arguments)
+        endBase(args)
     }
 
     /**
@@ -789,7 +798,7 @@ class Pipeline {
      *
      * @Note This method is added so we have consistency on creating pipeline with different level of
      * Pipeline classes. No matter you use Base Pipeline, GenericPipeline, or GradlePipeline, etc,
-     * you have consistency on using {@link #setup(SetupArguments)} and {@link #end(EndArguments)} methods.
+     * you have consistency on using {@link #setup(SetupStageArguments)} and {@link #end(EndArguments)} methods.
      *
      * @param args Arguments for the end method.
      */

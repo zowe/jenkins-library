@@ -28,6 +28,37 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
  */
 class Utils {
     /**
+     * Return all properties and values of an object
+     *
+     * @param   obj       Object to check
+     */
+    static String dumpProperties(Object obj) {
+        def result = ["<${obj.getClass()}>"]
+
+        obj.properties.each {
+            result << "- $it.key -> $it.value"
+        }
+
+        return result.join("\n")
+    }
+
+    /**
+     * Convert an Object to Map
+     *
+     * @param  obj          Object to convert
+     * @return              Map with same properties of the Object
+     */
+    static Map toMap(Object obj) {
+        Map result = [:]
+
+        obj.properties.each {
+            result[it.key] = it.value
+        }
+
+        return result
+    }
+
+    /**
      * Read resource file
      *
      * @Example

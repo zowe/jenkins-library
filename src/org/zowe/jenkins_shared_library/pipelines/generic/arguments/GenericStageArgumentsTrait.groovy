@@ -10,12 +10,10 @@
 
 package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
-import org.zowe.jenkins_shared_library.pipelines.base.arguments.StageArguments
-
 /**
  * Arguments available to stage creation methods present in {@link jenkins_shared_library.pipelines.generic.GenericPipeline}
  */
-class GenericStageArguments extends StageArguments {
+class GenericStageArgumentsTrait {
     /**
      * The stage operation.
      *
@@ -24,7 +22,7 @@ class GenericStageArguments extends StageArguments {
      * for this argument will be provided in each command.</p>
      *
      * @Note Since {@code trait} and {@code "@Mixion(GenericStageArgumentsTrait)"} doesn't work with CPS, we import this
-     *        property directly.
+     *        property directly to some classes.
      */
     Closure operation
 }

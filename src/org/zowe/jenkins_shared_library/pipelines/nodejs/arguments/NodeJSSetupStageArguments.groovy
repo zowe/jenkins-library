@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.nodejs.arguments
 
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
-import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupStageArguments
 
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
  * {@link org.zowe.jenkins_shared_library.pipelines.nodejs.NodeJSPipeline#setup(org.zowe.jenkins_shared_library.pipelines.nodejs.arguments.NodeJSSetupArguments)}
  * method.
  */
-class NodeJSSetupArguments extends GenericSetupArguments {
+class NodeJSSetupStageArguments extends GenericSetupStageArguments {
     /**
      * Amount of time allowed to install dependencies.
      *
