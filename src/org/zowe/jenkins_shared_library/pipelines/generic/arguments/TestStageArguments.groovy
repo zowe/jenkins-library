@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.pipelines.generic.arguments
 
+import org.zowe.jenkins_shared_library.pipelines.base.enums.ResultEnum
 import org.zowe.jenkins_shared_library.pipelines.generic.models.TestReport
 
 /**
@@ -17,6 +18,20 @@ import org.zowe.jenkins_shared_library.pipelines.generic.models.TestReport
  * {@link org.zowe.jenkins_shared_library.pipelines.generic.GenericPipeline#testGeneric(java.util.Map)} method.
  */
 class TestStageArguments extends GenericStageArguments {
+    /**
+     * Minimum build health needed for this stage to execute.
+     *
+     * <p>If the current build health is less than the value specified, the stage will be skipped.</p>
+     *
+     * <p>For more information about the skip precedent, see
+     * {@link jenkins_shared_library.pipelines.base.Pipeline#createStage(jenkins_shared_library.pipelines.base.arguments.StageArguments)}</p>
+     *
+     * @Note Default the resultThreshold to unstable for tests, if a custom value is passed then that will be used instead.
+     *
+     * @default {@link ResultEnum#UNSTABLE}
+     */
+    ResultEnum resultThreshold = ResultEnum.UNSTABLE
+
     /**
      * The location of the generated junit output.
      *

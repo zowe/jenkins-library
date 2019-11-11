@@ -12,6 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.gradle
 
 import groovy.util.logging.Log
 import java.util.concurrent.TimeUnit
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.gradle.Gradle
 import org.zowe.jenkins_shared_library.pipelines.base.Branches
@@ -180,7 +181,7 @@ class GradlePipeline extends GenericPipeline {
      * stage. The initialization will try to extract package information, like name, version, etc
      * from gradle properties.</p>
      */
-    void setupGradle(GradleSetupArguments arguments) throws GradlePipelineException {
+    void setupGradle(GradleSetupStageArguments arguments) throws GradlePipelineException {
         Closure initGradle = { pipeline ->
             // init gradle settings
             pipeline.steps.echo 'Init Gradle project ...'
@@ -211,16 +212,20 @@ class GradlePipeline extends GenericPipeline {
     /**
      * Initialize the pipeline.
      *
-     * @param arguments A map that can be instantiated as {@link GradleSetupArguments}
-     * @see #setup(GradleSetupArguments)
+     * @param arguments A map that can be instantiated as {@link GradleSetupStageArguments}
+     * @see #setup(GradleSetupStageArguments)
      */
     void setupGradle(Map arguments = [:]) {
-        setupGradle(arguments as GradleSetupArguments)
+        // if the Arguments class is not base class, the {@code "arguments as SomeStageArguments"} statement
+        // has problem to set values of properties defined in super class.
+        GradleSetupStageArguments args = new GradleSetupStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        setupGradle(args)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param arguments A map that can be instantiated as {@link GradleSetupArguments}
+     * @param arguments A map that can be instantiated as {@link GradleSetupStageArguments}
      */
     @Override
     protected void setup(Map arguments = [:]) {
@@ -249,7 +254,7 @@ class GradlePipeline extends GenericPipeline {
      */
     void buildGradle(Map arguments = [:]) {
         if (!arguments.operation) {
-            arguments.operation = {
+            arguments.operation = { String stageName ->
                 // assemble doesn't include running test
                 steps.sh "./gradlew assemble"
             }
@@ -287,7 +292,7 @@ class GradlePipeline extends GenericPipeline {
      */
     void testGradle(Map arguments = [:]) {
         if (!arguments.operation) {
-            arguments.operation = {
+            arguments.operation = { String stageName ->
                 // check is the next further step than test
                 if (this.packageInfo && this.packageInfo['scripts'] && this.packageInfo['scripts'].contains('coverage')) {
                     steps.echo 'gradle coverage task is defined.'
@@ -332,7 +337,7 @@ class GradlePipeline extends GenericPipeline {
      */
     void sonarScanGradle(GradleSonarScanStageArguments arguments) throws SonarScanStageException {
         if (!arguments.operation && !arguments.disableSonarGradlePlugin) {
-            arguments.operation = {
+            arguments.operation = { String stageName ->
                 if (!arguments.scannerServer) {
                     throw new SonarScanStageException("arguments.scannerServer is not defined for sonarScanGeneric", arguments.name)
                 }
@@ -431,7 +436,9 @@ class GradlePipeline extends GenericPipeline {
      * @see #sonarScanGradle(GradleSonarScanStageArguments)
      */
     void sonarScanGradle(Map arguments = [:]) {
-        sonarScanGradle(arguments as GradleSonarScanStageArguments)
+        GradleSonarScanStageArguments args = new GradleSonarScanStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        sonarScanGradle(args)
     }
 
     /**
@@ -462,7 +469,7 @@ class GradlePipeline extends GenericPipeline {
      */
     void packagingGradle(Map arguments = [:]) {
         if (!arguments.operation) {
-            arguments.operation = {
+            arguments.operation = { String stageName ->
                 // jar task actually has been executed becuase it's pre-task for assemble
                 steps.sh "./gradlew jar"
             }

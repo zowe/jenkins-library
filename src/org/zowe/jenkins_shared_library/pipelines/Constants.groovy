@@ -67,4 +67,9 @@ class Constants {
      * Default artifact NPM tag for non-release build. Default value is {@code "snapshot"}.
      */
     static String DEFAULT_NPM_NON_RELEASE_TAG = 'snapshot'
+
+    /**
+     * Default Docker image tag for non-release build. Default value is {@code "snapshot"}.
+     */
+    static String DEFAULT_DOCKER_NON_RELEASE_TAG = 'snapshot'
 }

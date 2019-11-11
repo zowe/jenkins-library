@@ -12,6 +12,7 @@ package org.zowe.jenkins_shared_library.pipelines.nodejs
 
 import groovy.util.logging.Log
 import java.util.concurrent.TimeUnit
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 import org.zowe.jenkins_shared_library.npm.Registry
 import org.zowe.jenkins_shared_library.pipelines.base.Branches
@@ -289,7 +290,7 @@ class NodeJSPipeline extends GenericPipeline {
      *     </dd>
      * </dl>
      */
-    void setupNodeJS(NodeJSSetupArguments arguments) throws NodeJSPipelineException {
+    void setupNodeJS(NodeJSSetupStageArguments arguments) throws NodeJSPipelineException {
         Closure initRegistry = { pipeline ->
             // init registries
             if (arguments.publishRegistry) {
@@ -413,16 +414,20 @@ ${gitStatus}
     /**
      * Initialize the pipeline.
      *
-     * @param arguments A map that can be instantiated as {@link NodeJSSetupArguments}
-     * @see #setup(NodeJSSetupArguments)
+     * @param arguments A map that can be instantiated as {@link NodeJSSetupStageArguments}
+     * @see #setup(NodeJSSetupStageArguments)
      */
     void setupNodeJS(Map arguments = [:]) {
-        setupNodeJS(arguments as NodeJSSetupArguments)
+        // if the Arguments class is not base class, the {@code "arguments as SomeStageArguments"} statement
+        // has problem to set values of properties defined in super class.
+        NodeJSSetupStageArguments args = new NodeJSSetupStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        setupNodeJS(args)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
-     * @param arguments A map that can be instantiated as {@link SetupArguments}
+     * @param arguments A map that can be instantiated as {@link NodeJSSetupStageArguments}
      */
     @Override
     protected void setup(Map arguments = [:]) {
@@ -446,7 +451,7 @@ ${gitStatus}
      */
     void buildNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
-            arguments.operation = {
+            arguments.operation = { String stageName ->
                 steps.sh "npm run build"
             }
         }
@@ -484,7 +489,7 @@ ${gitStatus}
      */
     void testNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
-            arguments.operation = {
+            arguments.operation = { String stageName ->
                 steps.sh "npm run test"
             }
         }

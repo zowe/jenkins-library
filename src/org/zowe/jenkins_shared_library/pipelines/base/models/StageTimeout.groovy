@@ -82,7 +82,6 @@ class StageTimeout {
      * Outputs the timeout in the form of "{@link #time} {@link #unit}"
      * @return The string representation of this object.
      */
-    @Override
     String toString() {
         return "${time} ${unit}"
     }

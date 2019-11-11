@@ -13,6 +13,7 @@ package org.zowe.jenkins_shared_library.pipelines.generic
 // import com.cloudbees.groovy.cps.NonCPS
 import groovy.util.logging.Log
 import java.util.regex.Pattern
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.zowe.jenkins_shared_library.artifact.JFrogArtifactory
 import org.zowe.jenkins_shared_library.package.Pax
 import org.zowe.jenkins_shared_library.pipelines.base.Branches
@@ -211,6 +212,13 @@ class GenericPipeline extends Pipeline {
      * GitHub instance
      */
     GitHub github
+
+    /**
+     * Github tag prefix
+     *
+     * <p>If you set a prefix {@code example}, then all version tags like {@code v1.2.3} will have a github tag {@code example-v1.2.3}.</p>
+     */
+    String githubTagPrefix = ''
 
     /**
      * JFrogArtifactory instance
@@ -413,6 +421,8 @@ class GenericPipeline extends Pipeline {
         Boolean _isPerformingRelease = this.isPerformingRelease()
         String _preReleaseString = this.getPreReleaseString()
 
+        log.finer("Pipeline object before getBuildStringMacros(${macros.dump()}): ${this.dump()}")
+
         if (!macros.containsKey('repository')) {
             macros['repository'] = _isReleaseBranch && _isPerformingRelease ?
                                    JFrogArtifactory.REPOSITORY_RELEASE :
@@ -544,7 +554,7 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
-     * Calls {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupArguments)} to setup the build.
+     * Calls {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupStageArguments)} to setup the build.
      *
      * @Stages
      * This method adds 2 stages to the build:
@@ -560,7 +570,7 @@ class GenericPipeline extends Pipeline {
      *     <dd>
      *         This initialization stage will run {@code #init()} methods of dependended instances,
      *         for example, GitHub, JFrogArtifactory, Pax etc. This step is placed in a stage because
-     *         some initlialization requires code checkout. You can specify {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments#extraInit} to extend the
+     *         some initlialization requires code checkout. You can specify {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupStageArguments#extraInit} to extend the
      *         default initialization.
      *     </dd>
      * </dl>
@@ -568,7 +578,7 @@ class GenericPipeline extends Pipeline {
      * @Note This method was intended to be called {@code setup} but had to be named
      * {@code setupGeneric} due to the issues described in {@link jenkins_shared_library.pipelines.base.Pipeline}.
      */
-    void setupGeneric(GenericSetupArguments arguments) {
+    void setupGeneric(GenericSetupStageArguments arguments) {
         // Call setup from the super class
         super.setupBase(arguments)
 
@@ -576,6 +586,7 @@ class GenericPipeline extends Pipeline {
         this.defineDefaultBranches()
 
         createStage(name: 'Check for CI Skip', stage: {
+
             // This checks for the [ci skip] text. If found, the status code is 0
             def result = steps.sh returnStatus: true, script: "git log -1 | grep '.*\\[ci skip\\].*'"
             if (result == 0) {
@@ -595,6 +606,9 @@ class GenericPipeline extends Pipeline {
                     email                      : GlobalConstants.DEFAULT_GITHUB_ROBOT_EMAIL,
                     usernamePasswordCredential : GlobalConstants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
                 ])
+            }
+            if (arguments.githubTagPrefix) {
+                this.githubTagPrefix = arguments.githubTagPrefix
             }
             if (arguments.artifactory) {
                 this.steps.echo "Init artifactory configurations ..."
@@ -629,17 +643,21 @@ class GenericPipeline extends Pipeline {
     /**
      * Initialize the pipeline.
      *
-     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments}
-     * @see #setupGeneric(GenericSetupArguments)
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupStageArguments}
+     * @see #setupGeneric(GenericSetupStageArguments)
      */
     void setupGeneric(Map arguments = [:]) {
-        setupGeneric(arguments as GenericSetupArguments)
+        // if the Arguments class is not base class, the {@code "arguments as SomeStageArguments"} statement
+        // has problem to set values of properties defined in super class.
+        GenericSetupStageArguments args = new GenericSetupStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        setupGeneric(args)
     }
 
     /**
      * Pseudo setup method, should be overridden by inherited classes
      *
-     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments}
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.generic.arguments.GenericSetupStageArguments}
      */
     @Override
     protected void setup(Map arguments = [:]) {
@@ -649,11 +667,11 @@ class GenericPipeline extends Pipeline {
     /**
      * Signal that no more stages will be added and begin pipeline execution.
      *
-     * @param options Options to send to {@link jenkins_shared_library.pipelines.base.Pipeline#endBase(java.util.Map)}
+     * @param arguments Arguments to send to {@link jenkins_shared_library.pipelines.base.Pipeline#endBase(java.util.Map)}
      */
-    void endGeneric(Map options = [:]) {
-        // can we do a release? if so, allow a release parameter
-        if (isReleaseBranch()) {
+    void endGeneric(Map arguments = [:]) {
+        // can we do a release on this branch? if so and the pipeline define release stage, allow a release parameter
+        if (isReleaseBranch() && _control.release) {
             this.addBuildParameter(steps.booleanParam(
                 name         : BUILD_PARAMETER_PERFORM_RELEASE,
                 description  : 'Perform a release of the project. A release will lead to a GitHub tag be created. After a formal release (which doesn\'t have pre-release string), your branch release will be bumped a PATCH level up. By default, release can only be enabled on branches which "allowRelease" is true.',
@@ -667,16 +685,16 @@ class GenericPipeline extends Pipeline {
             ))
         }
 
-        super.endBase(options)
+        super.endBase(arguments)
     }
 
     /**
      * Pseudo end method, should be overridden by inherited classes
-     * @param args A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.EndArguments}.
+     * @param arguments A map that can be instantiated as {@link jenkins_shared_library.pipelines.base.arguments.EndArguments}.
      */
     @Override
-    protected void end(Map args = [:]) {
-        endGeneric(args)
+    protected void end(Map arguments = [:]) {
+        endGeneric(arguments)
     }
 
     /**
@@ -719,36 +737,45 @@ class GenericPipeline extends Pipeline {
      * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.BuildStageArguments} used to define
      *                  the stage.
      */
-    void buildGeneric(Map arguments = [:]) {
+    void buildGeneric(BuildStageArguments arguments) {
+        log.finer("buildGeneric(${arguments.properties})")
+
         BuildStageException preSetupException
 
-        // Force build to only happen on success, this cannot be overridden
-        arguments.resultThreshold = ResultEnum.SUCCESS
-
-        BuildStageArguments args = arguments
-
         if (_control.build) {
-            preSetupException = new BuildStageException("Only one build step is allowed per pipeline.", args.name)
-        } else if (args.stage) {
-            preSetupException = new BuildStageException("arguments.stage is an invalid option for buildGeneric", args.name)
+            preSetupException = new BuildStageException("Only one build step is allowed per pipeline.", arguments.name)
+        } else if (arguments.stage) {
+            preSetupException = new BuildStageException("arguments.stage is an invalid option for buildGeneric", arguments.name)
         }
 
-        args.name = "Build: ${args.name}"
-        args.stage = { String stageName ->
+        arguments.name = "Build: ${arguments.name}"
+        arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
                 throw preSetupException
             }
 
-            args.operation(stageName)
+            arguments.operation(stageName)
         }
 
         // Create the stage and ensure that the first one is the stage of reference
-        Stage build = createStage(args)
+        Stage build = createStage(arguments)
         if (!_control.build) {
             _control.build = build
         }
+    }
+
+    /**
+     * Creates a stage that will build a generic package.
+     *
+     * @param arguments A map that can be instantiated as {@link BuildStageArguments}
+     * @see #buildGeneric(BuildStageArguments)
+     */
+    void buildGeneric(Map arguments = [:]) {
+        BuildStageArguments args = new BuildStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        buildGeneric(args)
     }
 
     /**
@@ -842,50 +869,42 @@ class GenericPipeline extends Pipeline {
      * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.TestStageArguments} used to define
      *                  the stage.
      */
-    void testGeneric(Map arguments = [:]) {
-        // Default the resultThreshold to unstable for tests,
-        // if a custom value is passed then that will be used instead
-        if (!arguments.resultThreshold) {
-            arguments.resultThreshold = ResultEnum.UNSTABLE
-        }
-
-        TestStageArguments args = arguments
-
+    void testGeneric(TestStageArguments arguments) {
         TestStageException preSetupException
 
-        if (args.stage) {
-            preSetupException = new TestStageException("arguments.stage is an invalid option for testGeneric", args.name)
+        if (arguments.stage) {
+            preSetupException = new TestStageException("arguments.stage is an invalid option for testGeneric", arguments.name)
         }
 
-        args.name = "Test: ${args.name}"
-        args.stage = { String stageName ->
+        arguments.name = "Test: ${arguments.name}"
+        arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
                 throw preSetupException
             } else if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new TestStageException("Tests cannot be run before the build has completed", args.name)
+                throw new TestStageException("Tests cannot be run before the build has completed", arguments.name)
             }
 
             steps.echo "Processing Arguments"
 
-            if (!args.allowMissingJunit) {
-                if (!args.junit) {
-                    throw new TestStageException("JUnit Report not provided", args.name)
+            if (!arguments.allowMissingJunit) {
+                if (!arguments.junit) {
+                    throw new TestStageException("JUnit Report not provided", arguments.name)
                 }
             }
 
-            for (def rep : args.htmlReports) {
+            for (def rep : arguments.htmlReports) {
                 TestReport report = rep
-                _validateReportInfo(report, "Test Results HTML Report", args.name)
+                _validateReportInfo(report, "Test Results HTML Report", arguments.name)
             }
 
-            if (!args.operation) {
-                throw new PublishStageException("Missing test operation!", args.name)
+            if (!arguments.operation) {
+                throw new PublishStageException("Missing test operation!", arguments.name)
             }
 
             try {
-                args.operation(stageName)
+                arguments.operation(stageName)
             } catch (Exception exception) {
                 // If the script exited with code 143, that indicates a SIGTERM event was
                 // captured. If this is the case then the process was killed by Jenkins.
@@ -897,12 +916,12 @@ class GenericPipeline extends Pipeline {
             }
 
             // Collect junit report
-            if (args.junit) {
-                log.finer "junit arguments: ${args.junit}"
-                def files = steps.findFiles glob: args.junit
-                if (!args.allowMissingJunit) {
+            if (arguments.junit) {
+                log.finer "junit arguments: ${arguments.junit}"
+                def files = steps.findFiles glob: arguments.junit
+                if (!arguments.allowMissingJunit) {
                     if (files.size() == 0) {
-                        throw new PublishStageException("Missing junit test result", args.name)
+                        throw new PublishStageException("Missing junit test result", arguments.name)
                     }
                 }
                 files.each { f ->
@@ -918,12 +937,12 @@ class GenericPipeline extends Pipeline {
             }
 
             // Collect cobertura coverage if specified
-            if (args.cobertura) {
-                steps.cobertura(TestStageArguments.coberturaDefaults + args.cobertura)
+            if (arguments.cobertura) {
+                steps.cobertura(TestStageArguments.coberturaDefaults + arguments.cobertura)
             }
 
             // publish html reports if specified
-            for (TestReport report : args.htmlReports) {
+            for (TestReport report : arguments.htmlReports) {
                 // Collect Test Results HTML Report
                 steps.publishHTML(target: [
                         allowMissing          : false,
@@ -937,10 +956,22 @@ class GenericPipeline extends Pipeline {
         }
 
         // Create the stage and ensure that the tests are properly added.
-        Stage test = createStage(args)
+        Stage test = createStage(arguments)
         if (!(_control.release || _control.publish)) {
             _control.prePublishTests += test
         }
+    }
+
+    /**
+     * Creates a stage that will execute tests on your application.
+     *
+     * @param arguments A map that can be instantiated as {@link TestStageArguments}
+     * @see #testGeneric(TestStageArguments)
+     */
+    void testGeneric(Map arguments = [:]) {
+        TestStageArguments args = new TestStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        testGeneric(args)
     }
 
     /**
@@ -1182,7 +1213,9 @@ class GenericPipeline extends Pipeline {
      * @see #sonarScanGradle(SonarScanStageArguments)
      */
     void sonarScanGeneric(Map arguments = [:]) {
-        sonarScanGeneric(arguments as SonarScanStageArguments)
+        SonarScanStageArguments args = new SonarScanStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        sonarScanGeneric(args)
     }
 
     /**
@@ -1247,41 +1280,31 @@ class GenericPipeline extends Pipeline {
      * @param arguments A map of arguments to be applied to the {@link jenkins_shared_library.pipelines.generic.arguments.SonarScanStageArguments} used to define
      *                  the stage.
      */
-    void packagingGeneric(Map arguments = [:]) {
-        if (!arguments) {
-            // can be empty
-            arguments = [:]
-        }
-
-        // Force build to only happen on success, this cannot be overridden
-        arguments.resultThreshold = ResultEnum.SUCCESS
-
-        PackagingStageArguments args = arguments as PackagingStageArguments
-
+    void packagingGeneric(PackagingStageArguments arguments) {
         PackagingStageException preSetupException
 
-        if (args.stage) {
-            preSetupException = new PackagingStageException("arguments.stage is an invalid option for packagingGeneric", args.name)
+        if (arguments.stage) {
+            preSetupException = new PackagingStageException("arguments.stage is an invalid option for packagingGeneric", arguments.name)
         }
-        if (!args.name) {
+        if (!arguments.name) {
             // try a default value from package info
             if (this.packageInfo && this.packageInfo['name']) {
-                args.name = this.packageInfo['name']
+                arguments.name = this.packageInfo['name']
             }
         }
-        if (!args.name) {
-            preSetupException = new PackagingStageException("arguments.name is not defined for packagingGeneric", args.name)
+        if (!arguments.name) {
+            preSetupException = new PackagingStageException("arguments.name is not defined for packagingGeneric", arguments.name)
         }
         // localWorkspace should have a default value after init stage.
-        // if (!args.localWorkspace) {
-        //     preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", args.name)
+        // if (!arguments.localWorkspace) {
+        //     preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", arguments.name)
         // }
 
-        def originalPackageName = args.name
-        // now args.name is used as stage name
-        args.name = "Packaging: ${args.name}"
+        def originalPackageName = arguments.name
+        // now arguments.name is used as stage name
+        arguments.name = "Packaging: ${arguments.name}"
 
-        args.stage = { String stageName ->
+        arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
@@ -1289,11 +1312,11 @@ class GenericPipeline extends Pipeline {
             }
 
             // execute operation Closure if provided
-            if (args.operation) {
-                args.operation(stageName)
+            if (arguments.operation) {
+                arguments.operation(stageName)
             } else {
                 // re-init if there are config changes passed on arguments
-                this.pax.init(arguments)
+                this.pax.init(Utils.toMap(arguments))
                 def workspaceExists = steps.fileExists(this.pax.localWorkspace)
                 if (workspaceExists) {
                     steps.echo "Found local packaging workspace ${this.pax.localWorkspace}"
@@ -1311,15 +1334,15 @@ class GenericPipeline extends Pipeline {
                     // normalize package name
                     def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
                     steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
-                    def paxPackageFile = args.compress ? paxPackageName + '.pax.Z' : paxPackageName + '.pax'
+                    def paxPackageFile = arguments.compress ? paxPackageName + '.pax.Z' : paxPackageName + '.pax'
                     def result = this.pax.pack(
                         job             : "pax-packaging-${paxPackageName}",
                         filename        : paxPackageFile,
-                        extraFiles      : args.extraFiles ?: '',
-                        paxOptions      : args.paxOptions ?: '',
-                        compress        : args.compress ?: false,
-                        compressOptions : args.compressOptions ?: '',
-                        keepTempFolder  : args.keepTempFolder ?: false
+                        extraFiles      : arguments.extraFiles ?: '',
+                        paxOptions      : arguments.paxOptions ?: '',
+                        compress        : arguments.compress ?: false,
+                        compressOptions : arguments.compressOptions ?: '',
+                        keepTempFolder  : arguments.keepTempFolder ?: false
                     )
                     if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageFile}")) {
                         steps.echo "Packaging result ${paxPackageFile} is in place."
@@ -1334,10 +1357,22 @@ class GenericPipeline extends Pipeline {
         }
 
         // Create the stage and ensure that the first one is the stage of reference
-        Stage packaging = createStage(args)
+        Stage packaging = createStage(arguments)
         if (!_control.packaging) {
             _control.packaging = packaging
         }
+    }
+
+    /**
+     * Creates a stage that will package artifact(s).
+     *
+     * @param arguments A map that can be instantiated as {@link PackagingStageArguments}
+     * @see #packagingGeneric(PackagingStageArguments)
+     */
+    void packagingGeneric(Map arguments = [:]) {
+        PackagingStageArguments args = new PackagingStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        packagingGeneric(args)
     }
 
     /**
@@ -1411,25 +1446,16 @@ class GenericPipeline extends Pipeline {
      *
      * @param arguments The arguments for the publish step.
      */
-    void publishGeneric(Map arguments) {
-        if (!arguments) {
-            // can be empty
-            arguments = [:]
-        }
-
-        arguments.resultThreshold = ResultEnum.SUCCESS
-
-        PublishStageArguments args = arguments as PublishStageArguments
-
-        args.name = "Publish${arguments.name ? ": ${arguments.name}" : ""}"
+    void publishGeneric(PublishStageArguments arguments) {
+        arguments.name = "Publish${arguments.name ? ": ${arguments.name}" : ""}"
 
         PublishStageException preSetupException
 
-        if (args.stage) {
-            preSetupException = new PublishStageException("arguments.stage is an invalid option for publishGeneric", args.name)
+        if (arguments.stage) {
+            preSetupException = new PublishStageException("arguments.stage is an invalid option for publishGeneric", arguments.name)
         }
 
-        args.stage = { String stageName ->
+        arguments.stage = { String stageName ->
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
@@ -1437,11 +1463,11 @@ class GenericPipeline extends Pipeline {
             }
 
             if (_control.build?.status != StageStatus.SUCCESS) {
-                throw new PublishStageException("Build must be successful to publish", args.name)
+                throw new PublishStageException("Build must be successful to publish", arguments.name)
             } else if (_control.prePublishTests && _control.prePublishTests.findIndexOf {it.status <= StageStatus.FAIL} != -1) {
-                throw new PublishStageException("All test stages before publish must be successful or skipped!", args.name)
-            } else if (!args.allowPublishWithoutTest && _control.prePublishTests.size() == 0) {
-                throw new PublishStageException("At least one test stage must be defined", args.name)
+                throw new PublishStageException("All test stages before publish must be successful or skipped!", arguments.name)
+            } else if (!arguments.allowPublishWithoutTest && _control.prePublishTests.size() == 0) {
+                throw new PublishStageException("At least one test stage must be defined", arguments.name)
             }
             Boolean _isReleaseBranch = this.isReleaseBranch()
             Boolean _isFormalReleaseBranch = this.isFormalReleaseBranch()
@@ -1451,16 +1477,16 @@ class GenericPipeline extends Pipeline {
             if (_isPerformingRelease) {
                 // release related validations
                 if (!_isReleaseBranch) {
-                    throw new PublishStageException("Cannot perform publish/release on non-release branch", args.name)
+                    throw new PublishStageException("Cannot perform publish/release on non-release branch", arguments.name)
                 }
                 if (_isFormalReleaseBranch && !_isReleaseBranch) {
-                    throw new PublishStageException("Cannot perform formal release on non-release branch", args.name)
+                    throw new PublishStageException("Cannot perform formal release on non-release branch", arguments.name)
                 }
                 if (_isReleaseBranch && !_isFormalReleaseBranch && !_preReleaseString) {
-                    throw new PublishStageException("Pre-release string is required to perform a non-formal-release", args.name)
+                    throw new PublishStageException("Pre-release string is required to perform a non-formal-release", arguments.name)
                 }
                 if (_isReleaseBranch && _isFormalReleaseBranch && _preReleaseString &&
-                    !args.allowPublishPreReleaseFromFormalReleaseBranch) {
+                    !arguments.allowPublishPreReleaseFromFormalReleaseBranch) {
                     // performing pre-release on formal release branch require human intervene
                     Map action = Utils.waitForInput(
                         this.steps,
@@ -1482,25 +1508,25 @@ class GenericPipeline extends Pipeline {
             if (_isPerformingRelease) {
                 String tag = 'v' + steps.env['PUBLISH_VERSION']
                 if (this.github.tagExistsRemote(tag)) {
-                    throw new PublishStageException("Github tag \"${tag}\" already exists, publish abandoned.", args.name)
+                    throw new PublishStageException("Github tag \"${tag}\" already exists, publish abandoned.", arguments.name)
                 }
             }
 
             // execute operation Closure if provided
-            if (args.operation) {
-                args.operation(stageName)
+            if (arguments.operation) {
+                arguments.operation(stageName)
             }
 
             // upload artifacts if provided
-            if (args.artifacts && args.artifacts.size() > 0) {
-                def baseTargetPath = args.publishTargetPath ?: artifactoryUploadTargetPath
-                this.uploadArtifacts(args.artifacts, baseTargetPath)
+            if (arguments.artifacts && arguments.artifacts.size() > 0) {
+                def baseTargetPath = arguments.publishTargetPath ?: artifactoryUploadTargetPath
+                this.uploadArtifacts(arguments.artifacts, baseTargetPath)
             } else {
                 steps.echo "No artifacts to publish."
             }
         }
 
-        Stage publish = createStage(args)
+        Stage publish = createStage(arguments)
         if (!_control.publish) {
             _control.publish = publish
         }
@@ -1547,6 +1573,18 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
+     * Creates a stage that will publish artifacts to Artifactory.
+     *
+     * @param arguments A map that can be instantiated as {@link PublishStageArguments}
+     * @see #publishGeneric(PublishStageArguments)
+     */
+    void publishGeneric(Map arguments = [:]) {
+        PublishStageArguments args = new PublishStageArguments()
+        InvokerHelper.setProperties(args, arguments)
+        publishGeneric(args)
+    }
+
+    /**
      * Pseudo publish method, should be overridden by inherited classes
      * @param arguments The arguments for the publish step.
      */
@@ -1560,13 +1598,8 @@ class GenericPipeline extends Pipeline {
      * @see #releaseGeneric(ReleaseStageArguments)
      */
     void releaseGeneric(Map arguments = [:]) {
-        if (!arguments) {
-            // can be empty
-            arguments = [:]
-        }
-
-        ReleaseStageArguments args = arguments as ReleaseStageArguments
-
+        ReleaseStageArguments args = new ReleaseStageArguments()
+        InvokerHelper.setProperties(args, arguments)
         this.releaseGeneric(args)
     }
 
@@ -1667,10 +1700,19 @@ class GenericPipeline extends Pipeline {
                 arguments.operation(stageName)
             } else {
                 // this is the default release behaviors
-                if (arguments.tagBranch) {
-                    arguments.tagBranch()
+                String githubTagPrefix = this.getGithubTagPrefix()
+                if (githubTagPrefix) {
+                    if (arguments.tagBranch) {
+                        arguments.tagBranch(githubTagPrefix)
+                    } else {
+                        this.tagBranch(githubTagPrefix)
+                    }
                 } else {
-                    this.tagBranch()
+                    if (arguments.tagBranch) {
+                        arguments.tagBranch()
+                    } else {
+                        this.tagBranch()
+                    }
                 }
 
                 // only bump version on formal release without pre-release string
@@ -1701,8 +1743,10 @@ class GenericPipeline extends Pipeline {
      *
      * @Example If we are releasing {@code "1.2.3"} with pre-release string {@code "rc1"}, we will
      * creating a tag {@code "v1.2.3-rc1"}.
+     *
+     * @param    tagPrefix    if prefix the tag with an identifier
      */
-    protected void tagBranch() {
+    protected void tagBranch(String tagPrefix = '') {
         String _preReleaseString = this.getPreReleaseString()
 
         // should be able to guess repository and branch name
@@ -1710,7 +1754,7 @@ class GenericPipeline extends Pipeline {
         if (!this.github.repository) {
             throw new ScmException('Github repository is not defined and cannot be determined.')
         }
-        String tag = 'v' + steps.env['PUBLISH_VERSION']
+        String tag = (tagPrefix ? tagPrefix + '-' : '') + 'v' + steps.env['PUBLISH_VERSION']
         this.steps.echo "Creating tag \"${tag}\" at \"${this.github.repository}:${this.github.branch}\"..."
 
         this.github.tag(tag: tag)

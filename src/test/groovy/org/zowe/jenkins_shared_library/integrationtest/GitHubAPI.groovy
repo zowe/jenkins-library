@@ -56,10 +56,11 @@ class GitHubAPI {
     /**
      * Send GET http request to Jenkins server
      *
-     * @param  url     http url
-     * @return          map of response with keys: code, headers, body
+     * @param  url         http url
+     * @param  fetchNext   if continue to fetch next url if the response indicates more results
+     * @return             map of response with keys: code, headers, body
      */
-    Map get(String url) throws IOException {
+    Map get(String url, Boolean fetchNext = false) throws IOException {
         logger.finer("GET ${url}")
 
         def conn = new URL("${url}").openConnection()
@@ -78,6 +79,22 @@ class GitHubAPI {
         }
 
         result = _transformResult(result)
+
+        if (fetchNext && result['headers'].containsKey('Link')) {
+            String nextUrl
+            result['headers']['Link'][0].split(/, /).each {
+                def matcher = it =~ /<([^>]+)>;\s+rel="next"/
+                if (matcher.find()) {
+                    nextUrl = matcher[0][1]
+                }
+            }
+
+            if (nextUrl) {
+                Map nextResult = this.get(nextUrl, fetchNext)
+                // body should be a collection!
+                result['body'] = result['body'] + nextResult['body']
+            }
+        }
 
         return result
     }
@@ -160,6 +177,28 @@ class GitHubAPI {
     }
 
     /**
+     * Load version information from Dockerfile
+     * @param  branch               which branch
+     * @param  dockerFile           path to Dockerfile
+     * @return                      version string
+     */
+    def getVersionFromDockerfile(String branch, String dockerFile = 'Dockerfile') {
+        String content = this.readFile(branch, dockerFile)
+        // Dockerfile should have "LABEL version=?"
+        def matcher = content =~ /[Ll][Aa][Bb][Ee][Ll]\s+version=([0-9."]+)/
+        def versionInDockerfile
+        if (matcher.find()) {
+            versionInDockerfile = matcher[0][1].replaceAll(/"/, "")
+        }
+        if (!versionInDockerfile) {
+            throw new Exception("Failed to find version from ${dockerFile}")
+        }
+        def version = Utils.parseSemanticVersion(versionInDockerfile)
+
+        return version
+    }
+
+    /**
      * Load version information from gradle.properties
      * @param  branch               which branch
      * @param  gradlePropertiesFile      path to gradle.properties
@@ -188,7 +227,7 @@ class GitHubAPI {
      */
     List<String> getTags() {
         String tagsUrl = "https://${GitHub.GITHUB_API_DOMAIN}/repos/${this.repository}/tags"
-        Map result = this.get(tagsUrl)
+        Map result = this.get(tagsUrl, true)
 
         List<String> tagNames = []
         result.body.each {

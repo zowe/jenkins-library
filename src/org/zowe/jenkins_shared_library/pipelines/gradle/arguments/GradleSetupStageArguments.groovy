@@ -11,7 +11,7 @@
 package org.zowe.jenkins_shared_library.pipelines.gradle.arguments
 
 import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
-import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupArguments
+import org.zowe.jenkins_shared_library.pipelines.generic.arguments.GenericSetupStageArguments
 
 import java.util.concurrent.TimeUnit
 
@@ -20,5 +20,5 @@ import java.util.concurrent.TimeUnit
  * {@link jenkins_shared_library.pipelines.Gradle.GradlePipeline#setupGradle(jenkins_shared_library.pipelines.Gradle.arguments.GradleSetupArguments)}
  * method.
  */
-class GradleSetupArguments extends GenericSetupArguments {
+class GradleSetupStageArguments extends GenericSetupStageArguments {
 }

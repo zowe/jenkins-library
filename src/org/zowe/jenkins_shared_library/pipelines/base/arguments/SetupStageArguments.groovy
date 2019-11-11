@@ -15,10 +15,10 @@ import org.zowe.jenkins_shared_library.pipelines.base.models.StageTimeout
 import java.util.concurrent.TimeUnit
 
 /**
- * Arguments available to the {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupArguments)}
+ * Arguments available to the {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupStageArguments)}
  * method.
  */
-class SetupArguments {
+class SetupStageArguments extends StageArguments {
     /**
      * Amount of time allowed for the pipeline setup.
      *

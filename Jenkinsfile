@@ -30,6 +30,9 @@ def PAX_SERVER_PORT        = 22
 def PAX_SERVER_CREDENTIAL  = 'ssh-marist-server-zzow01'
 def SIGNING_KEY_PASSPHRASE = 'code-signing-key-passphrase-jack'
 def SIGNING_KEY_FILE       = 'code-signing-key-private-jack'
+def DOCKER_REGISTRY        = ''
+def DOCKER_CREDENTIAL      = 'jackjia-docker-access-token'
+def DOCKER_IMAGE_REPFIX    = 'jackjiaibm'
 
 def opts = []
 // keep last 20 builds for regular branches, no keep for pull requests
@@ -92,9 +95,12 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                    " -Partifactory.credential='${ARTIFACTORY_CREDENTIAL}'" +
                    " -Ppax.server.host='${PAX_SERVER_HOST}'" +
                    " -Ppax.server.port='${PAX_SERVER_PORT}'" +
-                   " -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'"+
-                   " -Psigning.key.passphrase='${SIGNING_KEY_PASSPHRASE}'"+
-                   " -Psigning.key.file='${SIGNING_KEY_FILE}'"
+                   " -Ppax.server.crdential='${PAX_SERVER_CREDENTIAL}'" +
+                   " -Psigning.key.passphrase='${SIGNING_KEY_PASSPHRASE}'" +
+                   " -Psigning.key.file='${SIGNING_KEY_FILE}'" +
+                   " -Pdocker.email='${DOCKER_REGISTRY}'" +
+                   " -Pdocker.credential='${DOCKER_CREDENTIAL}'" +
+                   " -Pdocker.imageprefix='${DOCKER_IMAGE_REPFIX}'"
             }
         } catch (e) {
             throw e
