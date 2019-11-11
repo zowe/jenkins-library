@@ -27,6 +27,7 @@ import org.zowe.jenkins_shared_library.pipelines.docker.arguments.*
 import org.zowe.jenkins_shared_library.pipelines.docker.exceptions.*
 import org.zowe.jenkins_shared_library.pipelines.docker.models.*
 import org.zowe.jenkins_shared_library.scm.ScmException
+import org.zowe.jenkins_shared_library.Utils
 
 /**
  * Extends the functionality available in the {@link jenkins_shared_library.pipelines.generic.GenericPipeline} class.
