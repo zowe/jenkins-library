@@ -51,9 +51,9 @@ class Constants {
     /**
      * Default GitHub robot account LF enkins username/password credential ID
      *
-     * @Default {@code "zowe-github"}
+     * @Default {@code "zowe-github-ssh"}
      */
-    public static String DEFAULT_LFJ_GITHUB_ROBOT_CREDENTIAL = 'zowe-github'
+    public static String DEFAULT_LFJ_GITHUB_ROBOT_CREDENTIAL = 'zowe-github-ssh'
 
     /**
      * Default Artifactory URL
