@@ -212,7 +212,7 @@ class GradlePipeline extends GenericPipeline {
                 }
                 pipeline.gradle._updateVersion(gradleVersion)
             }
-            pipeline.steps.echo "Build target: ${gradleVersion}"
+            pipeline.steps.echo "Maven publish plugin target: ${gradleVersion}"
         }
         // should we overwrite this?
         arguments.extraInit = initGradle
