@@ -197,9 +197,22 @@ class GradlePipeline extends GenericPipeline {
             if (pipeline.packageInfo['group']) {
                 pipeline.setPackageName(pipeline.packageInfo['group'])
             }
+
             // version could be used to publish artifact
             pipeline.setVersion(pipeline.packageInfo['version'])
             pipeline.steps.echo "Package information: ${pipeline.getPackageName()} v${pipeline.getVersion()}"
+
+            // gradle needs special version format if we use gradle to publish artifact
+            Map<String, String> macros = pipeline.getBuildStringMacros()
+            String gradleVersion = "${macros['version']}${macros['branchtag-uc']}".toString()
+            if (macros['branchtag-uc'] != '') {
+                if (!gradleVersion.endsWith('-SNAPSHOT')) {
+                    // non formal release must end with -SNAPSHOT
+                    gradleVersion = "${gradleVersion}-SNAPSHOT".toString()
+                }
+                pipeline.gradle._updateVersion(gradleVersion)
+            }
+            pipeline.steps.echo "Maven publish plugin target: ${gradleVersion}"
         }
         // should we overwrite this?
         arguments.extraInit = initGradle
