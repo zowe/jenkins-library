@@ -205,11 +205,13 @@ class GradlePipeline extends GenericPipeline {
             // gradle needs special version format if we use gradle to publish artifact
             Map<String, String> macros = pipeline.getBuildStringMacros()
             String gradleVersion = "${macros['version']}${macros['branchtag-uc']}".toString()
-            if (macros['branchtag-uc'] != ''  && !gradleVersion.endsWith('-SNAPSHOT')) {
-                // non formal release must end with -SNAPSHOT
-                gradleVersion = "${gradleVersion}-SNAPSHOT".toString()
+            if (macros['branchtag-uc'] != '') {
+                if (!gradleVersion.endsWith('-SNAPSHOT')) {
+                    // non formal release must end with -SNAPSHOT
+                    gradleVersion = "${gradleVersion}-SNAPSHOT".toString()
+                }
+                pipeline.gradle._updateVersion(gradleVersion)
             }
-            pipeline.gradle._updateVersion(gradleVersion)
             pipeline.steps.echo "Build target: ${gradleVersion}"
         }
         // should we overwrite this?
