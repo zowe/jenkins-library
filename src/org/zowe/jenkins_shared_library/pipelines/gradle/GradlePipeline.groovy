@@ -205,7 +205,7 @@ class GradlePipeline extends GenericPipeline {
             // gradle needs special version format if we use gradle to publish artifact
             Map<String, String> macros = pipeline.getBuildStringMacros()
             String gradleVersion = "${macros['version']}${macros['branchtag-uc']}".toString()
-            if (macros['branchtag-uc'] == ''  && !gradleVersion.endsWith('-SNAPSHOT')) {
+            if (macros['branchtag-uc'] != ''  && !gradleVersion.endsWith('-SNAPSHOT')) {
                 // non formal release must end with -SNAPSHOT
                 gradleVersion = "${gradleVersion}-SNAPSHOT".toString()
             }
