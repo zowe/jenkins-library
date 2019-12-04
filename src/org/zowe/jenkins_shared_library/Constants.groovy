@@ -79,9 +79,9 @@ class Constants {
     /**
      * Default LF Artifactory robot account Jenkins username/password credential ID
      *
-     * @Default {@code "ZoweArtifactory"}
+     * @Default {@code "zowe.jfrog.io"}
      */
-    public static String DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL = 'ZoweArtifactory'
+    public static String DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL = 'zowe.jfrog.io'
 
     /**
      * Default SonarQube server ID defined on Jenkins
@@ -228,18 +228,20 @@ class Constants {
     public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_PUBLISH = 'https://zowe.jfrog.io/zowe/api/npm/npm-local-release/'
 
     /**
-     * Default NPM private registry robot account email
+     * Default NPM private registry robot account email.
      *
-     * @Default {@code "jack-tiefeng.jia@ibm.com"}
+     * @Note This is not the real email associated with account. Will this cause problem?
+     *
+     * @Default {@code "zowe.robot@gmail.com"}
      */
-    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_EMAIL = 'jack-tiefeng.jia@ibm.com'
+    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_EMAIL = 'zowe.robot@gmail.com'
 
     /**
      * Default NPM private registry robot account credential on Jenkins
      *
-     * @Default {@code "ZoweArtifactory"}
+     * @Default {@code "zowe.jfrog.io"}
      */
-    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'ZoweArtifactory'
+    public static String DEFAULT_LFJ_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'zowe.jfrog.io'
 
     /**
      * Default GnuPG Code Signing Key Passphrase Jenkins username/password credential
@@ -275,4 +277,25 @@ class Constants {
      * @Default {@code "jackjiaibm"}
      */
     public static String DEFAULT_DOCKER_IMAGE_PREFIX = 'jackjiaibm'
+
+    /**
+     * Default Docker registry url
+     *
+     * @Default {@code ""}
+     */
+    public static String DEFAULT_LFJ_DOCKER_REGISTRY_URL = ''
+
+    /**
+     * Default Docker registry robot account credential on Jenkins
+     *
+     * @Default {@code "zowe_dockerhub_creds"}
+     */
+    public static String DEFAULT_LFJ_DOCKER_REGISTRY_CREDENTIAL = 'zowe_dockerhub_creds'
+
+    /**
+     * Default Docker image prefix
+     *
+     * @Default {@code "zowedockerhub"}
+     */
+    public static String DEFAULT_LFJ_DOCKER_IMAGE_PREFIX = 'zowedockerhub'
 }
