@@ -616,8 +616,8 @@ class GenericPipeline extends Pipeline {
             } else if (!arguments.disableArtifactory) {
                 this.steps.echo "Init artifactory configurations with default ..."
                 this.artifactory.init([
-                    url                        : GlobalConstants.DEFAULT_ARTIFACTORY_URL,
-                    usernamePasswordCredential : GlobalConstants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
+                    url                        : GlobalConstants.DEFAULT_LFJ_ARTIFACTORY_URL,
+                    usernamePasswordCredential : GlobalConstants.DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL,
                 ])
             }
             if (arguments.pax) {
