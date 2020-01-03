@@ -62,6 +62,7 @@ PAX_SERVER_CREDENTIAL=${System.getProperty('pax.server.crdential')}
         assertThat('Build console log', buildLog, containsString("[Pax.pack] pre-defined environments: ${TEST_ENV_VAR_NAME}=${TEST_ENV_VAR_VALUE}"))
         assertThat('Build console log', buildLog, containsString("[pre-packaging.sh] ${TEST_ENV_VAR_NAME}=${TEST_ENV_VAR_VALUE}"))
         assertThat('Build console log', buildLog, containsString("[post-packaging.sh] ${TEST_ENV_VAR_NAME}=${TEST_ENV_VAR_VALUE}"))
+        assertThat('Build console log', buildLog, containsString("[catchall-packaging.sh] ${TEST_ENV_VAR_NAME}=${TEST_ENV_VAR_VALUE}"))
 
         assertThat('Build console log', buildLog, containsString('[PAX_PACKAGE_TEST] pack successfully'))
     }

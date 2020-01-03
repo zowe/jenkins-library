@@ -24,6 +24,7 @@ import org.zowe.jenkins_shared_library.Utils
  * <li><strong>prepare-workspace.sh</strong> is the script to prepare workspace. <strong>This script will run in local workspace environment.</strong></li>
  * <li><strong>pre-packaging.sh</strong> is the pre-hook which will run on PAX server before packaging</li>
  * <li><strong>post-packaging.sh</strong> is the post-hook which will run on PAX server after packaging</li>
+ * <li><strong>catchall-packaging.sh</strong> is the catch-all-hook which will run on PAX server (after post-packaging) no matter the packaging process succeeds or exits with error</li>
  * </ul>
  *
  * <p>If the process is successfully, a PAX file (named followed "filename" argument of {@link #pack(Map)}
@@ -85,6 +86,15 @@ class Pax {
      * @Default {@code "post-packaging.sh"}
      */
     static final String HOOK_POST_PACKAGING = 'post-packaging.sh'
+
+    /**
+     * Constant of catchall-packaging hook
+     *
+     * @Note This hook script runs on remote workspace.
+     *
+     * @Default {@code "catchall-packaging.sh"}
+     */
+    static final String HOOK_CATCHALL_PACKAGING = 'catchall-packaging.sh'
 
     /**
      * Reference to the groovy pipeline variable.
@@ -290,9 +300,9 @@ else
 fi
 
 # do we have ascii.tar?
-if [ -f "${remoteWorkspaceFullPath}/${PATH_ASCII}.tar" ]; then
+cd "${remoteWorkspaceFullPath}"
+if [ -f "${PATH_ASCII}.tar" ]; then
   echo "${func} extracting ${remoteWorkspaceFullPath}/${PATH_ASCII}.tar ..."
-  cd "${remoteWorkspaceFullPath}"
   pax -r -x tar -o to=IBM-1047 -f "${PATH_ASCII}.tar"
   # copy to target folder
   cp -R ${PATH_ASCII}/. ${PATH_CONTENT}
@@ -302,9 +312,9 @@ if [ -f "${remoteWorkspaceFullPath}/${PATH_ASCII}.tar" ]; then
 fi
 
 # run pre hook
+cd "${remoteWorkspaceFullPath}"
 if [ -f "${HOOK_PRE_PACKAGING}" ]; then
   echo "${func} running pre hook ..."
-  cd "${remoteWorkspaceFullPath}"
   iconv -f ISO8859-1 -t IBM-1047 ${HOOK_PRE_PACKAGING} > ${HOOK_PRE_PACKAGING}.new
   mv ${HOOK_PRE_PACKAGING}.new ${HOOK_PRE_PACKAGING}
   chmod +x ${HOOK_PRE_PACKAGING}
@@ -332,16 +342,15 @@ if [ -d "${remoteWorkspaceFullPath}/${PATH_CONTENT}" ]; then
     echo "${func}[ERROR] failed on creating pax file"
     exit 1
   fi
-  cd "${remoteWorkspaceFullPath}"
 else
   echo "${func}[ERROR] folder ${remoteWorkspaceFullPath}/${PATH_CONTENT} doesn't exist"
   exit 1
 fi
 
 # run post hook
+cd "${remoteWorkspaceFullPath}"
 if [ -f "${HOOK_POST_PACKAGING}" ]; then
   echo "${func} running post hook ..."
-  cd "${remoteWorkspaceFullPath}"
   iconv -f ISO8859-1 -t IBM-1047 ${HOOK_POST_PACKAGING} > ${HOOK_POST_PACKAGING}.new
   mv ${HOOK_POST_PACKAGING}.new ${HOOK_POST_PACKAGING}
   chmod +x ${HOOK_POST_PACKAGING}
@@ -429,6 +438,30 @@ EOF"""
                     if (keepTempFolder) {
                         this.steps.echo "${func}[warning] remote workspace will be left as-is without clean-up."
                     } else {
+                        try {
+                            // run catch-all hooks
+                            this.steps.echo "${func} running catch-all hooks..."
+                            this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
+cd "${remoteWorkspaceFullPath}"
+if [ -f "${HOOK_CATCHALL_PACKAGING}" ]; then
+  echo "${func} running catch-all hook ..."
+  iconv -f ISO8859-1 -t IBM-1047 ${HOOK_CATCHALL_PACKAGING} > ${HOOK_CATCHALL_PACKAGING}.new
+  mv ${HOOK_CATCHALL_PACKAGING}.new ${HOOK_CATCHALL_PACKAGING}
+  chmod +x ${HOOK_CATCHALL_PACKAGING}
+  echo "${func} launch: ${environmentText} ./${HOOK_CATCHALL_PACKAGING}"
+  ${environmentText} ./${HOOK_CATCHALL_PACKAGING}
+  if [ \$? -ne 0 ]; then
+    echo "${func}[ERROR] failed on catch-all hook"
+    exit 1
+  fi
+fi
+exit 0
+EOF"""
+                        } catch (ex3) {
+                            // ignore errors for cleaning up
+                            this.log.finer("${func} running catch-all hooks failed: ${ex2}")
+                        }
+
                         try {
                             // always clean up temporary files/folders
                             this.steps.echo "${func} cleaning up remote workspace..."
