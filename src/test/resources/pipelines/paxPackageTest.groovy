@@ -39,6 +39,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         def hookPrepareWorkspace = pax.getHOOK_PREPARE_WORKSPACE()
         def hookPrePackaging = pax.getHOOK_PRE_PACKAGING()
         def hookPostPackaging = pax.getHOOK_POST_PACKAGING()
+        def hookCatchAllPackaging = pax.HOOK_CATCHALL_PACKAGING()
         sh "mkdir -p ${localWorkspace}/${pathContent}"
         sh "mkdir -p ${localWorkspace}/${pathAscii}"
         // write prepare hook
@@ -74,6 +75,14 @@ echo "[${hookPostPackaging}] pwd=\$(pwd)"
 echo "[${hookPostPackaging}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
 echo "extra file" > extra-file.log
 echo "[${hookPostPackaging}] ended."
+"""
+
+        // write catch-all hook
+        writeFile file: "${localWorkspace}/${hookCatchAllPackaging}", text: """
+echo "[${hookCatchAllPackaging}] started ..."
+echo "[${hookCatchAllPackaging}] pwd=\$(pwd)"
+echo "[${hookCatchAllPackaging}] ${TEST_ENV_VAR_NAME}=\${${TEST_ENV_VAR_NAME}}"
+echo "[${hookCatchAllPackaging}] ended."
 """
 
         echo "[PAX_PACKAGE_TEST] init successfully"
