@@ -107,7 +107,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                    " -Pdocker.email='${DOCKER_REGISTRY}'" +
                    " -Pdocker.credential='${DOCKER_CREDENTIAL}'" +
                    " -Pdocker.imageprefix='${DOCKER_IMAGE_REPFIX}'" +
-                   (params.TEST_CATEGORY ? " -tests '" + params.TEST_CATEGORY + "'": "")
+                   (params.TEST_CATEGORY ? " --tests '" + params.TEST_CATEGORY + "'": "")
             }
         } catch (e) {
             throw e
