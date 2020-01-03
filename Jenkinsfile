@@ -47,6 +47,12 @@ customParameters.push(choice(
     choices: ['', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST'],
     description: 'Log level for running gradle test. Default is INFO if leave it empty.'
 ))
+customParameters.push(string(
+    name: 'TEST_CATEGORY',
+    description: 'What set of tests want to run',
+    defaultValue: '',
+    trim: true
+))
 opts.push(parameters(customParameters))
 
 // set build properties
@@ -100,7 +106,8 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
                    " -Psigning.key.file='${SIGNING_KEY_FILE}'" +
                    " -Pdocker.email='${DOCKER_REGISTRY}'" +
                    " -Pdocker.credential='${DOCKER_CREDENTIAL}'" +
-                   " -Pdocker.imageprefix='${DOCKER_IMAGE_REPFIX}'"
+                   " -Pdocker.imageprefix='${DOCKER_IMAGE_REPFIX}'" +
+                   (params.TEST_CATEGORY ? " --tests '" + params.TEST_CATEGORY + "'": "")
             }
         } catch (e) {
             throw e
