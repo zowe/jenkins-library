@@ -39,7 +39,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         def hookPrepareWorkspace = pax.getHOOK_PREPARE_WORKSPACE()
         def hookPrePackaging = pax.getHOOK_PRE_PACKAGING()
         def hookPostPackaging = pax.getHOOK_POST_PACKAGING()
-        def hookCatchAllPackaging = pax.HOOK_CATCHALL_PACKAGING()
+        def hookCatchAllPackaging = pax.getHOOK_CATCHALL_PACKAGING()
         sh "mkdir -p ${localWorkspace}/${pathContent}"
         sh "mkdir -p ${localWorkspace}/${pathAscii}"
         // write prepare hook
