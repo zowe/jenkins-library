@@ -441,8 +441,7 @@ EOF"""
                         try {
                             // run catch-all hooks
                             this.steps.echo "${func} running catch-all hooks..."
-                            def resultCatchAll = this.steps.sh(
-                                script: """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
+                            this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -p ${this.sshPort} \${USERNAME}@${this.sshHost} << EOF
 cd "${remoteWorkspaceFullPath}"
 if [ -f "${HOOK_CATCHALL_PACKAGING}" ]; then
   echo "${func} running catch-all hook ..."
@@ -457,10 +456,7 @@ if [ -f "${HOOK_CATCHALL_PACKAGING}" ]; then
   fi
 fi
 exit 0
-EOF""",
-                                returnStdout: true
-                            )
-                            this.log.finer("${func} running catch-all hooks returns: ${resultCatchAll}")
+EOF"""
                         } catch (ex3) {
                             // ignore errors for cleaning up
                             this.log.finer("${func} running catch-all hooks failed: ${ex2}")
