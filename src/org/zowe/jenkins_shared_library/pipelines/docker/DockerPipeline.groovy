@@ -239,6 +239,7 @@ class DockerPipeline extends GenericPipeline {
 
                 String image = registry.build([
                     dockerFile: dockerFile,
+                    buildArgs: arguments.buildArgs
                 ])
                 this.steps.echo "Docker image ${image} is built successfully."
             }
