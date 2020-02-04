@@ -104,6 +104,11 @@ class Registry {
     String version
 
     /**
+    * Extra build args supplied through pipeline
+    */ 
+    String buildArgs = ''
+
+    /**
      * Docker image tags, can be multiple
      *
      * @Default {@link #DEFAULT_IMAGE_TAG}
@@ -208,6 +213,9 @@ class Registry {
                 throw new InvalidArgumentException('tags', "tags with type ${args['tags'].getClass()} is not accepted")
             }
         }
+        if (args.containsKey('buildArgs') && args['buildArgs'] instanceof String && args['buildArgs'].length() > 0) {
+            this.buildArgs = args['buildArgs'];
+        }
         if (this.tags.size() == 0) {
             this.tags = [DEFAULT_IMAGE_TAG]
         }
@@ -271,7 +279,7 @@ class Registry {
         this.steps.echo "Building Docker image from ${dockerFilePath}/${dockerFileName} ..."
         this.steps.dir(dockerFilePath) {
             def tmpTag = 'zowe_docker_tmp_' + Utils.getTimestamp()
-            this.steps.sh "docker build -t \"${tmpTag}\" -f ${dockerFileName} ."
+            this.steps.sh "docker build ${this.buildArgs} -t \"${tmpTag}\" -f ${dockerFileName} ."
             this._image = this.steps.sh(script: "docker images | grep \"${tmpTag}\" | awk '{print \$3};'", returnStdout: true).trim()
         }
 
