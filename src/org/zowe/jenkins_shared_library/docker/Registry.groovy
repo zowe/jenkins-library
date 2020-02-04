@@ -213,9 +213,7 @@ class Registry {
                 throw new InvalidArgumentException('tags', "tags with type ${args['tags'].getClass()} is not accepted")
             }
         }
-        if (args.containsKey('buildArgs') && args['buildArgs'] instanceof String && args['buildArgs'].length() > 0) {
-            this.buildArgs = args['buildArgs'];
-        }
+
         if (this.tags.size() == 0) {
             this.tags = [DEFAULT_IMAGE_TAG]
         }
@@ -263,6 +261,10 @@ class Registry {
         // init with arguments
         if (args.size() > 0) {
             this.init(args)
+        }
+
+        if (args.containsKey('buildArgs') && args['buildArgs'] instanceof String && args['buildArgs'].length() > 0) {
+            this.buildArgs = args['buildArgs'];
         }
 
         // validate arguments
