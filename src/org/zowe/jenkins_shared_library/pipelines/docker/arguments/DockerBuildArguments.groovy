@@ -38,4 +38,9 @@ class DockerBuildArguments extends BuildStageArguments {
      * Docker file path and name
      */
     String dockerFile
+
+    /**
+    *  Extra command arguments
+    */ 
+    String buildArgs
 }
