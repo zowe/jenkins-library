@@ -49,6 +49,20 @@ class NodeJSSetupStageArguments extends GenericSetupStageArguments {
     List<Map> installRegistries
 
     /**
+     * If we want to use another version of node.js.
+     *
+     * <p>This requires nvm installed on the build container.</p>
+     */
+    String nodeJsVersion
+
+    /**
+     * Path to nvm.sh.
+     *
+     * @default /home/jenkins/.nvm/nvm.sh
+     */
+    String nvmInitScript = '/home/jenkins/.nvm/nvm.sh'
+
+    /**
      * npm publish registry configurations
      *
      * <p>Use configurations defined at {@link jenkins_shared_library.npm.Registry#init(Map)}.</p>

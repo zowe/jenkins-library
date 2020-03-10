@@ -124,6 +124,17 @@ class NodeJSPipeline extends GenericPipeline {
     Registry publishRegistry
 
     /**
+     * If we have a customized node.js version to use for this pipeline
+     */
+    String nodeJsVersion
+
+
+    /**
+     * Path to nvm.sh.
+     */
+    String nvmInitScript
+
+    /**
      * Registries for installing npm dependencies
      */
     List<Registry> installRegistries = []
@@ -219,6 +230,19 @@ class NodeJSPipeline extends GenericPipeline {
                 // we need to login
                 registry.login()
             }
+        }
+    }
+
+    /**
+     * Run shell script under nvm environment
+     *
+     * @param  script      which shell script to execute
+     */
+    String nvmShell(script) {
+        if (this.nvmInitScript && this.nodeJsVersion) {
+            steps.sh ". ${this.nvmInitScript} && nvm use ${this.nodeJsVersion} && ${script}"
+        } else {
+            steps.sh script
         }
     }
 
@@ -322,6 +346,17 @@ class NodeJSPipeline extends GenericPipeline {
             // version could be used to publish artifact
             pipeline.setVersion(pipeline.packageInfo['version'])
             pipeline.steps.echo "Package information: ${pipeline.getPackageName()} v${pipeline.getVersion()}"
+
+            // do we want to use default version of node.js on the build container?
+            if (arguments.nodeJsVersion) {
+                if (!arguments.nvmInitScript || !pipeline.fileExists(arguments.nvmInitScript)) {
+                    throw new NodeJSPipelineException("NVM is required to switch node.js version");
+                }
+                pipeline.nodeJsVersion = arguments.nodeJsVersion
+                pipeline.nvmInitScript = arguments.nvmInitScript
+                pipeline.steps.echo "Pipeline will use node.js ${pipeline.nodeJsVersion} to build and test"
+                pipeline.steps.sh ". ${pipeline.nvmInitScript} && nvm install ${pipeline.nodeJsVersion}"
+            }
         }
         // should we overwrite this?
         arguments.extraInit = initRegistry
@@ -333,17 +368,17 @@ class NodeJSPipeline extends GenericPipeline {
         // this stage should always happen for node.js project?
         createStage(name: 'Install Node Package Dependencies', stage: {
             if (steps.fileExists('yarn.lock')) {
-                steps.sh "yarn install"
+                nvmShell("yarn install")
             } else {
                 // we save audit part to next stage
                 if (arguments.alwaysUseNpmInstall) {
-                    steps.sh "npm install --no-audit"
+                    nvmShell("npm install --no-audit")
                 } else {
                     if (steps.fileExists('package-lock.json')) {
                         // if we have package-lock.json, try to use everything defined in that file
-                        steps.sh "npm ci"
+                        nvmShell("npm ci")
                     } else {
-                        steps.sh "npm install --no-audit"
+                        nvmShell("npm install --no-audit")
                     }
                 }
             }
@@ -377,7 +412,7 @@ ${gitStatus}
             createStage(
                 name: 'Lint',
                 stage: {
-                    steps.sh 'npm run lint'
+                    nvmShell('npm run lint')
                 },
                 timeout: arguments.lint,
                 shouldExecute: {
@@ -452,7 +487,7 @@ ${gitStatus}
     void buildNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = { String stageName ->
-                steps.sh "npm run build"
+                nvmShell("npm run build")
             }
         }
 
@@ -490,7 +525,7 @@ ${gitStatus}
     void testNodeJS(Map arguments = [:]) {
         if (!arguments.operation) {
             arguments.operation = { String stageName ->
-                steps.sh "npm run test"
+                nvmShell("npm run test")
             }
         }
 
