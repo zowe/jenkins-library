@@ -240,7 +240,7 @@ class NodeJSPipeline extends GenericPipeline {
      */
     String nvmShell(script) {
         if (this.nvmInitScript && this.nodeJsVersion) {
-            steps.sh "set +x\n. ${this.nvmInitScript}\nset -x\nnvm use ${this.nodeJsVersion}\n${script}"
+            steps.sh "set +x\n. ${this.nvmInitScript}\nnvm use ${this.nodeJsVersion}\nset -x\n${script}"
         } else {
             steps.sh script
         }
@@ -355,7 +355,7 @@ class NodeJSPipeline extends GenericPipeline {
                 pipeline.nodeJsVersion = arguments.nodeJsVersion
                 pipeline.nvmInitScript = arguments.nvmInitScript
                 pipeline.steps.echo "Pipeline will use node.js ${pipeline.nodeJsVersion} to build and test"
-                pipeline.steps.sh "set +\n. ${pipeline.nvmInitScript}\nset -x\nnvm install ${pipeline.nodeJsVersion}"
+                pipeline.steps.sh "set +\n. ${pipeline.nvmInitScript}\nnvm install ${pipeline.nodeJsVersion}"
             }
         }
         // should we overwrite this?
