@@ -355,7 +355,7 @@ class NodeJSPipeline extends GenericPipeline {
                 pipeline.nodeJsVersion = arguments.nodeJsVersion
                 pipeline.nvmInitScript = arguments.nvmInitScript
                 pipeline.steps.echo "Pipeline will use node.js ${pipeline.nodeJsVersion} to build and test"
-                pipeline.steps.sh "set +\n. ${pipeline.nvmInitScript}\nnvm install ${pipeline.nodeJsVersion}"
+                pipeline.steps.sh "set +x\n. ${pipeline.nvmInitScript}\nnvm install ${pipeline.nodeJsVersion}"
             }
         }
         // should we overwrite this?
