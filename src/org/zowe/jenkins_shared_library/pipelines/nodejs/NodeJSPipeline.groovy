@@ -349,7 +349,7 @@ class NodeJSPipeline extends GenericPipeline {
 
             // do we want to use default version of node.js on the build container?
             if (arguments.nodeJsVersion) {
-                if (!arguments.nvmInitScript || !pipeline.fileExists(arguments.nvmInitScript)) {
+                if (!arguments.nvmInitScript || !pipeline.steps.fileExists(arguments.nvmInitScript)) {
                     throw new NodeJSPipelineException("NVM is required to switch node.js version");
                 }
                 pipeline.nodeJsVersion = arguments.nodeJsVersion
