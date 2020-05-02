@@ -714,9 +714,10 @@ class GitHub {
             log.finer("creating pull request on ${this.repository} response:\n${resultText}")
 
             result = this.steps.readJSON text: resultText
-        }
-        if (!result || !result.containsKey('number')) {
-            throw new ScmException("Invalid Github API response \"${resultText}\"")
+
+            if (!result || !result.containsKey('number')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
         }
 
         return result['number']
