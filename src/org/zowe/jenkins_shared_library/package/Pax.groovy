@@ -437,7 +437,7 @@ EOF"""
 get ${remoteWorkspaceFullPath}/${compressPax ? filePaxZ : filePax} ${this.localWorkspace}${extraGets}
 EOF"""
 
-                    this.steps.sh """docker build https://github.com/1000TurquoisePogs/zowe-dockerfiles.git#s390x:dockerfiles/zowe-release/amd64/zowe-v1-lts --build-arg PAX_FILE=${this.localWorkspace}/${filePax}"""
+                    this.steps.sh """sudo systemctl start docker && sudo docker build https://github.com/1000TurquoisePogs/zowe-dockerfiles.git#s390x:dockerfiles/zowe-release/amd64/zowe-v1-lts --build-arg PAX_FILE=${this.localWorkspace}/${filePax}"""
                 } catch (ex1) {
                     // throw error
                     throw new PackageException("Pack Pax package failed: ${ex1}")
