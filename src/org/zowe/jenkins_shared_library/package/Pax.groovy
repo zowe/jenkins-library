@@ -194,6 +194,7 @@ class Pax {
      * @param   compress        if we want to compress the result
      * @param   compressOptions compress command options
      * @param   keepTempFolder   if we want to keep the temporary packaging folder on the remote machine
+     * @param   buildDocker     take pax and build docker out of it
      *                           for debugging purpose. Default is false.
      * @return                   pax package created
      */
@@ -234,6 +235,10 @@ class Pax {
         def keepTempFolder = false
         if (args.containsKey('keepTempFolder') && args['keepTempFolder']) {
             keepTempFolder = true
+        }
+        def buildDocker = false
+        if (args.containsKey('buildDocker') && args['buildDocker']) {
+            buildDocker = true
         }
         def compressPax = false
         if (args.containsKey('compress') && args['compress']) {
@@ -431,6 +436,8 @@ EOF"""
                     this.steps.sh """SSHPASS=\${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -P ${this.sshPort} -b - \${USERNAME}@${this.sshHost} << EOF
 get ${remoteWorkspaceFullPath}/${compressPax ? filePaxZ : filePax} ${this.localWorkspace}${extraGets}
 EOF"""
+
+                    this.steps.sh """docker build https://github.com/zowe/zowe-dockerfiles.git#/pull/15/head:dockerfiles/zowe-release/amd64/zowe-v1-lts --build-arg PAX_FILE=${this.localWorkspace}/${filePax}"""
                 } catch (ex1) {
                     // throw error
                     throw new PackageException("Pack Pax package failed: ${ex1}")
