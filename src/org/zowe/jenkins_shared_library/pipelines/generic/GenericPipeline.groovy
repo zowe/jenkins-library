@@ -644,7 +644,8 @@ class GenericPipeline extends Pipeline {
                 }
             },
             timeout: arguments.initForGeneric,
-            baseDirectory: this.baseDirectory
+            baseDirectory: this.baseDirectory,
+            displayAnsiColor: arguments.initWithColor
         )
     }
 

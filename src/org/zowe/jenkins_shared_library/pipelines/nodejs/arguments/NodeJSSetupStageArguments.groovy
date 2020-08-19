@@ -37,7 +37,7 @@ class NodeJSSetupStageArguments extends GenericSetupStageArguments {
     /**
      * Amount of time allowed to lint.
      *
-     * @default 5 Minutes
+     * @default 2 Minutes
      */
     StageTimeout lint = [time: 2, unit: TimeUnit.MINUTES]
 
@@ -74,6 +74,8 @@ class NodeJSSetupStageArguments extends GenericSetupStageArguments {
      *
      * <p>By default, with value false, the install dependencies stage will try to decide whether
      * use {@code npm ci} or {@code npm install} based on existence of {@code package.json}.</p>
+     *
+     * @default {@code false}
      */
     Boolean alwaysUseNpmInstall = false
 
@@ -83,21 +85,43 @@ class NodeJSSetupStageArguments extends GenericSetupStageArguments {
      * <p>Usually the failure is caused by mismatched package-lock.json or wrong registry configuration.</p>
      *
      * <p>Pipeline will always exit if there are changes other than lock files.</p>
+     *
+     * @default {@code false}
      */
     Boolean exitIfFolderNotClean = false
 
     /**
      * If continue the pipeline if npm audit failed.
+     *
+     * @default {@code false}
      */
     Boolean ignoreAuditFailure = false
 
     /**
      * If we disable the default lint stage
+     *
+     * @default {@code false}
      */
     Boolean disableLint = false
 
     /**
      * If we disable the default audit stage
+     *
+     * @default {@code false}
      */
     Boolean disableAudit = false
+
+    /**
+     * If we want to display colorful output of lint stage
+     *
+     * @default {@code false}
+     */
+    Boolean lintWithColor = false
+
+    /**
+     * If we want to display colorful output of audit stage
+     *
+     * @default {@code false}
+     */
+    Boolean auditWithColor = false
 }

@@ -114,4 +114,11 @@ class GenericSetupStageArguments extends SetupStageArguments {
      * passed to Clusure as arguments.</p>
      */
     Closure extraInit
+
+    /**
+     * If we want to display colorful output for init generic stage.
+     *
+     * @default {@code false}
+     */
+    Boolean initWithColor = false
 }

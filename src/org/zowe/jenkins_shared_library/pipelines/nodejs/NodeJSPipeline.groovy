@@ -429,7 +429,8 @@ ${gitStatus}
 
                     return shouldExecute && lintDefined
                 },
-            baseDirectory: this.baseDirectory
+                baseDirectory: this.baseDirectory,
+                displayAnsiColor: arguments.lintWithColor
             )
         }
 
@@ -449,7 +450,8 @@ ${gitStatus}
                 },
                 isSkippable: true,
                 timeout: arguments.audit,
-                baseDirectory: this.baseDirectory
+                baseDirectory: this.baseDirectory,
+                displayAnsiColor: arguments.auditWithColor
             )
         }
     }
