@@ -366,47 +366,53 @@ class NodeJSPipeline extends GenericPipeline {
         this.defineDefaultBranches()
 
         // this stage should always happen for node.js project?
-        createStage(name: 'Install Node Package Dependencies', stage: {
-            if (steps.fileExists('yarn.lock')) {
-                nvmShell("yarn install")
-            } else {
-                // we save audit part to next stage
-                if (arguments.alwaysUseNpmInstall) {
-                    nvmShell("npm install --no-audit")
+        createStage(
+            name: 'Install Node Package Dependencies',
+            stage: {
+                if (steps.fileExists('yarn.lock')) {
+                    nvmShell("yarn install")
                 } else {
-                    if (steps.fileExists('package-lock.json')) {
-                        // if we have package-lock.json, try to use everything defined in that file
-                        nvmShell("npm ci")
-                    } else {
+                    // we save audit part to next stage
+                    if (arguments.alwaysUseNpmInstall) {
                         nvmShell("npm install --no-audit")
+                    } else {
+                        if (steps.fileExists('package-lock.json')) {
+                            // if we have package-lock.json, try to use everything defined in that file
+                            nvmShell("npm ci")
+                        } else {
+                            nvmShell("npm install --no-audit")
+                        }
                     }
                 }
-            }
 
-            // debug purpose, sometimes npm install will update package-lock.json
-            def gitStatus = this.steps.sh(script: 'git status --porcelain', returnStdout: true).trim()
-            if (gitStatus != '') {
-                this.steps.echo """
+                // debug purpose, sometimes npm install will update package-lock.json
+                def gitStatus = this.steps.sh(script: 'git status --porcelain', returnStdout: true).trim()
+                if (gitStatus != '') {
+                    this.steps.echo """
 ======================= WARNING: git folder is not clean =======================
 ${gitStatus}
 ============ This may cause fail to publish artifact in later stage ============
 """
-                if (arguments.exitIfFolderNotClean) {
-                    steps.error 'Git folder is not clean after installing dependencies.'
-                } else {
-                    // we decide to ignore lock files
-                    if (gitStatus == 'M package-lock.json') {
-                        this.steps.echo "WARNING: package-lock.json will be reset to ignore the failure"
-                        steps.sh 'git checkout -- package-lock.json'
-                    } else if (gitStatus == 'M yarn.lock') {
-                        this.steps.echo "WARNING: yarn.lock will be reset to ignore the failure"
-                        steps.sh 'git checkout -- yarn.lock'
+                    if (arguments.exitIfFolderNotClean) {
+                        steps.error 'Git folder is not clean after installing dependencies.'
                     } else {
-                        steps.error 'Git folder is not clean other than lock files after installing dependencies.'
+                        // we decide to ignore lock files
+                        if (gitStatus == 'M package-lock.json') {
+                            this.steps.echo "WARNING: package-lock.json will be reset to ignore the failure"
+                            steps.sh 'git checkout -- package-lock.json'
+                        } else if (gitStatus == 'M yarn.lock') {
+                            this.steps.echo "WARNING: yarn.lock will be reset to ignore the failure"
+                            steps.sh 'git checkout -- yarn.lock'
+                        } else {
+                            steps.error 'Git folder is not clean other than lock files after installing dependencies.'
+                        }
                     }
                 }
-            }
-        }, isSkippable: false, timeout: arguments.installDependencies)
+            },
+            isSkippable: false,
+            timeout: arguments.installDependencies,
+            baseDirectory: this.baseDirectory
+        )
 
         if (!arguments.disableLint) {
             createStage(
@@ -422,7 +428,8 @@ ${gitStatus}
                     steps.echo lintDefined ? 'lint is defined in package.json' : 'lint is NOT defined in package.json'
 
                     return shouldExecute && lintDefined
-                }
+                },
+            baseDirectory: this.baseDirectory
             )
         }
 
@@ -441,7 +448,8 @@ ${gitStatus}
                     }
                 },
                 isSkippable: true,
-                timeout: arguments.audit
+                timeout: arguments.audit,
+                baseDirectory: this.baseDirectory
             )
         }
     }

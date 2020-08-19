@@ -154,6 +154,14 @@ class Pipeline {
     String version
 
     /**
+     * Base directory of the project.
+     *
+     * <p>By assigning a value to baseDirectory, many built-in stages will be wrapped with
+     * <pre>dir(baseDirectory) {}</pre></p>.
+     */
+    String baseDirectory = ''
+
+    /**
      * This is a list of administrator ids that will receive notifications when a build
      * happens on a protected branch.
      */
@@ -508,7 +516,29 @@ class Pipeline {
                             // Run the passed stage with the proper environment variables
                             steps.withEnv(environment) {
                                 _closureWrapper(stage) {
-                                    args.stage(stage.name)
+                                    // FIXME: how to do this properly?
+                                    if (args.displayTimestamp) {
+                                        if (args.baseDirectory) {
+                                            steps.dir(args.baseDirectory) {
+                                                steps.timestamps {
+                                                    args.stage(stage.name)
+                                                }
+                                            }
+                                        } else {
+                                            steps.timestamps {
+                                                args.stage(stage.name)
+                                            }
+                                        }
+                                    } else {
+                                        if (args.baseDirectory) {
+                                            steps.dir(args.baseDirectory) {
+                                                args.stage(stage.name)
+                                            }
+                                        } else {
+                                            args.stage(stage.name)
+                                        }
+                                    }
+
                                     stage.status = StageStatus.SUCCESS
                                 }
                             }
@@ -601,24 +631,32 @@ class Pipeline {
         if (arguments.version) {
             this.version = arguments.version
         }
+        if (arguments.baseDirectory) {
+            this.baseDirectory = arguments.baseDirectory
+        }
 
         // prepare default configurations
         this.defineDefaultBranches()
 
         // Create the stage and hold the variable for the future
-        Stage setup = createStage(name: _SETUP_STAGE_NAME, stage: {
-            steps.echo "Setup was called first"
+        Stage setup = createStage(
+            name: _SETUP_STAGE_NAME,
+            stage: {
+                steps.echo "Setup was called first"
 
-            if (_stages.firstFailingStage) {
-                if (_stages.firstFailingStage.exception) {
-                    throw _stages.firstFailingStage.exception
+                if (_stages.firstFailingStage) {
+                    if (_stages.firstFailingStage.exception) {
+                        throw _stages.firstFailingStage.exception
+                    } else {
+                        throw new StageException("Setup found a failing stage but there was no associated exception.", _stages.firstFailingStage.name)
+                    }
                 } else {
-                    throw new StageException("Setup found a failing stage but there was no associated exception.", _stages.firstFailingStage.name)
+                    steps.echo "No problems with pre-initialization of pipeline :)"
                 }
-            } else {
-                steps.echo "No problems with pre-initialization of pipeline :)"
-            }
-        }, isSkippable: false, timeout: arguments.setup)
+            },
+            isSkippable: false,
+            timeout: arguments.setup
+        )
 
         // Check for duplicate setup call
         if (_control.setup) {
@@ -634,9 +672,14 @@ class Pipeline {
         // For regular pipeline pointing to a github repository Jenkinsfile, or multibranch pipelines,
         // scm should exist.
         if (steps.scm && !arguments.skipCheckout) {
-            createStage(name: 'Checkout', stage: {
-                steps.checkout steps.scm
-            }, isSkippable: false, timeout: arguments.checkout)
+            createStage(
+                name: 'Checkout',
+                stage: {
+                    steps.checkout steps.scm
+                },
+                isSkippable: false,
+                timeout: arguments.checkout
+            )
         }
     }
 

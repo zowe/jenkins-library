@@ -104,4 +104,23 @@ class StageArguments {
      * {@link jenkins_shared_library.pipelines.base.models.StageTimeout}</p>
      */
     StageTimeout timeout = [:]
+
+    /**
+     * Base directory of the stage.
+     *
+     * <p>By assigning a value to baseDirectory, the whole stage will be wrapped with
+     * <pre>dir(baseDirectory) {}</pre></p>.
+     */
+    String baseDirectory = ''
+
+    /**
+     * If we want to display timestamp on job log.
+     *
+     * <p>If this option is true, the whole stage job log will be wrapped with
+     * <pre>timestamps {}</pre>. This feature requires <pre>timestamper</pre>
+     * plugin to be installed on Jenkins.</p>
+     *
+     * @default false
+     */
+    boolean displayTimestamp = false
 }

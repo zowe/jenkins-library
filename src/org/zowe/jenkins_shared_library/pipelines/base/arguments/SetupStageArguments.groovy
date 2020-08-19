@@ -53,4 +53,12 @@ class SetupStageArguments extends StageArguments {
      * @default {@code false}
      */
     Boolean skipCheckout = false
+
+    /**
+     * Base directory of the project.
+     *
+     * <p>By assigning a value to baseDirectory, many built-in stages will be wrapped with
+     * <pre>dir(baseDirectory) {}</pre></p>.
+     */
+    String baseDirectory = ''
 }

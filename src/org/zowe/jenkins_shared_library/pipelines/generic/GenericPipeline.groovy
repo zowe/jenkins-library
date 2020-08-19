@@ -585,59 +585,67 @@ class GenericPipeline extends Pipeline {
         // prepare default configurations
         this.defineDefaultBranches()
 
-        createStage(name: 'Check for CI Skip', stage: {
+        createStage(
+            name: 'Check for CI Skip',
+            stage: {
+                // This checks for the [ci skip] text. If found, the status code is 0
+                def result = steps.sh returnStatus: true, script: "git log -1 | grep '.*\\[ci skip\\].*'"
+                if (result == 0) {
+                    steps.echo "\"${PipelineConstants.CI_SKIP}\" spotted in the git commit. Aborting."
+                    _shouldSkipRemainingStages = true
+                    setResult(ResultEnum.NOT_BUILT)
+                }
+            },
+            timeout: arguments.ciSkip
+        )
 
-            // This checks for the [ci skip] text. If found, the status code is 0
-            def result = steps.sh returnStatus: true, script: "git log -1 | grep '.*\\[ci skip\\].*'"
-            if (result == 0) {
-                steps.echo "\"${PipelineConstants.CI_SKIP}\" spotted in the git commit. Aborting."
-                _shouldSkipRemainingStages = true
-                setResult(ResultEnum.NOT_BUILT)
-            }
-        }, timeout: arguments.ciSkip)
+        createStage(
+            name: 'Init Generic Pipeline',
+            stage: {
+                if (arguments.github) {
+                    this.steps.echo "Init github configurations ..."
+                    this.github.init(arguments.github)
+                } else if (!arguments.disableGithub) {
+                    this.steps.echo "Init github configurations with default ..."
+                    this.github.init([
+                        email                      : GlobalConstants.DEFAULT_GITHUB_ROBOT_EMAIL,
+                        usernamePasswordCredential : GlobalConstants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
+                    ])
+                }
+                if (arguments.githubTagPrefix) {
+                    this.githubTagPrefix = arguments.githubTagPrefix
+                }
+                if (arguments.artifactory) {
+                    this.steps.echo "Init artifactory configurations ..."
+                    this.artifactory.init(arguments.artifactory)
+                } else if (!arguments.disableArtifactory) {
+                    this.steps.echo "Init artifactory configurations with default ..."
+                    this.artifactory.init([
+                        url                        : GlobalConstants.DEFAULT_LFJ_ARTIFACTORY_URL,
+                        usernamePasswordCredential : GlobalConstants.DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL,
+                    ])
+                }
+                if (arguments.pax) {
+                    this.steps.echo "Init pax packaging server configurations ..."
+                    this.pax.init(arguments.pax)
+                } else if (!arguments.disablePax) {
+                    this.steps.echo "Init artifactory configurations with default ..."
+                    this.pax.init([
+                        sshHost                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_HOST,
+                        sshPort                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_PORT,
+                        sshCredential              : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL,
+                        remoteWorkspace            : GlobalConstants.DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE,
+                    ])
+                }
 
-        createStage(name: 'Init Generic Pipeline', stage: {
-            if (arguments.github) {
-                this.steps.echo "Init github configurations ..."
-                this.github.init(arguments.github)
-            } else if (!arguments.disableGithub) {
-                this.steps.echo "Init github configurations with default ..."
-                this.github.init([
-                    email                      : GlobalConstants.DEFAULT_GITHUB_ROBOT_EMAIL,
-                    usernamePasswordCredential : GlobalConstants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
-                ])
-            }
-            if (arguments.githubTagPrefix) {
-                this.githubTagPrefix = arguments.githubTagPrefix
-            }
-            if (arguments.artifactory) {
-                this.steps.echo "Init artifactory configurations ..."
-                this.artifactory.init(arguments.artifactory)
-            } else if (!arguments.disableArtifactory) {
-                this.steps.echo "Init artifactory configurations with default ..."
-                this.artifactory.init([
-                    url                        : GlobalConstants.DEFAULT_LFJ_ARTIFACTORY_URL,
-                    usernamePasswordCredential : GlobalConstants.DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL,
-                ])
-            }
-            if (arguments.pax) {
-                this.steps.echo "Init pax packaging server configurations ..."
-                this.pax.init(arguments.pax)
-            } else if (!arguments.disablePax) {
-                this.steps.echo "Init artifactory configurations with default ..."
-                this.pax.init([
-                    sshHost                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_HOST,
-                    sshPort                    : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_PORT,
-                    sshCredential              : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL,
-                    remoteWorkspace            : GlobalConstants.DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE,
-                ])
-            }
-
-            if (arguments.extraInit) {
-                this.steps.echo "Run extra initialization ..."
-                arguments.extraInit(this)
-            }
-        }, timeout: arguments.initForGeneric)
+                if (arguments.extraInit) {
+                    this.steps.echo "Run extra initialization ..."
+                    arguments.extraInit(this)
+                }
+            },
+            timeout: arguments.initForGeneric,
+            baseDirectory: this.baseDirectory
+        )
     }
 
     /**
@@ -758,6 +766,8 @@ class GenericPipeline extends Pipeline {
 
             arguments.operation(stageName)
         }
+
+        arguments.baseDirectory = this.baseDirectory
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage build = createStage(arguments)
@@ -954,6 +964,8 @@ class GenericPipeline extends Pipeline {
                 ])
             }
         }
+
+        arguments.baseDirectory = this.baseDirectory
 
         // Create the stage and ensure that the tests are properly added.
         Stage test = createStage(arguments)
@@ -1199,6 +1211,8 @@ class GenericPipeline extends Pipeline {
             }
         }
 
+        arguments.baseDirectory = this.baseDirectory
+
         // Create the stage and ensure that the first one is the stage of reference
         Stage sonarScan = createStage(arguments)
         if (!_control.sonarScan) {
@@ -1355,6 +1369,8 @@ class GenericPipeline extends Pipeline {
                 }
             }
         }
+
+        arguments.baseDirectory = this.baseDirectory
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage packaging = createStage(arguments)
@@ -1525,6 +1541,8 @@ class GenericPipeline extends Pipeline {
                 steps.echo "No artifacts to publish."
             }
         }
+
+        arguments.baseDirectory = this.baseDirectory
 
         Stage publish = createStage(arguments)
         if (!_control.publish) {
@@ -1730,6 +1748,8 @@ class GenericPipeline extends Pipeline {
                 this.sendReleaseNotice()
             }
         }
+
+        arguments.baseDirectory = this.baseDirectory
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage release = createStage(arguments)
