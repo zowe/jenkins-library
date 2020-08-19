@@ -517,25 +517,57 @@ class Pipeline {
                             steps.withEnv(environment) {
                                 _closureWrapper(stage) {
                                     // FIXME: how to do this properly?
-                                    if (args.displayTimestamp) {
-                                        if (args.baseDirectory) {
-                                            steps.dir(args.baseDirectory) {
+                                    if (args.displayAnsiColor) {
+                                        if (args.displayTimestamp) {
+                                            if (args.baseDirectory) {
+                                                steps.dir(args.baseDirectory) {
+                                                    steps.timestamps {
+                                                        steps.ansiColor('xterm') {
+                                                            args.stage(stage.name)
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                steps.timestamps {
+                                                    steps.ansiColor('xterm') {
+                                                        args.stage(stage.name)
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            if (args.baseDirectory) {
+                                                steps.dir(args.baseDirectory) {
+                                                    steps.ansiColor('xterm') {
+                                                        args.stage(stage.name)
+                                                    }
+                                                }
+                                            } else {
+                                                steps.ansiColor('xterm') {
+                                                    args.stage(stage.name)
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        if (args.displayTimestamp) {
+                                            if (args.baseDirectory) {
+                                                steps.dir(args.baseDirectory) {
+                                                    steps.timestamps {
+                                                        args.stage(stage.name)
+                                                    }
+                                                }
+                                            } else {
                                                 steps.timestamps {
                                                     args.stage(stage.name)
                                                 }
                                             }
                                         } else {
-                                            steps.timestamps {
+                                            if (args.baseDirectory) {
+                                                steps.dir(args.baseDirectory) {
+                                                    args.stage(stage.name)
+                                                }
+                                            } else {
                                                 args.stage(stage.name)
                                             }
-                                        }
-                                    } else {
-                                        if (args.baseDirectory) {
-                                            steps.dir(args.baseDirectory) {
-                                                args.stage(stage.name)
-                                            }
-                                        } else {
-                                            args.stage(stage.name)
                                         }
                                     }
 

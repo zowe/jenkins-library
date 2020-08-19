@@ -123,4 +123,15 @@ class StageArguments {
      * @default false
      */
     boolean displayTimestamp = false
+
+    /**
+     * If we want to display colorful job output.
+     *
+     * <p>If this option is true, the whole stage job log will be wrapped with
+     * <pre>ansiColor('xterm') {}</pre>. This feature requires <pre>AnsiColor</pre>
+     * plugin to be installed on Jenkins.</p>
+     *
+     * @default false
+     */
+    boolean displayAnsiColor = false
 }
