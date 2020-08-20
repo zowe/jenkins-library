@@ -21,7 +21,7 @@ def TEST_BRANCH       = 'master'
 // expected scope
 def EXPECTED_SCOPE    = 'zowe'
 // expected registry
-def EXPECTED_REGISTRY = 'https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-local-release/'
+def EXPECTED_REGISTRY = 'https://zowe.jfrog.io/zowe/api/npm/npm-local-release/'
 
 def lastVersionChecked
 
