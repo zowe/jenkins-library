@@ -16,7 +16,7 @@ String TEST_ASCII_CONTENT = "this should be human readable"
 String TEST_ENV_VAR_NAME  = 'LIBRARY_TEST_SAMPLE_VAR'
 String TEST_ENV_VAR_VALUE = '1234'
 
-node ('ibm-jenkins-slave-nvm-jnlp') {
+node ('ibm-jenkins-slave-nvm') {
     /**
      * Initialize package/Pax object
      */

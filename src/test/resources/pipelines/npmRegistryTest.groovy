@@ -25,7 +25,7 @@ def EXPECTED_REGISTRY = 'https://gizaartifactory.jfrog.io/gizaartifactory/api/np
 
 def lastVersionChecked
 
-node ('ibm-jenkins-slave-nvm-jnlp') {
+node ('ibm-jenkins-slave-nvm') {
     /**
      * Initialize npm registry and github object
      */
