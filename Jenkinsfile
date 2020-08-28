@@ -66,6 +66,9 @@ node('ibm-jenkins-slave-nvm') {
         // checkout source code
         checkout scm
 
+        // bootstrap gradle
+        sh "./bootstrap_gradlew.sh"
+
         // check if it's pull request
         echo "Current branch is ${env.BRANCH_NAME}"
         if (isPullRequest) {
