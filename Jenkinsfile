@@ -20,11 +20,11 @@ def JENKINS_CREDENTIAL     = 'jenkins-credential'
 def GITHUB_USERNAME        = 'Zowe Robot'
 def GITHUB_EMAIL           = 'zowe.robot@gmail.com'
 def GITHUB_CREDENTIAL      = 'zowe-robot-github'
-def NPM_USERNAME           = 'giza-jenkins'
-def NPM_EMAIL              = 'giza-jenkins@gmail.com'
-def NPM_CREDENTIAL         = 'GizaArtifactoryEncoded'
-def ARTIFACTORY_URL        = 'https://gizaartifactory.jfrog.io/gizaartifactory'
-def ARTIFACTORY_CREDENTIAL = 'GizaArtifactory'
+def NPM_USERNAME           = 'jenkins'
+def NPM_EMAIL              = 'zowe.robot@gmail.com'
+def NPM_CREDENTIAL         = 'zowe.jfrog.io'
+def ARTIFACTORY_URL        = 'https://zowe.jfrog.io/zowe'
+def ARTIFACTORY_CREDENTIAL = 'zowe.jfrog.io'
 def PAX_SERVER_HOST        = 'zzow01.zowe.marist.cloud'
 def PAX_SERVER_PORT        = 22
 def PAX_SERVER_CREDENTIAL  = 'ssh-marist-server-zzow01'
@@ -58,13 +58,16 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-node ('ibm-jenkins-slave-nvm-jnlp') {
+node('ibm-jenkins-slave-nvm') {
   currentBuild.result = 'SUCCESS'
 
   try {
     stage('checkout') {
         // checkout source code
         checkout scm
+
+        // bootstrap gradle
+        sh "./bootstrap_gradlew.sh"
 
         // check if it's pull request
         echo "Current branch is ${env.BRANCH_NAME}"

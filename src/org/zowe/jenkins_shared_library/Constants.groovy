@@ -65,16 +65,16 @@ class Constants {
     /**
      * Default Artifactory URL
      *
-     * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}
+     * @Default {@code "https://zowe.jfrog.io/zowe"}
      */
-    public static String DEFAULT_ARTIFACTORY_URL = 'https://gizaartifactory.jfrog.io/gizaartifactory'
+    public static String DEFAULT_ARTIFACTORY_URL = 'https://zowe.jfrog.io/zowe'
 
     /**
      * Default Artifactory robot account Jenkins username/password credential ID
      *
-     * @Default {@code "GizaArtifactory"}
+     * @Default {@code "zowe.jfrog.io"}
      */
-    public static String DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL = 'GizaArtifactory'
+    public static String DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL = 'zowe.jfrog.io'
 
     /**
      * Default Artifactory URL provided by LF
@@ -195,30 +195,30 @@ class Constants {
     /**
      * Default NPM private registry url for npm install
      *
-     * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/"}
+     * @Default {@code "https://zowe.jfrog.io/zowe/api/npm/npm-release/"}
      */
-    public static String DEFAULT_NPM_PRIVATE_REGISTRY_INSTALL = 'https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/'
+    public static String DEFAULT_NPM_PRIVATE_REGISTRY_INSTALL = 'https://zowe.jfrog.io/zowe/api/npm/npm-release/'
 
     /**
      * Default NPM private registry url for npm publish
      *
-     * @Default {@code "https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-local-release/"}
+     * @Default {@code "https://zowe.jfrog.io/zowe/api/npm/npm-local-release/"}
      */
-    public static String DEFAULT_NPM_PRIVATE_REGISTRY_PUBLISH = 'https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-local-release/'
+    public static String DEFAULT_NPM_PRIVATE_REGISTRY_PUBLISH = 'https://zowe.jfrog.io/zowe/api/npm/npm-local-release/'
 
     /**
      * Default NPM private registry robot account email
      *
-     * @Default {@code "giza-jenkins@gmail.com"}
+     * @Default {@code "zowe.robot@gmail.com"}
      */
-    public static String DEFAULT_NPM_PRIVATE_REGISTRY_EMAIL = 'giza-jenkins@gmail.com'
+    public static String DEFAULT_NPM_PRIVATE_REGISTRY_EMAIL = 'zowe.robot@gmail.com'
 
     /**
      * Default NPM private registry robot account credential on Jenkins
      *
-     * @Default {@code "GizaArtifactory"}
+     * @Default {@code "zowe.jfrog.io"}
      */
-    public static String DEFAULT_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'GizaArtifactory'
+    public static String DEFAULT_NPM_PRIVATE_REGISTRY_CREDENTIAL = 'zowe.jfrog.io'
 
     /**
      * Default NPM private registry url for npm install

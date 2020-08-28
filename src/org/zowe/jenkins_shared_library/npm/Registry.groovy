@@ -262,12 +262,12 @@ class Registry {
      *
      * @Note Using token credential may receive this error with whoami, but actually npm install is ok.
      * <pre>
-     * + npm whoami --registry https://gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/
+     * + npm whoami --registry https://zowe.jfrog.io/zowe/api/npm/npm-release/
      * npm ERR! code E401
      * npm ERR! Unable to authenticate, need: Basic realm="Artifactory Realm"
      * </pre>
      *
-     * <p>This happens if we set {@code "//gizaartifactory.jfrog.io/gizaartifactory/api/npm/npm-release/:_authToken"},
+     * <p>This happens if we set {@code "//zowe.jfrog.io/zowe/api/npm/npm-release/:_authToken"},
      * but if we set {@code "_auth=<token>"}, everything is ok.</p>
      *
      * <p>Is this a bug of Artifactory?</p>

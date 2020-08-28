@@ -23,7 +23,7 @@ import org.zowe.jenkins_shared_library.Utils
  * <pre>
  *     def jfrog = new JFrogArtifactory(this)
  *     jfrog.init(
- *         url: 'https://gizaartifactory.jfrog.io/gizaartifactory',
+ *         url: 'https://zowe.jfrog.io/zowe',
  *         usernamePasswordCredential: 'my-artifactory-credential'
  *     )
  *     jfrog.upload(
@@ -63,7 +63,7 @@ class JFrogArtifactory implements ArtifactInterface {
     /**
      * Artifactory URL.
      *
-     * @Example {@code https://gizaartifactory.jfrog.io/gizaartifactory}
+     * @Example {@code https://zowe.jfrog.io/zowe}
      */
     String url
 
@@ -94,7 +94,7 @@ class JFrogArtifactory implements ArtifactInterface {
      *
      * @Note The below parameters are supported keys of the {@code args} Map.
      *
-     * @param   url                          the artifactory URL. For example {@code "https://gizaartifactory.jfrog.io/gizaartifactory"}.
+     * @param   url                          the artifactory URL. For example {@code "https://zowe.jfrog.io/zowe"}.
      * @param   usernamePasswordCredential   Artifactory username/password credential ID
      */
     void init(Map args = [:]) {
@@ -365,7 +365,7 @@ class JFrogArtifactory implements ArtifactInterface {
                 } ],
                 "buildDependencies" : [ ]
             },
-            "uri" : "https://gizaartifactory.jfrog.io/gizaartifactory/api/build/zowe-install-packaging%20::%20staging/218"
+            "uri" : "https://zowe.jfrog.io/zowe/api/build/zowe-install-packaging%20::%20staging/218"
         }
         */
         def result = this.steps.readJSON text: resultText

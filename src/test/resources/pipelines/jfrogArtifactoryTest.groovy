@@ -15,7 +15,7 @@ Integer testPropValue     = 1
 String snapshotArtifact   = "libs-snapshot-local/org/zowe/jenkins-library-test/${testRemoteArtifact}"
 String releaseFolder      = "libs-release-local/org/zowe/jenkins-library-test/"
 
-node ('ibm-jenkins-slave-nvm-jnlp') {
+node ('ibm-jenkins-slave-nvm') {
     /**
      * Initialize JFrogArtifactory object
      */
@@ -37,9 +37,9 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to get artifact information
      */
     stage('getArtifact') {
-        String pattern             = 'libs-release-local/org/zowe/1.0.0/zowe-1.0.0.pax'
-        String expectedBuildName   = 'zowe-promote-publish :: master'
-        String expectedBuildNumber = '50'
+        String pattern             = 'libs-release-local/org/zowe/1.9.0/zowe-1.9.0.pax'
+        String expectedBuildName   = 'zowe-promote-publish :: staging'
+        String expectedBuildNumber = '24'
 
         // get artifact
         Map artifact = jfrog.getArtifact(pattern)
@@ -66,10 +66,10 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
      * Should be able to get build information
      */
     stage('getBuildInfo') {
-        // this is parent build of `libs-release-local/org/zowe/1.0.0/zowe-1.0.0.pax`
+        // this is parent build of `libs-release-local/org/zowe/1.9.0/zowe-1.9.0.pax`
         String buildName           = 'zowe-install-packaging :: master'
-        String buildNumber         = '515'
-        String expectedVcsRevision = 'f11489d588321281a461eb7bc7883b495f16d882'
+        String buildNumber         = '803'
+        String expectedVcsRevision = '840b9c532f434fa0d1488378b2a9b201d0c03f41'
 
         // get build
         Map build = jfrog.getBuildInfo(buildName, buildNumber)
@@ -100,7 +100,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         String spec = """{
     "files": [
         {
-            "pattern": "libs-release-local/org/zowe/explorer-jes/0.0.*/explorer-jes-0.0.*.pax",
+            "pattern": "libs-release-local/org/zowe/explorer-jes/1.0.*/explorer-jes-1.0.*.pax",
             "target": "${downloadFolder}/",
             "flat": "true",
             "sortBy": ["created"],
@@ -108,7 +108,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             "limit": 1
         },
         {
-            "pattern": "libs-release-local/org/zowe/explorer-mvs/0.0.*/explorer-mvs-0.0.*.pax",
+            "pattern": "libs-release-local/org/zowe/explorer-mvs/1.0.*/explorer-mvs-1.0.*.pax",
             "target": "${downloadFolder}/",
             "flat": "true",
             "sortBy": ["created"],
@@ -145,7 +145,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
         String spec = """{
     "files": [
         {
-            "pattern": "libs-release-local/org/zowe/explorer-jes/0.0.*/explorer-jes-0.0.*.pax",
+            "pattern": "libs-release-local/org/zowe/explorer-jes/1.0.*/explorer-jes-1.0.*.pax",
             "target": "${downloadFolder}/",
             "flat": "true",
             "sortBy": ["created"],
@@ -153,7 +153,7 @@ node ('ibm-jenkins-slave-nvm-jnlp') {
             "limit": 1
         },
         {
-            "pattern": "libs-release-local/org/zowe/explorer-mvs/0.0.*/does-not-exists-0.0.*.pax.Z",
+            "pattern": "libs-release-local/org/zowe/explorer-mvs/1.0.*/does-not-exists-1.0.*.pax.Z",
             "target": "${downloadFolder}/",
             "flat": "true",
             "sortBy": ["created"],
