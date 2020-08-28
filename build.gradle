@@ -69,8 +69,8 @@ sourceSets {
     }
 }
 group = 'org.zowe'
-version = '1.3.0'
-description = 'zowe-cli-version-controller'
+version = '1.4.0'
+description = 'zowe-jenkins-library'
 sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile) {
