@@ -644,7 +644,7 @@ class GenericPipeline extends Pipeline {
                 }
             },
             timeout: arguments.initForGeneric,
-            baseDirectory: this.baseDirectory,
+            baseDirectory: arguments.baseDirectory ?: this.baseDirectory,
             displayAnsiColor: arguments.initWithColor
         )
     }
@@ -768,7 +768,9 @@ class GenericPipeline extends Pipeline {
             arguments.operation(stageName)
         }
 
-        arguments.baseDirectory = this.baseDirectory
+        if (!arguments.baseDirectory) {
+            arguments.baseDirectory = this.baseDirectory
+        }
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage build = createStage(arguments)
@@ -966,7 +968,9 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        arguments.baseDirectory = this.baseDirectory
+        if (!arguments.baseDirectory) {
+            arguments.baseDirectory = this.baseDirectory
+        }
 
         // Create the stage and ensure that the tests are properly added.
         Stage test = createStage(arguments)
@@ -1212,7 +1216,9 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        arguments.baseDirectory = this.baseDirectory
+        if (!arguments.baseDirectory) {
+            arguments.baseDirectory = this.baseDirectory
+        }
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage sonarScan = createStage(arguments)
@@ -1371,7 +1377,9 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        arguments.baseDirectory = this.baseDirectory
+        if (!arguments.baseDirectory) {
+            arguments.baseDirectory = this.baseDirectory
+        }
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage packaging = createStage(arguments)
@@ -1543,7 +1551,9 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        arguments.baseDirectory = this.baseDirectory
+        if (!arguments.baseDirectory) {
+            arguments.baseDirectory = this.baseDirectory
+        }
 
         Stage publish = createStage(arguments)
         if (!_control.publish) {
@@ -1750,7 +1760,9 @@ class GenericPipeline extends Pipeline {
             }
         }
 
-        arguments.baseDirectory = this.baseDirectory
+        if (!arguments.baseDirectory) {
+            arguments.baseDirectory = this.baseDirectory
+        }
 
         // Create the stage and ensure that the first one is the stage of reference
         Stage release = createStage(arguments)
