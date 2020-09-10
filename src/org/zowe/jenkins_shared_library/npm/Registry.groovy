@@ -315,9 +315,10 @@ class Registry {
         // this.steps.sh "touch ${NPMRC_FILE} && mv ${NPMRC_FILE} ${NPMRC_FILE}-bak"
 
         // Prevent npm publish from being affected by the local npmrc file
-        if (this.steps.fileExists('.npmrc')) {
-            this.steps.sh "rm -f .npmrc || exit 0"
-        }
+        // FIXME: removed to pririotize local .npmrc
+        // if (this.steps.fileExists('.npmrc')) {
+        //     this.steps.sh "rm -f .npmrc || exit 0"
+        // }
 
         // update auth in .npmrc
         if (tokenCredential) {
@@ -388,9 +389,10 @@ class Registry {
      */
     void resetConfig() {
         // remove .npmrc in current folder
-        if (this.steps.fileExists('.npmrc')) {
-            this.steps.sh "rm -f .npmrc || exit 0"
-        }
+        // FIXME: removed to pririotize local .npmrc
+        // if (this.steps.fileExists('.npmrc')) {
+        //     this.steps.sh "rm -f .npmrc || exit 0"
+        // }
         // remove .npmrc in home folder
         if (this.steps.fileExists(NPMRC_FILE)) {
             this.steps.sh "rm -f ${NPMRC_FILE} || exit 0"
