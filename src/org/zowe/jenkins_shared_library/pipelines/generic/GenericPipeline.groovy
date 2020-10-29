@@ -1570,7 +1570,10 @@ class GenericPipeline extends Pipeline {
      * @param artifacts      list of artifacts. glob file pattern is allowed.
      * @param baseTargetPath The targe path to upload
      */
-    protected void uploadArtifacts(List<String> artifacts, String baseTargetPath) {
+    public void uploadArtifacts(List<String> artifacts, String baseTargetPath) {
+        if (!baseTargetPath) {
+            baseTargetPath = artifactoryUploadTargetPath
+        }
         if (!baseTargetPath.endsWith('/')) {
             baseTargetPath += '/'
         }
