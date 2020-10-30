@@ -1769,7 +1769,7 @@ class GenericPipeline extends Pipeline {
                     if (arguments.bumpVersion) {
                         arguments.bumpVersion()
                     } else {
-                        this.bumpVersion()
+                        this.bumpVersion(arguments.name)
                     }
                 } else {
                     this.steps.echo "No need to bump version."
@@ -1819,10 +1819,10 @@ class GenericPipeline extends Pipeline {
      * <p>For example, npm package should use `npm version patch` to bump, and gradle project should
      * update the {@code version} definition in {@code "gradle.properties"}.</p>
      */
-    protected void bumpVersion() {
+    protected void bumpVersion(String releaseName) {
         // log.warning('This method should be overridden.')
         if (!this.versionFile) {
-            throw new ReleaseStageException('Generic pipeline requires versionFile to perform a release')
+            throw new ReleaseStageException('Generic pipeline requires versionFile to perform a release', releaseName)
         }
         def branch = this.github.branch
         if (!branch) {
@@ -1831,10 +1831,10 @@ class GenericPipeline extends Pipeline {
             branch = this.github.branch
         }
         if (!branch) {
-            throw new ReleaseStageException('Unable to determine branch name to for version bump.')
+            throw new ReleaseStageException('Unable to determine branch name to for version bump.', releaseName)
         }
         if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
-            throw new ReleaseStageException('Version is not successfully extracted from project.')
+            throw new ReleaseStageException('Version is not successfully extracted from project.', releaseName)
         }
 
         String newSemVer = ''
@@ -1851,7 +1851,7 @@ class GenericPipeline extends Pipeline {
             'folder'   : tempFolder
         ])
         if (!this.github.isClean()) {
-            throw new ReleaseStageException('Git working directory not clean.')
+            throw new ReleaseStageException('Git working directory not clean.', releaseName)
         }
 
         this.steps.echo "Making a patch version bump ..."
@@ -1865,7 +1865,7 @@ class GenericPipeline extends Pipeline {
             log.finer("Before convert:\n${beforeConvert}")
             log.finer("After convert:\n${afterConvert}")
             if (beforeConvert == afterConvert) {
-                throw new ReleaseStageException('Version bump is not successfully.')
+                throw new ReleaseStageException('Version bump is not successfully.', releaseName)
             }
 
             // replace version
@@ -1879,7 +1879,7 @@ class GenericPipeline extends Pipeline {
         this.steps.echo "Pushing ${branch} to remote ..."
         this.github.push()
         if (!this.github.isSynced()) {
-            throw new ReleaseStageException('Branch is not synced with remote after version bump .')
+            throw new ReleaseStageException('Branch is not synced with remote after version bump .', releaseName)
         }
 
         // remove temp folder
