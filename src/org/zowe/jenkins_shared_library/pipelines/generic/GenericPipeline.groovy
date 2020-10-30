@@ -145,6 +145,13 @@ class GenericPipeline extends Pipeline {
     Map packageInfo
 
     /**
+     * Version file name/path
+     *
+     * <p>Set to file path if the repository has version file. Currently we only support version files only contains sematic version as content.</p>
+     */
+    String versionFile;
+
+    /**
      * The full version pattern when the pipeline try to publish artifacts.
      *
      * @Note Allowed macros are same as macros defined in {@link #artifactoryUploadTargetPath}.
@@ -636,6 +643,13 @@ class GenericPipeline extends Pipeline {
                         sshCredential              : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL,
                         remoteWorkspace            : GlobalConstants.DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE,
                     ])
+                }
+
+                // save version file for release step
+                this.versionFile = arguments.versionFile
+                if (arguments.versionFile) {
+                    // extract version from version file
+                    pipeline.setVersion(sh(script: "cat ${arguments.versionFile}", returnStdout: true).trim())
                 }
 
                 if (arguments.extraInit) {
@@ -1803,7 +1817,75 @@ class GenericPipeline extends Pipeline {
      * update the {@code version} definition in {@code "gradle.properties"}.</p>
      */
     protected void bumpVersion() {
-        log.warning('This method should be overridden.')
+        // log.warning('This method should be overridden.')
+        if (!this.versionFile) {
+            throw new ReleaseStageException('Generic pipeline requires versionFile to perform a release')
+        }
+        def branch = this.github.branch
+        if (!branch) {
+            // try to detect branch name
+            this.github.initFromFolder()
+            branch = this.github.branch
+        }
+        if (!branch) {
+            throw new ReleaseStageException('Unable to determine branch name to for version bump.')
+        }
+        if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
+            throw new ReleaseStageException('Version is not successfully extracted from project.')
+        }
+
+        String newSemVer = ''
+
+        // get temp folder for cloning
+        def tempFolder = ".tmp-generic-${Utils.getTimestamp()}"
+        def oldBranch = this.github.getBranch()
+        def oldFolder = this.github.getFolder()
+
+        this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
+        // clone to temp folder
+        this.github.cloneRepository([
+            'branch'   : branch,
+            'folder'   : tempFolder
+        ])
+        if (!this.github.isClean()) {
+            throw new ReleaseStageException('Git working directory not clean.')
+        }
+
+        this.steps.echo "Making a patch version bump ..."
+        this.steps.dir(tempFolder) {
+            newSemVer = Utils.interpretSemanticVersionBump(this.packageInfo['versionTrunks'], 'PATCH')
+            this.steps.writeFile file: "${this.versionFile}.tmp", text: newSemVer
+
+            // compare if we successfully bumped the version
+            String beforeConvert = steps.readFile "${this.versionFile}"
+            String afterConvert = steps.readFile ".${this.versionFile}.tmp"
+            log.finer("Before convert:\n${beforeConvert}")
+            log.finer("After convert:\n${afterConvert}")
+            if (beforeConvert == afterConvert) {
+                throw new ReleaseStageException('Version bump is not successfully.')
+            }
+
+            // replace version
+            steps.sh "mv .${this.versionFile}.tmp ${this.versionFile}"
+        }
+
+        // commit
+        this.github.commit(newSemVer)
+
+        // push version changes
+        this.steps.echo "Pushing ${branch} to remote ..."
+        this.github.push()
+        if (!this.github.isSynced()) {
+            throw new ReleaseStageException('Branch is not synced with remote after version bump .')
+        }
+
+        // remove temp folder
+        this.steps.echo "Removing temporary folder ${tempFolder} ..."
+        this.steps.sh "rm -fr ${tempFolder}"
+
+        // set values back
+        this.github.setBranch(oldBranch)
+        this.github.setFolder(oldFolder)
     }
 
     /**

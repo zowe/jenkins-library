@@ -47,6 +47,13 @@ class GenericSetupStageArguments extends SetupStageArguments {
     StageTimeout initForGeneric = [time: 1, unit: TimeUnit.MINUTES]
 
     /**
+     * Version file name/path
+     *
+     * <p>Set to file path if the repository has version file. Currently we only support version files only contains sematic version as content.</p>
+     */
+    String versionFile = ''
+
+    /**
      * Github configurations
      *
      * <p>Use configurations defined at {@link jenkins_shared_library.scm.GitHub#init(Map)}.</p>
