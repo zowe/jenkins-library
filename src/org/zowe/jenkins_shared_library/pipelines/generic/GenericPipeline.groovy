@@ -648,8 +648,11 @@ class GenericPipeline extends Pipeline {
                 // save version file for release step
                 this.versionFile = arguments.versionFile
                 if (arguments.versionFile) {
+                    if (!this.steps.fileExists(this.versionFile)) {
+                        throw new SetupStageException("Version file ${this.versionFile} doesn't exist")
+                    }
                     // extract version from version file
-                    this.setVersion(sh(script: "cat ${arguments.versionFile}", returnStdout: true).trim())
+                    this.setVersion(this.steps.sh(script: "cat ${this.versionFile}", returnStdout: true).trim())
                 }
 
                 if (arguments.extraInit) {
