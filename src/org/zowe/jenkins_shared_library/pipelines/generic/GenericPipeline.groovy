@@ -649,7 +649,7 @@ class GenericPipeline extends Pipeline {
                 this.versionFile = arguments.versionFile
                 if (arguments.versionFile) {
                     // extract version from version file
-                    pipeline.setVersion(sh(script: "cat ${arguments.versionFile}", returnStdout: true).trim())
+                    this.setVersion(sh(script: "cat ${arguments.versionFile}", returnStdout: true).trim())
                 }
 
                 if (arguments.extraInit) {
