@@ -680,6 +680,19 @@ class GenericPipeline extends Pipeline {
         createStage(
             name: 'Init Generic Pipeline',
             stage: {
+                if (arguments.manifest) {
+                    this.manifest = arguments.manifest
+                }
+                this._readPackageManifest()
+                if (this.packageInfo) {
+                    if (this.packageInfo['id']) {
+                        this.setPackageName(this.packageInfo['id'] )
+                    }
+                    if (this.packageInfo['version']) {
+                        this.setVersion(this.packageInfo['version'] )
+                    }
+                }
+
                 if (arguments.github) {
                     this.steps.echo "Init github configurations ..."
                     this.github.init(arguments.github)
@@ -714,14 +727,6 @@ class GenericPipeline extends Pipeline {
                         sshCredential              : GlobalConstants.DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL,
                         remoteWorkspace            : GlobalConstants.DEFAULT_PAX_PACKAGING_REMOTE_WORKSPACE,
                     ])
-                }
-
-                if (arguments.manifest) {
-                    this.manifest = arguments.manifest
-                }
-                this._readPackageManifest()
-                if (this.packageInfo && this.packageInfo['version']) {
-                    this.setVersion(this.packageInfo['version'] )
                 }
 
                 if (arguments.extraInit) {
