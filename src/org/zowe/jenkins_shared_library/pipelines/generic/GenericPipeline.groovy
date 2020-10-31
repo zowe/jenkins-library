@@ -1936,11 +1936,10 @@ class GenericPipeline extends Pipeline {
         this.steps.echo "Making a patch version bump ..."
         this.steps.dir(tempFolder) {
             newSemVer = Utils.interpretSemanticVersionBump(this.packageInfo['versionTrunks'], 'PATCH')
-            this._manifestObject["version"] = newSemVer
             if (this._manifestFormat == "json") {
-                writeJSON file: ".${this.manifest}.tmp", json: this._manifestObject
+                this.steps.sh "sed -e 's#\"version\": \\{0,\\}\"[^\"]\\{5,\\}\"#\"version\": \"${newSemVer}\"#' ${this.manifest} > .${this.manifest}.tmp"
             } else if (this._manifestFormat == "yaml") {
-                writeYaml file: ".${this.manifest}.tmp", data: this._manifestObject
+                this.steps.sh "sed -e \"s#^version:.*\\\$#version: ${newSemVer}#\" ${this.manifest} > .${this.manifest}.tmp"
             }
 
             // compare if we successfully bumped the version
