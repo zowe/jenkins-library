@@ -596,6 +596,7 @@ class GenericPipeline extends Pipeline {
         if (!this.manifest) {
             return
         }
+        log.fine("manifest file: ${this.manifest}")
 
         // determine manifest format
         if (this.manifest.endsWith(".json")) {
