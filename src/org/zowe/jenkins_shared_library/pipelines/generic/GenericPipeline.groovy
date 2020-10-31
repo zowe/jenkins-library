@@ -145,6 +145,29 @@ class GenericPipeline extends Pipeline {
     Map packageInfo
 
     /**
+     * Manifest file name/path
+     *
+     * <p>Set to file path if the repository has Zowe manifest file. This is optional. By default, the Generic pipeline will try manifest.json, manifest.yaml or manifest.yml in root directory.</p>
+     */
+    String manifest;
+
+    /**
+     * Format of manifest file.
+     *
+     * <p>The value could be json or yaml.</p>
+     *
+     * <p>The value is calculated based on manifest file name.</p>
+     */
+    protected String _manifestFormat;
+
+    /**
+     * Object of manifest.
+     *
+     * <p>The value is calculated based on manifest file content.</p>
+     */
+    protected Map _manifestObject;
+
+    /**
      * The full version pattern when the pipeline try to publish artifacts.
      *
      * @Note Allowed macros are same as macros defined in {@link #artifactoryUploadTargetPath}.
@@ -554,6 +577,68 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
+     * Read manifest file if exists and fill in packageInfo.
+     */
+    protected void _readPackageManifest() {
+        // find/check manifest file
+        if (this.manifest) {
+            if (!this.steps.fileExists(this.manifest)) {
+                throw new SetupStageException("Manifest file ${this.manifest} doesn't exist")
+            }
+        } else if (this.steps.fileExists("manifest.json")) {
+            this.manifest = "manifest.json"
+        } else if (this.steps.fileExists("manifest.yaml")) {
+            this.manifest = "manifest.yaml"
+        } else if (this.steps.fileExists("manifest.yml")) {
+            this.manifest = "manifest.yml"
+        }
+
+        if (!this.manifest) {
+            return
+        }
+        log.fine("manifest file: ${this.manifest}")
+
+        // determine manifest format
+        if (this.manifest.endsWith(".json")) {
+            this._manifestFormat = "json"
+        } else if (this.manifest.endsWith(".yaml") || this.manifest.endsWith(".yml")) {
+            this._manifestFormat = "yaml"
+        } else {
+            throw new SetupStageException("Unknown manifest format ${this.manifest}")
+        }
+
+        // read file
+        if (this._manifestFormat == "json") {
+            this._manifestObject = this.steps.readJSON file: this.manifest
+        } else if (this._manifestFormat == "yaml") {
+            this._manifestObject = this.steps.readYaml file: this.manifest
+        }
+        log.fine("Manifest: ${this._manifestObject}")
+
+        // import information we need
+        if (this._manifestObject) {
+            this.packageInfo = [:]
+
+            if (this._manifestObject["name"]) {
+                this.packageInfo["name"] = this._manifestObject["name"]
+            }
+            if (this._manifestObject["id"]) {
+                this.packageInfo["id"] = this._manifestObject["id"]
+            }
+            if (this._manifestObject["title"]) {
+                this.packageInfo["title"] = this._manifestObject["title"]
+            }
+            if (this._manifestObject["description"]) {
+                this.packageInfo["description"] = this._manifestObject["description"]
+            }
+            if (this._manifestObject["version"]) {
+                this.packageInfo["version"] = this._manifestObject["version"]
+                this.packageInfo['versionTrunks'] = Utils.parseSemanticVersion(this._manifestObject["version"])
+            }
+        }
+    }
+
+    /**
      * Calls {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupStageArguments)} to setup the build.
      *
      * @Stages
@@ -602,6 +687,19 @@ class GenericPipeline extends Pipeline {
         createStage(
             name: 'Init Generic Pipeline',
             stage: {
+                if (arguments.manifest) {
+                    this.manifest = arguments.manifest
+                }
+                this._readPackageManifest()
+                if (this.packageInfo) {
+                    if (this.packageInfo['id']) {
+                        this.setPackageName(this.packageInfo['id'] )
+                    }
+                    if (this.packageInfo['version']) {
+                        this.setVersion(this.packageInfo['version'] )
+                    }
+                }
+
                 if (arguments.github) {
                     this.steps.echo "Init github configurations ..."
                     this.github.init(arguments.github)
@@ -1579,7 +1677,7 @@ class GenericPipeline extends Pipeline {
         }
 
         log.fine("Uploading artifacts ${artifacts} to ${baseTargetPath}")
-        Map uploadSpec = steps.readJSON text: '{"files":[]}'
+        Map uploadSpec = this.steps.readJSON text: '{"files":[]}'
         Map<String, String> baseMacros = getBuildStringMacros()
         artifacts.each { artifact ->
             log.fine("- pattern ${artifact}")
@@ -1752,7 +1850,7 @@ class GenericPipeline extends Pipeline {
                     if (arguments.bumpVersion) {
                         arguments.bumpVersion()
                     } else {
-                        this.bumpVersion()
+                        this.bumpVersion(arguments.name)
                     }
                 } else {
                     this.steps.echo "No need to bump version."
@@ -1802,8 +1900,79 @@ class GenericPipeline extends Pipeline {
      * <p>For example, npm package should use `npm version patch` to bump, and gradle project should
      * update the {@code version} definition in {@code "gradle.properties"}.</p>
      */
-    protected void bumpVersion() {
-        log.warning('This method should be overridden.')
+    protected void bumpVersion(String releaseName) {
+        def branch = this.github.branch
+        if (!branch) {
+            // try to detect branch name
+            this.github.initFromFolder()
+            branch = this.github.branch
+        }
+        if (!branch) {
+            throw new ReleaseStageException('Unable to determine branch name to for version bump.', releaseName)
+        }
+        if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
+            throw new ReleaseStageException('Version is not successfully extracted from project.', releaseName)
+        }
+        if (!this.manifest || !this._manifestFormat || !this._manifestObject) {
+            throw new ReleaseStageException('No manifest file found, could not update version.', releaseName)
+        }
+
+        String newSemVer = ''
+
+        // get temp folder for cloning
+        def tempFolder = ".tmp-generic-${Utils.getTimestamp()}"
+        def oldBranch = this.github.getBranch()
+        def oldFolder = this.github.getFolder()
+
+        this.steps.echo "Cloning ${branch} into ${tempFolder} ..."
+        // clone to temp folder
+        this.github.cloneRepository([
+            'branch'   : branch,
+            'folder'   : tempFolder
+        ])
+        if (!this.github.isClean()) {
+            throw new ReleaseStageException('Git working directory not clean.', releaseName)
+        }
+
+        this.steps.echo "Making a patch version bump ..."
+        this.steps.dir(tempFolder) {
+            newSemVer = Utils.interpretSemanticVersionBump(this.packageInfo['versionTrunks'], 'PATCH')
+            if (this._manifestFormat == "json") {
+                this.steps.sh "sed -e 's#\"version\": \\{0,\\}\"[^\"]\\{5,\\}\"#\"version\": \"${newSemVer}\"#' ${this.manifest} > .${this.manifest}.tmp"
+            } else if (this._manifestFormat == "yaml") {
+                this.steps.sh "sed -e 's#^version:.*\$#version: ${newSemVer}#' ${this.manifest} > .${this.manifest}.tmp"
+            }
+
+            // compare if we successfully bumped the version
+            String beforeConvert = steps.readFile "${this.manifest}"
+            String afterConvert = steps.readFile ".${this.manifest}.tmp"
+            log.finer("Before convert:\n${beforeConvert}")
+            log.finer("After convert:\n${afterConvert}")
+            if (beforeConvert == afterConvert) {
+                throw new ReleaseStageException('Version bump is not successfully.', releaseName)
+            }
+
+            // replace version
+            steps.sh "mv .${this.manifest}.tmp ${this.manifest}"
+        }
+
+        // commit
+        this.github.commit(newSemVer)
+
+        // push version changes
+        this.steps.echo "Pushing ${branch} to remote ..."
+        this.github.push()
+        if (!this.github.isSynced()) {
+            throw new ReleaseStageException('Branch is not synced with remote after version bump .', releaseName)
+        }
+
+        // remove temp folder
+        this.steps.echo "Removing temporary folder ${tempFolder} ..."
+        this.steps.sh "rm -fr ${tempFolder}"
+
+        // set values back
+        this.github.setBranch(oldBranch)
+        this.github.setFolder(oldFolder)
     }
 
     /**

@@ -47,6 +47,13 @@ class GenericSetupStageArguments extends SetupStageArguments {
     StageTimeout initForGeneric = [time: 1, unit: TimeUnit.MINUTES]
 
     /**
+     * Manifest file name/path
+     *
+     * <p>Set to file path if the repository has Zowe manifest file. This is optional. By default, the Generic pipeline will try manifest.json, manifest.yaml or manifest.yml in root directory.</p>
+     */
+    String manifest = ''
+
+    /**
      * Github configurations
      *
      * <p>Use configurations defined at {@link jenkins_shared_library.scm.GitHub#init(Map)}.</p>
