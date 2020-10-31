@@ -145,11 +145,27 @@ class GenericPipeline extends Pipeline {
     Map packageInfo
 
     /**
-     * Version file name/path
+     * Manifest file name/path
      *
-     * <p>Set to file path if the repository has version file. Currently we only support version files only contains sematic version as content.</p>
+     * <p>Set to file path if the repository has Zowe manifest file. This is optional. By default, the Generic pipeline will try manifest.json, manifest.yaml or manifest.yml in root directory.</p>
      */
-    String versionFile;
+    String manifest;
+
+    /**
+     * Format of manifest file.
+     *
+     * <p>The value could be json or yaml.</p>
+     *
+     * <p>The value is calculated based on manifest file name.</p>
+     */
+    protected String _manifestFormat;
+
+    /**
+     * Object of manifest.
+     *
+     * <p>The value is calculated based on manifest file content.</p>
+     */
+    protected Map _manifestObject;
 
     /**
      * The full version pattern when the pipeline try to publish artifacts.
@@ -561,6 +577,61 @@ class GenericPipeline extends Pipeline {
     }
 
     /**
+     * Read manifest file if exists and fill in packageInfo.
+     */
+    protected _readPackageManifest() {
+        // find/check manifest file
+        if (this.manifest) {
+            if (!this.steps.fileExists(this.manifest)) {
+                throw new SetupStageException("Manifest file ${this.manifest} doesn't exist")
+            }
+        } else if (this.steps.fileExists("manifest.json")) {
+            this.manifest = "manifest.json"
+        } else if (this.steps.fileExists("manifest.yaml")) {
+            this.manifest = "manifest.yaml"
+        } else if (this.steps.fileExists("manifest.yml")) {
+            this.manifest = "manifest.yml"
+        }
+
+        if (!this.manifest) {
+            return
+        }
+
+        // determine manifest format
+        if (this.manifest.endsWith(".json")) {
+            protected this._manifestFormat = "json"
+        } else if (this.manifest.endsWith(".yaml") || this.manifest.endsWith(".yml")) {
+            protected this._manifestFormat = "yaml"
+        } else {
+            throw new SetupStageException("Unknown manifest format ${this.manifest}")
+        }
+
+        // read file
+        protected if (this._manifestFormat == "json") {
+            this._manifestObject = readJSON(file: this.manifest)
+        protected } else if (this._manifestFormat == "yaml") {
+            this._manifestObject = readYaml(file: this.manifest)
+        }
+        log.fine("Manifest: ${this._manifestObject}")
+
+        // import information we need
+        if (this._manifestObject) {
+            this.packageInfo = [:]
+
+            if (this._manifestObject["name"]) {
+                this.packageInfo["name"] = this._manifestObject["name"]
+            }
+            if (this._manifestObject["description"]) {
+                this.packageInfo["description"] = this._manifestObject["description"]
+            }
+            if (this._manifestObject["version"]) {
+                this.packageInfo["version"] = this._manifestObject["version"]
+                this.packageInfo['versionTrunks'] = Utils.parseSemanticVersion(this._manifestObject["version"])
+            }
+        }
+    }
+
+    /**
      * Calls {@link jenkins_shared_library.pipelines.base.Pipeline#setupBase(jenkins_shared_library.pipelines.base.arguments.SetupStageArguments)} to setup the build.
      *
      * @Stages
@@ -645,14 +716,12 @@ class GenericPipeline extends Pipeline {
                     ])
                 }
 
-                // save version file for release step
-                this.versionFile = arguments.versionFile
-                if (arguments.versionFile) {
-                    if (!this.steps.fileExists(this.versionFile)) {
-                        throw new SetupStageException("Version file ${this.versionFile} doesn't exist")
-                    }
-                    // extract version from version file
-                    this.setVersion(this.steps.sh(script: "cat ${this.versionFile}", returnStdout: true).trim())
+                if (arguments.manifest) {
+                    this.manifest = arguments.manifest
+                }
+                this._readPackageManifest()
+                if (this.packageInfo && this.packageInfo['version']) {
+                    this.setVersion(this.packageInfo['version'] )
                 }
 
                 if (arguments.extraInit) {
@@ -1820,10 +1889,6 @@ class GenericPipeline extends Pipeline {
      * update the {@code version} definition in {@code "gradle.properties"}.</p>
      */
     protected void bumpVersion(String releaseName) {
-        // log.warning('This method should be overridden.')
-        if (!this.versionFile) {
-            throw new ReleaseStageException('Generic pipeline requires versionFile to perform a release', releaseName)
-        }
         def branch = this.github.branch
         if (!branch) {
             // try to detect branch name
@@ -1835,6 +1900,9 @@ class GenericPipeline extends Pipeline {
         }
         if (!this.packageInfo || !this.packageInfo['versionTrunks']) {
             throw new ReleaseStageException('Version is not successfully extracted from project.', releaseName)
+        }
+        if (!this.manifest || !this._manifestFormat || !this._manifestObject) {
+            throw new ReleaseStageException('No manifest file found, could not update version.', releaseName)
         }
 
         String newSemVer = ''
@@ -1857,11 +1925,16 @@ class GenericPipeline extends Pipeline {
         this.steps.echo "Making a patch version bump ..."
         this.steps.dir(tempFolder) {
             newSemVer = Utils.interpretSemanticVersionBump(this.packageInfo['versionTrunks'], 'PATCH')
-            this.steps.writeFile file: "${this.versionFile}.tmp", text: newSemVer
+            this._manifestObject["version"] = newSemVer
+            if (this._manifestFormat == "json") {
+                writeJSON file: ".${this.manifest}.tmp", json: this._manifestObject
+            } else if (this._manifestFormat == "yaml") {
+                writeYaml file: ".${this.manifest}.tmp", data: this._manifestObject
+            }
 
             // compare if we successfully bumped the version
-            String beforeConvert = steps.readFile "${this.versionFile}"
-            String afterConvert = steps.readFile ".${this.versionFile}.tmp"
+            String beforeConvert = steps.readFile "${this.manifest}"
+            String afterConvert = steps.readFile ".${this.manifest}.tmp"
             log.finer("Before convert:\n${beforeConvert}")
             log.finer("After convert:\n${afterConvert}")
             if (beforeConvert == afterConvert) {
@@ -1869,7 +1942,7 @@ class GenericPipeline extends Pipeline {
             }
 
             // replace version
-            steps.sh "mv .${this.versionFile}.tmp ${this.versionFile}"
+            steps.sh "mv .${this.manifest}.tmp ${this.manifest}"
         }
 
         // commit

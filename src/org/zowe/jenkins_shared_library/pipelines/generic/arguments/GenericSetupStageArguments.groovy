@@ -47,11 +47,11 @@ class GenericSetupStageArguments extends SetupStageArguments {
     StageTimeout initForGeneric = [time: 1, unit: TimeUnit.MINUTES]
 
     /**
-     * Version file name/path
+     * Manifest file name/path
      *
-     * <p>Set to file path if the repository has version file. Currently we only support version files only contains sematic version as content.</p>
+     * <p>Set to file path if the repository has Zowe manifest file. This is optional. By default, the Generic pipeline will try manifest.json, manifest.yaml or manifest.yml in root directory.</p>
      */
-    String versionFile = ''
+    String manifest = ''
 
     /**
      * Github configurations
