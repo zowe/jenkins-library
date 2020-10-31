@@ -609,9 +609,9 @@ class GenericPipeline extends Pipeline {
 
         // read file
         if (this._manifestFormat == "json") {
-            this._manifestObject = readJSON file: this.manifest
+            this._manifestObject = this.steps.readJSON file: this.manifest
         } else if (this._manifestFormat == "yaml") {
-            this._manifestObject = readYaml file: this.manifest
+            this._manifestObject = this.steps.readYaml file: this.manifest
         }
         log.fine("Manifest: ${this._manifestObject}")
 
@@ -1677,7 +1677,7 @@ class GenericPipeline extends Pipeline {
         }
 
         log.fine("Uploading artifacts ${artifacts} to ${baseTargetPath}")
-        Map uploadSpec = steps.readJSON text: '{"files":[]}'
+        Map uploadSpec = this.steps.readJSON text: '{"files":[]}'
         Map<String, String> baseMacros = getBuildStringMacros()
         artifacts.each { artifact ->
             log.fine("- pattern ${artifact}")
