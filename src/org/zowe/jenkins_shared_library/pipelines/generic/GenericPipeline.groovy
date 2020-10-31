@@ -1940,7 +1940,7 @@ class GenericPipeline extends Pipeline {
             if (this._manifestFormat == "json") {
                 this.steps.sh "sed -e 's#\"version\": \\{0,\\}\"[^\"]\\{5,\\}\"#\"version\": \"${newSemVer}\"#' ${this.manifest} > .${this.manifest}.tmp"
             } else if (this._manifestFormat == "yaml") {
-                this.steps.sh "sed -e \"s#^version:.*\\\$#version: ${newSemVer}#\" ${this.manifest} > .${this.manifest}.tmp"
+                this.steps.sh "sed -e 's#^version:.*$#version: ${newSemVer}#' ${this.manifest} > .${this.manifest}.tmp"
             }
 
             // compare if we successfully bumped the version
