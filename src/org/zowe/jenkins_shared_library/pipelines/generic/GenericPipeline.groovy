@@ -609,9 +609,9 @@ class GenericPipeline extends Pipeline {
 
         // read file
         if (this._manifestFormat == "json") {
-            this._manifestObject = readJSON(file: this.manifest)
+            this._manifestObject = readJSON file: this.manifest
         } else if (this._manifestFormat == "yaml") {
-            this._manifestObject = readYaml(file: this.manifest)
+            this._manifestObject = readYaml file: this.manifest
         }
         log.fine("Manifest: ${this._manifestObject}")
 
