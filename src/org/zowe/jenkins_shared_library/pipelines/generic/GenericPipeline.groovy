@@ -600,9 +600,9 @@ class GenericPipeline extends Pipeline {
 
         // determine manifest format
         if (this.manifest.endsWith(".json")) {
-            protected this._manifestFormat = "json"
+            this._manifestFormat = "json"
         } else if (this.manifest.endsWith(".yaml") || this.manifest.endsWith(".yml")) {
-            protected this._manifestFormat = "yaml"
+            this._manifestFormat = "yaml"
         } else {
             throw new SetupStageException("Unknown manifest format ${this.manifest}")
         }
