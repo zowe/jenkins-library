@@ -579,7 +579,7 @@ class GenericPipeline extends Pipeline {
     /**
      * Read manifest file if exists and fill in packageInfo.
      */
-    protected _readPackageManifest() {
+    protected void _readPackageManifest() {
         // find/check manifest file
         if (this.manifest) {
             if (!this.steps.fileExists(this.manifest)) {
@@ -608,9 +608,9 @@ class GenericPipeline extends Pipeline {
         }
 
         // read file
-        protected if (this._manifestFormat == "json") {
+        if (this._manifestFormat == "json") {
             this._manifestObject = readJSON(file: this.manifest)
-        protected } else if (this._manifestFormat == "yaml") {
+        } else if (this._manifestFormat == "yaml") {
             this._manifestObject = readYaml(file: this.manifest)
         }
         log.fine("Manifest: ${this._manifestObject}")
