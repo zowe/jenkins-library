@@ -621,6 +621,12 @@ class GenericPipeline extends Pipeline {
             if (this._manifestObject["name"]) {
                 this.packageInfo["name"] = this._manifestObject["name"]
             }
+            if (this._manifestObject["id"]) {
+                this.packageInfo["id"] = this._manifestObject["id"]
+            }
+            if (this._manifestObject["title"]) {
+                this.packageInfo["title"] = this._manifestObject["title"]
+            }
             if (this._manifestObject["description"]) {
                 this.packageInfo["description"] = this._manifestObject["description"]
             }
