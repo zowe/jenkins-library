@@ -1900,6 +1900,15 @@ class GenericPipeline extends Pipeline {
      * <p>For example, npm package should use `npm version patch` to bump, and gradle project should
      * update the {@code version} definition in {@code "gradle.properties"}.</p>
      */
+    protected void bumpVersion() {
+        log.warning('This method should be overridden.')
+    }
+
+    /**
+     * This method should be overridden to properly bump version in different kind of project.
+     *
+     * <p>The parameter releaseName is actually for ReleaseStageException. There is not other usage of it.</p>
+     */
     protected void bumpVersion(String releaseName) {
         def branch = this.github.branch
         if (!branch) {
