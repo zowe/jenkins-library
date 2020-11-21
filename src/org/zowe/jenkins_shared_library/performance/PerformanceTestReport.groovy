@@ -73,7 +73,7 @@ class PerformanceTestReport {
      */
     void generateCpuChartHtmlReport(reportFile) throws InvalidArgumentException {
         def report = steps.readYaml(file: reportFile)
-        if (!testsReport || !testsReport.tests) {
+        if (!report || !report.tests) {
             throw new InvalidArgumentException("Invalid report doesn't have tests")
         }
 
@@ -258,7 +258,7 @@ class PerformanceTestReport {
      */
     void updatePlot(reportFile) throws InvalidArgumentException {
         def report = steps.readYaml(file: reportFile)
-        if (!testsReport || !testsReport.tests) {
+        if (!report || !report.tests) {
             throw new InvalidArgumentException("Invalid report doesn't have tests")
         }
 
