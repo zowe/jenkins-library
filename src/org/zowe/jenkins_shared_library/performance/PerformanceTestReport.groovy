@@ -175,6 +175,7 @@ class PerformanceTestReport {
         def totalRows = csvRowIndexes.size()
         def csvColumnsMap = [:]
         def csvRowIndexesMap = [:]
+        def i = 0
         for (i = 0; i < totalCols; i++) {
             csvColumnsMap["${csvColumns[i]}".toString()] = i
         }
