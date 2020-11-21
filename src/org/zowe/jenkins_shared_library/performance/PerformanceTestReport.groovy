@@ -133,7 +133,7 @@ class PerformanceTestReport {
         if (!testReport || !testReport.name) {
             throw new InvalidArgumentException("Invalid test doesn't have a name")
         }
-        steps.echo "Generating CPU Time Chart for test ${test.name} ..."
+        steps.echo "Generating CPU Time Chart for test ${testReport.name} ..."
         if (!testReport["serverMetrics"] || testReport["serverMetrics"].size() == 0) {
             steps.echo "- no server side metrics found"
             return [:]
