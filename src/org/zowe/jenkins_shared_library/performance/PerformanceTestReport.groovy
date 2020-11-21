@@ -72,7 +72,7 @@ class PerformanceTestReport {
      * @return Map     contains: sanitizedName, html, js
      */
     void generateCpuChartHtmlReport(reportFile) throws InvalidArgumentException {
-        def report = this.readYaml(file: reportFile)
+        def report = steps.readYaml(file: reportFile)
         if (!testsReport || !testsReport.tests) {
             throw new InvalidArgumentException("Invalid report doesn't have tests")
         }
@@ -257,7 +257,7 @@ class PerformanceTestReport {
      * @param reportFile     report yaml file
      */
     void updatePlot(reportFile) throws InvalidArgumentException {
-        def report = this.readYaml(file: reportFile)
+        def report = steps.readYaml(file: reportFile)
         if (!testsReport || !testsReport.tests) {
             throw new InvalidArgumentException("Invalid report doesn't have tests")
         }
