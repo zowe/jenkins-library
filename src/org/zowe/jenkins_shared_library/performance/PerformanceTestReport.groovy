@@ -314,7 +314,7 @@ class PerformanceTestReport {
                 group: 'Performance Dashoard',
                 numBuilds: '20',
                 style: 'line',
-                title: "${testReport.name}",
+                title: "${testReport.name} - CPU",
                 yaxis: 'CPU %'
         }
 
@@ -341,8 +341,8 @@ class PerformanceTestReport {
                 group: 'Performance Dashoard',
                 numBuilds: '20',
                 style: 'line',
-                title: "${testReport.name}",
-                yaxis: 'Requests/s'
+                title: "${testReport.name} - RPS",
+                yaxis: 'Requests / seconds'
         }
     }
 }
