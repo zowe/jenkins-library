@@ -224,7 +224,7 @@ class PerformanceTestReport {
             csvContent.add(it.join(","))
         }
         steps.echo csvContent.join("\n")
-        steps.writeFile file: "${csvFile}", text: csvContent.join("\n")
+        steps.writeFile file: "${this.reportDir}/${csvFile}", text: csvContent.join("\n")
 
         // html report
         result['html'] = "<h2>${testReport.name}</h2>\n" +
