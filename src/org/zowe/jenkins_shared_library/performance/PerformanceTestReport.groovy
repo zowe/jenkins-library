@@ -296,7 +296,7 @@ class PerformanceTestReport {
             plotFile = "plot-" + sanitizedTestName + "-cpu-build.csv"
             plotCsvContent = []
             plotCsvContent.push('"Build","Average CPU %","Total CPU Time","Duration"')
-            plotCsvContent.push("${BUILD_NUMBER},${testReport.result.total_cpu_percentage_from_server_metrics},${testReport.result.total_cpu_time_from_server_metrics},${testReport.result.total_time_elapse_from_server_metrics}")
+            plotCsvContent.push("${steps.env.BUILD_NUMBER},${testReport.result.total_cpu_percentage_from_server_metrics},${testReport.result.total_cpu_time_from_server_metrics},${testReport.result.total_time_elapse_from_server_metrics}")
 
             // write plot file
             steps.echo "- writing ${plotFile} ..."
@@ -323,7 +323,7 @@ class PerformanceTestReport {
             plotFile = "plot-" + sanitizedTestName + "-rps-build.csv"
             plotCsvContent = []
             plotCsvContent.push('"Build","Request per Second"')
-            plotCsvContent.push("${BUILD_NUMBER},${testReport.result.requests_per_second}")
+            plotCsvContent.push("${steps.env.BUILD_NUMBER},${testReport.result.requests_per_second}")
 
             // write plot file
             steps.echo "- writing ${plotFile} ..."
