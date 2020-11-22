@@ -104,7 +104,7 @@ class PerformanceTestReport {
 
         if (testIndex > 0) {
             // write test report
-            this.echo "Saving HTML report"
+            steps.echo "Saving HTML report"
             htmlReport += "<script src=\"main.js\"></script>\n" +
                 "</body>\n" +
                 "</html>"
