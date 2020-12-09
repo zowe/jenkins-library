@@ -16,7 +16,7 @@ def TEST_BRANCH      = 'master'
 // the folder name where the repository will be cloned to
 def CLONE_DIRECTORY  = '.tmp-git'
 
-node ('ibm-jenkins-slave-nvm') {
+node ('zowe-jenkins-agent') {
     /**
      * Initialize github object
      */

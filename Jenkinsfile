@@ -58,7 +58,7 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-node('ibm-jenkins-slave-nvm') {
+node('zowe-jenkins-agent') {
   currentBuild.result = 'SUCCESS'
 
   try {

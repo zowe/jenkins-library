@@ -25,7 +25,7 @@ def EXPECTED_REGISTRY = 'https://zowe.jfrog.io/zowe/api/npm/npm-local-release/'
 
 def lastVersionChecked
 
-node ('ibm-jenkins-slave-nvm') {
+node ('zowe-jenkins-agent') {
     /**
      * Initialize npm registry and github object
      */
