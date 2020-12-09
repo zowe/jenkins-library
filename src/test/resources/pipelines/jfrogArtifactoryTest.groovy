@@ -15,7 +15,7 @@ Integer testPropValue     = 1
 String snapshotArtifact   = "libs-snapshot-local/org/zowe/jenkins-library-test/${testRemoteArtifact}"
 String releaseFolder      = "libs-release-local/org/zowe/jenkins-library-test/"
 
-node ('ibm-jenkins-slave-nvm') {
+node ('zowe-jenkins-agent') {
     /**
      * Initialize JFrogArtifactory object
      */

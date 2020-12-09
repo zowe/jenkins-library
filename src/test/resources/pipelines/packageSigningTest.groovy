@@ -11,7 +11,7 @@ def signing
 // test constants
 String TEST_ASCII_FILE    = "test-ascii.txt"
 
-node ('ibm-jenkins-slave-nvm') {
+node ('zowe-jenkins-agent') {
     /**
      * Initialize package/Signing object
      */

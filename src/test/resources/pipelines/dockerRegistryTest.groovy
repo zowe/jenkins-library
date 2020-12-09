@@ -20,7 +20,7 @@ def TEST_IMAGE        = "${env.DOCKER_IMAGE_REPFIX}/${TEST_REPORSITORY}"
 def TEST_TAG          = "${env.JOB_NAME}-${env.BUILD_NUMBER}".replaceAll(/[^0-9a-zA-Z\-]/, '-')
 
 // requires DinD image
-node ('ibm-jenkins-slave-dind') {
+node ('zowe-jenkins-agent-dind') {
     /**
      * Initialize docker registry and github object
      */
