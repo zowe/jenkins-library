@@ -933,6 +933,19 @@ class JFrogArtifactory implements ArtifactInterface {
         if (definition.containsKey('excludePatterns')) {
             result['excludePatterns'] = definition['excludePatterns']
         }
+        // jfrog cli shows warning of deprecation:
+        // [Warn] The --exclude-patterns command option and the 'excludePatterns' File Spec property are deprecated.
+        //         Please use the --exclusions command option or the 'exclusions' File Spec property instead.
+        //         Unlike exclude-patterns, exclusions take into account the repository as part of the pattern.
+        //         For example:
+        //         "excludePatterns": ["a.zip"]
+        //         can be translated to
+        //         "exclusions": ["repo-name/a.zip"]
+        //         or
+        //         "exclusions": ["*/a.zip"]
+        if (definition.containsKey('exclusions')) {
+            result['exclusions'] = definition['exclusions']
+        }
         // always flat
         result['flat'] = 'true'
         result['pattern'] = ''
