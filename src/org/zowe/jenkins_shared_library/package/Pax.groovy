@@ -459,7 +459,7 @@ exit 0
 EOF"""
                         } catch (ex3) {
                             // ignore errors for cleaning up
-                            this.log.finer("${func} running catch-all hooks failed: ${ex2}")
+                            this.log.finer("${func} running catch-all hooks failed: ${ex3}")
                         }
 
                         try {
