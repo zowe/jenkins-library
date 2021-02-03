@@ -69,7 +69,7 @@ class SonarScanStageArguments extends GenericStageArguments {
      *
      * @Note This requires nvm installed on the build image.
      */
-    String nodeJsVersion = 'v10.23.2'
+    String nodeJsVersion = 'v10.18.1'
 
     /**
      * Path to nvm init script.
