@@ -54,7 +54,7 @@ class SonarScanStageArguments extends GenericStageArguments {
     String scannerServer
 
     /**
-     * Customize JAVA_HOME for sonar scan if the default JDK is not supported
+     * Customize JAVA_HOME for sonar scan if the default JDK is not supported.
      *
      * @Note This default value is where we put JDK v11 in zowe-jenkins-agent
      *       build image. Pipelines are not using this base image should
@@ -63,6 +63,20 @@ class SonarScanStageArguments extends GenericStageArguments {
      * @default {@code /usr/java/openjdk-11}
      */
     String javaHome = '/usr/java/openjdk-11'
+
+    /**
+     * Customize Node.JS version for sonar scan if the default version is not supported.
+     *
+     * @Note This requires nvm installed on the build image.
+     */
+    String nodeJsVersion = 'v10.23.2'
+
+    /**
+     * Path to nvm init script.
+     *
+     * @default {@code /home/jenkins/.nvm/nvm.sh}
+     */
+    String nvmInitScript = '/home/jenkins/.nvm/nvm.sh'
 
     /**
      * If the SonarQube server support branch scan.
