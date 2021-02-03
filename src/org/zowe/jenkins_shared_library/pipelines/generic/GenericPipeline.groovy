@@ -1237,13 +1237,13 @@ class GenericPipeline extends Pipeline {
                             def extraEnvironments = ""
                             if (arguments.javaHome) {
                                 // warning The version of Java (1.8.0_242) you have used to run this analysis is deprecated and we will stop accepting it from October 2020. Please update to at least Java 11.
-                                extraEnvironments = "JAVA_HOME=${arguments.javaHome} && PATH=\${JAVA_HOME}/bin:\$PATH && "
+                                extraEnvironments = "JAVA_HOME=${arguments.javaHome}\nPATH=\${JAVA_HOME}/bin:\$PATH\n"
                             }
                             if (arguments.nodeJsVersion && arguments.nvmInitScript) {
                                 // The version of node.js (8) you have used to run this analysis is deprecated and we stopped accepting it. Please update to at least node.js 10.
                                 // Temporarily you can set the property 'sonar.scanner.force-deprecated-node-version-grace-period' to 'true' to continue using node.js 8
                                 // This will only work until Mon Feb 15 08:00:00 UTC 2021, afterwards all scans will fail.
-                                extraEnvironments += ". ${arguments.nvmInitScript} && nvm install ${arguments.nodeJsVersion} && nvm use ${arguments.nodeJsVersion} && "
+                                extraEnvironments += "set +x\n. ${arguments.nvmInitScript}\nnvm install ${arguments.nodeJsVersion}\nnvm use ${arguments.nodeJsVersion}\nset -x\n"
                             }
                             this.steps.sh "${extraEnvironments}${scannerHome}/bin/sonar-scanner"
 
