@@ -1234,7 +1234,11 @@ class GenericPipeline extends Pipeline {
                     steps.timeout(time: 1, unit: 'HOURS') {
                         def scannerHome = this.steps.tool arguments.scannerTool
                         this.steps.withSonarQubeEnv(arguments.scannerServer) {
-                            this.steps.sh "${scannerHome}/bin/sonar-scanner"
+                            def scanCommand = "${scannerHome}/bin/sonar-scanner"
+                            if (arguments.javaHome) {
+                                scanCommand = "JAVA_HOME=${arguments.javaHome} && PATH=\${JAVA_HOME}/bin:\$PATH && ${scanCommand}"
+                            }
+                            this.steps.sh scanCommand
 
                             if (arguments.failBuild) {
                                 // fail build on quality gate failure

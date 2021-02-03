@@ -54,6 +54,17 @@ class SonarScanStageArguments extends GenericStageArguments {
     String scannerServer
 
     /**
+     * Customize JAVA_HOME for sonar scan if the default JDK is not supported
+     *
+     * @Note This default value is where we put JDK v11 in zowe-jenkins-agent
+     *       build image. Pipelines are not using this base image should
+     *       customize this value to match their environment.
+     *
+     * @default {@code /usr/java/openjdk-11}
+     */
+    String javaHome = '/usr/java/openjdk-11'
+
+    /**
      * If the SonarQube server support branch scan.
      *
      * @Note If enable branch scan on a SonarQube server which doesn't support,
