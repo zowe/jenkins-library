@@ -125,11 +125,20 @@ node ('zowe-jenkins-agent') {
             error 'Pull request is not created.'
         }
         echo "Pull request #${prId} is created."
+        echo "[GITHUB_TEST] creating pull request successfully"
 
+        // get this pr to verify
+        Map prOutput = github.getPullRequest(prId)
+        if (${prOutput.number} == prId) {
+            echo "PR number is ${prOutput.number}"
+            echo "[GITHUB_TEST] getting pull request successfully"
+        }
         // closing after test
         github.closePullRequest(prId)
+        echo "[GITHUB_TEST] closing pull request successfully"
+
         github.deleteRemoteBranch()
 
-        echo "[GITHUB_TEST] creating pull request successfully"
+       
     }
 }

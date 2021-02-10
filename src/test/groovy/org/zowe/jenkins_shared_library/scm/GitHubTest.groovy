@@ -83,7 +83,17 @@ GITHUB_CREDENTIAL=${System.getProperty('github.credential')}
     }
 
     @Test
-    void testPullRequest() {
+    void testCreatePullRequest() {
         assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] creating pull request successfully'))
+    }
+
+    @Test
+    void testGetPullRequest() {
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] getting pull request successfully'))
+    }
+
+     @Test
+    void testClosePullRequest() {
+        assertThat('Build console log', buildLog, containsString('[GITHUB_TEST] closing pull request successfully'))
     }
 }
