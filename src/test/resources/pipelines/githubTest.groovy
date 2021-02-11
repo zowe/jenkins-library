@@ -129,10 +129,22 @@ node ('zowe-jenkins-agent') {
 
         // get this pr to verify
         Map prOutput = github.getPullRequest(prId)
-        if (${prOutput.number} == prId) {
+        if (!prOutput) {
+            error 'Get pull request failed.'
+        }
+        else if (prOutput.number == prId) {
             echo "PR number is ${prOutput.number}"
             echo "[GITHUB_TEST] getting pull request successfully"
+
+            // get correct user permission
+            String user = prOutput.user.login
+            boolean isUserWrite = isUserWriteCollaborator(user)
+            echo "user $user is a write collaborator: $isUserWrite"
+            if (isUserWrite) {
+                echo "[GITHUB_TEST] getting correct user permission from pull request successfully"
+            }
         }
+        
         // closing after test
         github.closePullRequest(prId)
         echo "[GITHUB_TEST] closing pull request successfully"
