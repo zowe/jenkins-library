@@ -138,7 +138,7 @@ node ('zowe-jenkins-agent') {
 
             // get correct user permission
             String user = prOutput.user.login
-            boolean isUserWrite = isUserWriteCollaborator(user)
+            boolean isUserWrite = github.isUserWriteCollaborator(user)
             echo "user $user is a write collaborator: $isUserWrite"
             if (isUserWrite) {
                 echo "[GITHUB_TEST] getting correct user permission from pull request successfully"
