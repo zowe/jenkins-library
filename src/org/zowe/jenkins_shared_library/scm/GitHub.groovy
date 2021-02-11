@@ -784,9 +784,10 @@ class GitHub {
             log.finer("fetching pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
 
             result = this.steps.readJSON text: resultText
-        }
-        if (!result || !result.containsKey('id')) {
-            throw new ScmException("Invalid Github API response \"${resultText}\"")
+        
+            if (!result || !result.containsKey('id')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
         }
 
         return result
@@ -850,10 +851,12 @@ class GitHub {
             log.finer("closing pull request #${args['pr']} on ${this.repository} response:\n${resultText}")
 
             result = this.steps.readJSON text: resultText
+            
+            if (!result || !result.containsKey('number')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
         }
-        if (!result || !result.containsKey('number')) {
-            throw new ScmException("Invalid Github API response \"${resultText}\"")
-        }
+        
 
         return true
     }
@@ -954,5 +957,65 @@ class GitHub {
         }
 
         return foundTag
+    }
+
+    String getPullRequestUser(Integer pr) {
+        Map pullRequestInfo = this.getPullRequest(pr)
+        return pullRequestInfo.user.login
+    }
+
+    Boolean isUserWriteCollaborator(String user) throws InvalidArgumentException, ScmException {
+        boolean isUserWrite = false
+
+        // validate arguments
+        if (!this.repository) {
+            throw new InvalidArgumentException('repository')
+        }
+        def repoSplit = this.repository.split('/')
+        if (repoSplit.size() !=  2) {
+            throw new InvalidArgumentException('repository', 'Repository should be in username/project format.')
+        }
+
+        if (!this.usernamePasswordCredential) {
+            throw new InvalidArgumentException('usernamePasswordCredential')
+        }
+        
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Determining if user $user is a collaborator and having write, maintain or admin access on ${this.repository}"
+
+            def cmd_getPermission = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                    " -X GET" +
+                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/collaborators/$user/permission\""
+            log.finer("github api curl: ${cmd_getPermission}")
+            def resultText = this.steps.sh(script: cmd_getPermission + ' 2>&1', returnStdout: true).trim()
+            log.finer("Getting user $user permission on ${this.repository}; response:\n${resultText}")
+            if (!resultText) {
+                throw new ScmException("Empty Github API response")
+            }
+            
+            def result = this.steps.readJSON text: resultText
+            if (result && result.containsKey('permission')) {
+                String permission = result.permission
+                //possible permission could be {Read, Triage, Write, Maintain, Admin}
+                this.steps.echo "User $user permission on ${this.repository} is $permission"
+                if (permission.equals("write") || permission.equals("maintain") || permission.equals("admin")) {
+                    isUserWrite = true
+                }
+            } else if (result && result.containsKey("message")) {
+                //{
+                //  "message": "wronguseridabcdef is not a user",
+                //  "documentation_url": "https://docs.github.com/rest/reference/repos#get-repository-permissions-for-a-user"
+                //}
+                this.steps.echo "${result.message}"
+            }
+        }
+        this.steps.echo "User $user is "+(isUserWrite ? "" : "not ")+"a permitted write collaborator"
+        return isUserWrite
     }
 }
