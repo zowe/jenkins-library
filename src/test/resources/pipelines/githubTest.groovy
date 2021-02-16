@@ -125,11 +125,32 @@ node ('zowe-jenkins-agent') {
             error 'Pull request is not created.'
         }
         echo "Pull request #${prId} is created."
+        echo "[GITHUB_TEST] creating pull request successfully"
 
+        // get this pr to verify
+        Map prOutput = github.getPullRequest(prId)
+        if (!prOutput) {
+            error 'Get pull request failed.'
+        }
+        else if (prOutput.number == prId) {
+            echo "PR number is ${prOutput.number}"
+            echo "[GITHUB_TEST] getting pull request successfully"
+
+            // get correct user permission
+            String user = prOutput.user.login
+            boolean isUserWrite = github.isUserWriteCollaborator(user)
+            echo "user $user is a write collaborator: $isUserWrite"
+            if (isUserWrite) {
+                echo "[GITHUB_TEST] getting correct user permission from pull request successfully"
+            }
+        }
+        
         // closing after test
         github.closePullRequest(prId)
+        echo "[GITHUB_TEST] closing pull request successfully"
+
         github.deleteRemoteBranch()
 
-        echo "[GITHUB_TEST] creating pull request successfully"
+       
     }
 }
