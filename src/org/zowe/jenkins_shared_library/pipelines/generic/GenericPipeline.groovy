@@ -710,6 +710,7 @@ class GenericPipeline extends Pipeline {
                         usernamePasswordCredential : GlobalConstants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
                     ])
                 }
+                this.github.initFromFolder()
                 if (arguments.githubTagPrefix) {
                     this.githubTagPrefix = arguments.githubTagPrefix
                 }
