@@ -258,6 +258,8 @@ class GenericPipeline extends Pipeline {
      */
     protected GenericPipelineControl _control = new GenericPipelineControl()
 
+    boolean isAuthorizedUser
+
     /**
      * Constructs the class.
      *
@@ -1432,13 +1434,16 @@ class GenericPipeline extends Pipeline {
         // }
 
         Integer causeID = Pipeline.build.getCause()
-        boolean isAllowed = false
+        this.isAuthorizedUser = false
         if (causeID == PipelineConstants.USERID_CAUSE_ID) {
-            isAllowed = true
+            this.isAuthorizedUser = true
         } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
             if (this.changeInfo.isPullRequest) {
-                isAllowed = isPRAuthorizedUser()
+                this.isAuthorizedUser = isPRAuthorizedUser()
             }
+        }
+        if (!this.isAuthorizedUser) {
+            preSetupException = new PackagingStageException("this.isAuthorizedUser is not true, user not authorized to run build", this.isAuthorizedUser)
         }
 
         def originalPackageName = arguments.name
