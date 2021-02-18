@@ -16,6 +16,7 @@ import hudson.tasks.test.AbstractTestResultAction
 @Grab('org.apache.commons:commons-text:1.6')
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4
 import org.zowe.jenkins_shared_library.Constants
+import org.zowe.jenkins_shared_library.pipelines.Constants as PipelineConstants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
 import hudson.model.Cause
 import hudson.triggers.TimerTrigger
@@ -186,23 +187,23 @@ class Build {
         def TIMER_CAUSE = _build.getBuildCauses('hudson.triggers.TimerTrigger$TimerTriggerCause')  // triggered by a timer
 
         if (BRANCHEVENT_CAUSE) {
-            return Constants.BRANCHEVENT_CAUSE_ID
+            return PipelineConstants.BRANCHEVENT_CAUSE_ID
         } 
         if (USERID_CAUSE) {
-            return Constants.USERID_CAUSE_ID
+            return PipelineConstants.USERID_CAUSE_ID
         }
         if (BRANCHINDEXING_CAUSE) {
-            return Constants.BRANCHINDEXING_CAUSE_ID
+            return PipelineConstants.BRANCHINDEXING_CAUSE_ID
         }
         if (REMOTE_CAUSE) {
-            return Constants.REMOTE_CAUSE_ID
+            return PipelineConstants.REMOTE_CAUSE_ID
         }
         if (UPSTREAM_CAUSE) {
-            return Constants.UPSTREAM_CAUSE_ID
+            return PipelineConstants.UPSTREAM_CAUSE_ID
         }
         if (TIMER_CAUSE) {
-            return Constants.TIMER_CAUSE_ID
+            return PipelineConstants.TIMER_CAUSE_ID
         } 
-        return Constants.UNKNOWN_CAUSE_ID
+        return PipelineConstants.UNKNOWN_CAUSE_ID
     }
 }
