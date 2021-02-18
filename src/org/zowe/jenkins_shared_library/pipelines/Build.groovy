@@ -16,6 +16,8 @@ import hudson.tasks.test.AbstractTestResultAction
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4
 import org.zowe.jenkins_shared_library.Constants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
+import hudson.model.Cause
+import hudson.triggers.TimerTrigger
 
 /**
  * This class extends Jenkins current build functions.
@@ -168,5 +170,37 @@ class Build {
         }
 
         return text
+    }
+
+    Integer getCause() {
+        def ALL_CAUSES = currentBuild.getBuildCauses()
+        echo "Build cause is $ALL_CAUSES"   
+
+        def BRANCHEVENT_CAUSE = currentBuild.getBuildCauses('jenkins.branch.BranchEventCause')           // PR is opened or updated
+        def USERID_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')                 // a Jenkins user starts a manual build
+        def BRANCHINDEXING_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$BranchIndexingCause') // by clicking 'Scan Repository Now'
+        def REMOTE_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$RemoteCause')
+        def UPSTREAM_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$UpstreamCause')             // triggered by an upstream pipeline
+        def TIMER_CAUSE = currentBuild.getBuildCauses('hudson.triggers.TimerTrigger$TimerTriggerCause')  // triggered by a timer
+
+        if (BRANCHEVENT_CAUSE) {
+            return Constants.BRANCHEVENT_CAUSE_ID
+        } 
+        if (USERID_CAUSE) {
+            return Constants.USERID_CAUSE_ID
+        }
+        if (BRANCHINDEXING_CAUSE) {
+            return Constants.BRANCHINDEXING_CAUSE_ID
+        }
+        if (REMOTE_CAUSE) {
+            return Constants.REMOTE_CAUSE_ID
+        }
+        if (UPSTREAM_CAUSE) {
+            return Constants.UPSTREAM_CAUSE_ID
+        }
+        if (TIMER_CAUSE) {
+            return Constants.TIMER_CAUSE_ID
+        } 
+        return Constants.UNKNOWN_CAUSE_ID
     }
 }

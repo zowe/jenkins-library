@@ -133,6 +133,8 @@ class Pipeline {
      */
     protected static final String _SETUP_STAGE_NAME = "Setup"
 
+    Build build
+    
     /**
      * Package name of the project
      *
@@ -669,6 +671,8 @@ class Pipeline {
 
         // prepare default configurations
         this.defineDefaultBranches()
+
+        this.build = new Build(steps.currentBuild)
 
         // Create the stage and hold the variable for the future
         Stage setup = createStage(

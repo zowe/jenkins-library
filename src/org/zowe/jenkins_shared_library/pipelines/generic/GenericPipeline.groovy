@@ -1431,6 +1431,16 @@ class GenericPipeline extends Pipeline {
         //     preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", arguments.name)
         // }
 
+        Integer causeID = Pipeline.build.getCause()
+        boolean isAllowed = false
+        if (causeID == PipelineConstants.USERID_CAUSE_ID) {
+            isAllowed = true
+        } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
+            if (this.changeInfo.isPullRequest) {
+                isAllowed = isPRAuthorizedUser()
+            }
+        }
+
         def originalPackageName = arguments.name
         // now arguments.name is used as stage name
         arguments.name = "Packaging: ${arguments.name}"
@@ -1517,6 +1527,20 @@ class GenericPipeline extends Pipeline {
      */
     protected void packaging(Map arguments) {
         packagingGeneric(arguments)
+    }
+
+    Boolean isPRAuthorizedUser() {
+        boolean isAuthorized = false
+        
+        String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
+        int prNumber = prNumberString as Integer   // convert to int
+        def user = this.github.getPullRequestUser(prNumber)
+        def allowed = this.github.isUserWriteCollaborator(user)
+        if (allowed) {
+            isAuthorized = true
+        }
+        
+        return isAuthorized
     }
 
     /**
