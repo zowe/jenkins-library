@@ -33,6 +33,7 @@ import hudson.triggers.TimerTrigger
  *     echo build.getTestSummary()
  * </pre>
  */
+@Log
 class Build {
     /**
      * Reference to the Jenkins build variable.
@@ -173,7 +174,6 @@ class Build {
         return text
     }
 
-    @Log
     Integer getCause() {
         def ALL_CAUSES = _build.getBuildCauses()
         logger.finer("Build cause is $ALL_CAUSES")
