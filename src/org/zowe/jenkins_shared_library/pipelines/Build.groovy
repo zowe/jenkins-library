@@ -10,6 +10,7 @@
 
 package org.zowe.jenkins_shared_library.pipelines
 
+import groovy.util.logging.Log
 import com.cloudbees.groovy.cps.NonCPS
 import hudson.tasks.test.AbstractTestResultAction
 @Grab('org.apache.commons:commons-text:1.6')
@@ -25,7 +26,7 @@ import hudson.triggers.TimerTrigger
  * @Example
  * <pre>
  *     // init Build instance
- *     def build = new Build(currentBuild)
+ *     def build = new Build(_build)
  *     // show change summary
  *     echo build.getChangeSummary()
  *     // show test summary
@@ -43,10 +44,10 @@ class Build {
      *
      * @Example
      * <pre>
-     * def build = new Build(currentBuild)
+     * def build = new Build(_build)
      * </pre>
      *
-     * @param build    Normally should be "currentBuild" (org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper)
+     * @param build    Normally should be "_build" (org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper)
      */
     Build(def build) {
         this._build = build
@@ -172,16 +173,17 @@ class Build {
         return text
     }
 
+    @Log
     Integer getCause() {
-        def ALL_CAUSES = currentBuild.getBuildCauses()
-        echo "Build cause is $ALL_CAUSES"   
+        def ALL_CAUSES = _build.getBuildCauses()
+        logger.finer("Build cause is $ALL_CAUSES")
 
-        def BRANCHEVENT_CAUSE = currentBuild.getBuildCauses('jenkins.branch.BranchEventCause')           // PR is opened or updated
-        def USERID_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')                 // a Jenkins user starts a manual build
-        def BRANCHINDEXING_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$BranchIndexingCause') // by clicking 'Scan Repository Now'
-        def REMOTE_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$RemoteCause')
-        def UPSTREAM_CAUSE = currentBuild.getBuildCauses('hudson.model.Cause$UpstreamCause')             // triggered by an upstream pipeline
-        def TIMER_CAUSE = currentBuild.getBuildCauses('hudson.triggers.TimerTrigger$TimerTriggerCause')  // triggered by a timer
+        def BRANCHEVENT_CAUSE = _build.getBuildCauses('jenkins.branch.BranchEventCause')           // PR is opened or updated
+        def USERID_CAUSE = _build.getBuildCauses('hudson.model.Cause$UserIdCause')                 // a Jenkins user starts a manual build
+        def BRANCHINDEXING_CAUSE = _build.getBuildCauses('hudson.model.Cause$BranchIndexingCause') // by clicking 'Scan Repository Now'
+        def REMOTE_CAUSE = _build.getBuildCauses('hudson.model.Cause$RemoteCause')
+        def UPSTREAM_CAUSE = _build.getBuildCauses('hudson.model.Cause$UpstreamCause')             // triggered by an upstream pipeline
+        def TIMER_CAUSE = _build.getBuildCauses('hudson.triggers.TimerTrigger$TimerTriggerCause')  // triggered by a timer
 
         if (BRANCHEVENT_CAUSE) {
             return Constants.BRANCHEVENT_CAUSE_ID
