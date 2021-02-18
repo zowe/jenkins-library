@@ -176,7 +176,7 @@ class Build {
 
     Integer getCause() {
         def ALL_CAUSES = _build.getBuildCauses()
-        logger.finer("Build cause is $ALL_CAUSES")
+        log.finer("Build cause is $ALL_CAUSES")
 
         def BRANCHEVENT_CAUSE = _build.getBuildCauses('jenkins.branch.BranchEventCause')           // PR is opened or updated
         def USERID_CAUSE = _build.getBuildCauses('hudson.model.Cause$UserIdCause')                 // a Jenkins user starts a manual build
