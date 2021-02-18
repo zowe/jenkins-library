@@ -26,7 +26,7 @@ import hudson.triggers.TimerTrigger
  * @Example
  * <pre>
  *     // init Build instance
- *     def build = new Build(_build)
+ *     def build = new Build(currentBuild)
  *     // show change summary
  *     echo build.getChangeSummary()
  *     // show test summary
@@ -45,10 +45,10 @@ class Build {
      *
      * @Example
      * <pre>
-     * def build = new Build(_build)
+     * def build = new Build(currentBuild)
      * </pre>
      *
-     * @param build    Normally should be "_build" (org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper)
+     * @param build    Normally should be "currentBuild" (org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper)
      */
     Build(def build) {
         this._build = build
@@ -66,7 +66,7 @@ class Build {
         String changeString = ""
 
         // Loop through each change present in the change set
-        for (def changeLog : this._build.changeSets) {
+        for (def changeLog : this.currentBuild.changeSets) {
             def browser = changeLog.browser
 
             // Add each item in the change set to the list
@@ -109,7 +109,7 @@ class Build {
      */
     @NonCPS
     String getTestSummary() {
-        def testResultAction = this._build.rawBuild.getAction(AbstractTestResultAction.class)
+        def testResultAction = this.currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
         def text = "<h3>Test Results</h3>"
 
         if (testResultAction != null) {
