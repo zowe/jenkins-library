@@ -67,7 +67,7 @@ class Build {
         String changeString = ""
 
         // Loop through each change present in the change set
-        for (def changeLog : this.currentBuild.changeSets) {
+        for (def changeLog : this._build.changeSets) {
             def browser = changeLog.browser
 
             // Add each item in the change set to the list
@@ -110,7 +110,7 @@ class Build {
      */
     @NonCPS
     String getTestSummary() {
-        def testResultAction = this.currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+        def testResultAction = this._build.rawBuild.getAction(AbstractTestResultAction.class)
         def text = "<h3>Test Results</h3>"
 
         if (testResultAction != null) {
