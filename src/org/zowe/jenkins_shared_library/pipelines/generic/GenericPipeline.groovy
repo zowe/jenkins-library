@@ -258,6 +258,8 @@ class GenericPipeline extends Pipeline {
      */
     protected GenericPipelineControl _control = new GenericPipelineControl()
 
+    boolean isAuthorizedUser
+
     /**
      * Constructs the class.
      *
@@ -1431,6 +1433,19 @@ class GenericPipeline extends Pipeline {
         //     preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", arguments.name)
         // }
 
+        Integer causeID = this.build.getCause()
+        this.isAuthorizedUser = false
+        if (causeID == PipelineConstants.USERID_CAUSE_ID) {
+            this.isAuthorizedUser = true
+        } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
+            if (this.changeInfo.isPullRequest) {
+                this.isAuthorizedUser = isPRAuthorizedUser()
+            }
+        }
+        if (!this.isAuthorizedUser) {
+            preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
+        }
+
         def originalPackageName = arguments.name
         // now arguments.name is used as stage name
         arguments.name = "Packaging: ${arguments.name}"
@@ -1517,6 +1532,14 @@ class GenericPipeline extends Pipeline {
      */
     protected void packaging(Map arguments) {
         packagingGeneric(arguments)
+    }
+
+    Boolean isPRAuthorizedUser() {
+        String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
+        int prNumber = prNumberString as Integer   // convert to int
+        def user = this.github.getPullRequestUser(prNumber)
+        
+        return this.github.isUserWriteCollaborator(user)
     }
 
     /**

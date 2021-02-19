@@ -10,12 +10,16 @@
 
 package org.zowe.jenkins_shared_library.pipelines
 
+import groovy.util.logging.Log
 import com.cloudbees.groovy.cps.NonCPS
 import hudson.tasks.test.AbstractTestResultAction
 @Grab('org.apache.commons:commons-text:1.6')
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4
 import org.zowe.jenkins_shared_library.Constants
+import org.zowe.jenkins_shared_library.pipelines.Constants as PipelineConstants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
+import hudson.model.Cause
+import hudson.triggers.TimerTrigger
 
 /**
  * This class extends Jenkins current build functions.
@@ -30,6 +34,7 @@ import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
  *     echo build.getTestSummary()
  * </pre>
  */
+@Log
 class Build {
     /**
      * Reference to the Jenkins build variable.
@@ -168,5 +173,37 @@ class Build {
         }
 
         return text
+    }
+
+    Integer getCause() {
+        def ALL_CAUSES = _build.getBuildCauses()
+        log.finer("Build cause is $ALL_CAUSES")
+
+        def BRANCHEVENT_CAUSE = _build.getBuildCauses('jenkins.branch.BranchEventCause')           // PR is opened or updated
+        def USERID_CAUSE = _build.getBuildCauses('hudson.model.Cause$UserIdCause')                 // a Jenkins user starts a manual build
+        def BRANCHINDEXING_CAUSE = _build.getBuildCauses('hudson.model.Cause$BranchIndexingCause') // by clicking 'Scan Repository Now'
+        def REMOTE_CAUSE = _build.getBuildCauses('hudson.model.Cause$RemoteCause')
+        def UPSTREAM_CAUSE = _build.getBuildCauses('hudson.model.Cause$UpstreamCause')             // triggered by an upstream pipeline
+        def TIMER_CAUSE = _build.getBuildCauses('hudson.triggers.TimerTrigger$TimerTriggerCause')  // triggered by a timer
+
+        if (BRANCHEVENT_CAUSE) {
+            return PipelineConstants.BRANCHEVENT_CAUSE_ID
+        } 
+        if (USERID_CAUSE) {
+            return PipelineConstants.USERID_CAUSE_ID
+        }
+        if (BRANCHINDEXING_CAUSE) {
+            return PipelineConstants.BRANCHINDEXING_CAUSE_ID
+        }
+        if (REMOTE_CAUSE) {
+            return PipelineConstants.REMOTE_CAUSE_ID
+        }
+        if (UPSTREAM_CAUSE) {
+            return PipelineConstants.UPSTREAM_CAUSE_ID
+        }
+        if (TIMER_CAUSE) {
+            return PipelineConstants.TIMER_CAUSE_ID
+        } 
+        return PipelineConstants.UNKNOWN_CAUSE_ID
     }
 }

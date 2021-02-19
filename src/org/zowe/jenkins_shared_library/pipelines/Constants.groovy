@@ -72,4 +72,15 @@ class Constants {
      * Default Docker image tag for non-release build. Default value is {@code "snapshot"}.
      */
     static String DEFAULT_DOCKER_NON_RELEASE_TAG = 'snapshot'
+
+    /**
+     * Build cause IDs
+     */
+    static Integer BRANCHEVENT_CAUSE_ID = 1
+    static Integer USERID_CAUSE_ID = 2
+    static Integer BRANCHINDEXING_CAUSE_ID = 3
+    static Integer REMOTE_CAUSE_ID = 4
+    static Integer UPSTREAM_CAUSE_ID = 5
+    static Integer TIMER_CAUSE_ID = 6
+    static Integer UNKNOWN_CAUSE_ID = -1
 }
