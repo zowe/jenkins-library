@@ -134,7 +134,7 @@ class Pipeline {
     protected static final String _SETUP_STAGE_NAME = "Setup"
 
     Build build
-    
+
     /**
      * Package name of the project
      *
@@ -249,6 +249,8 @@ class Pipeline {
         this.steps = steps
 
         this._email = new Email(steps)
+        // moved to here so it will always be initialized, even if the pipeline doesn't have setup...
+        this.build = new Build(steps.currentBuild)
     }
 
     /**
@@ -671,8 +673,6 @@ class Pipeline {
 
         // prepare default configurations
         this.defineDefaultBranches()
-
-        this.build = new Build(steps.currentBuild)
 
         // Create the stage and hold the variable for the future
         Stage setup = createStage(
