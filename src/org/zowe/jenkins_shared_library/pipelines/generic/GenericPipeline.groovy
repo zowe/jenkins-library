@@ -1507,11 +1507,19 @@ class GenericPipeline extends Pipeline {
         if (causeID == PipelineConstants.UPSTREAM_CAUSE_ID) {
             causeID = this.build.identifyRootCause()
         }
-        if (causeID == PipelineConstants.USERID_CAUSE_ID) {
+        if (causeID == PipelineConstants.USERID_CAUSE_ID) { 
+            //users on Jenkins are already trusted
             isAuthorizedUser = true
-        } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
+        } 
+        else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
             if (this.changeInfo.isPullRequest) {
+                // anyone on Github can create pull request, so we need to check if the user is trusted
                 isAuthorizedUser = isPRAuthorizedUser()
+            }
+            else {
+                // When a branch event happens (only trusted user can create a branch), or a user on Jenkins triggers 'Scan Repository Now'
+                // either we will allow it
+                isAuthorizedUser = true
             }
         }
         return isAuthorizedUser
