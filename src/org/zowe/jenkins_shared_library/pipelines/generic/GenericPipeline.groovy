@@ -1431,38 +1431,14 @@ class GenericPipeline extends Pipeline {
         //     preSetupException = new PackagingStageException("arguments.localWorkspace is not defined for packagingGeneric", arguments.name)
         // }
 
-        // FIXME:
-        // 1. isPRAuthorizedUser() depends on github.repository value, and it can only be initialized after setup() is executed.
-        //    This results this check will fail because it's executed in preparation step, before any stages are really executed.
-        //    To properly fix this, we need to move these checks inside "arguments.stage = {".
-        // 2. build.getCause() should be array and we need to find out the real cause
-        // 3. UPSTREAM_CAUSE_ID is not handled here. If it's UPSTREAM_CAUSE_ID, we need to find the root cause to decide what to do.
-        // 4. this.isAuthorizedUser will not be neccessary because it's only initialized after packagingGeneric is executed, except
-        //    for we move the check into setupGeneric.
-        Integer causeID = this.build.identifySurfaceCause()
-        if (causeID == PipelineConstants.UPSTREAM_CAUSE_ID) {
-            causeID = this.build.identifyRootCause()
-        }
-        //println causeIDs
-        this.isAuthorizedUser = false
-        // if (causeID == PipelineConstants.USERID_CAUSE_ID) {
-        //     this.isAuthorizedUser = true
-        // } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
-        //     if (this.changeInfo.isPullRequest) {
-        //         this.isAuthorizedUser = isPRAuthorizedUser()
-        //     }
-        // }
-
-        //hard stop at here, just want to debug getCause()
-        if (!this.isAuthorizedUser) {
-            preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
-        }
-
         def originalPackageName = arguments.name
         // now arguments.name is used as stage name
         arguments.name = "Packaging: ${arguments.name}"
 
         arguments.stage = { String stageName ->
+            if (!checkAuthorizedUser()) {
+                preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
+            }
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
@@ -1523,6 +1499,22 @@ class GenericPipeline extends Pipeline {
         if (!_control.packaging) {
             _control.packaging = packaging
         }
+    }
+
+    Boolean checkAuthorizedUser() {
+        def isAuthorizedUser = false
+        Integer causeID = this.build.identifySurfaceCause()
+        if (causeID == PipelineConstants.UPSTREAM_CAUSE_ID) {
+            causeID = this.build.identifyRootCause()
+        }
+        if (causeID == PipelineConstants.USERID_CAUSE_ID) {
+            isAuthorizedUser = true
+        } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
+            if (this.changeInfo.isPullRequest) {
+                isAuthorizedUser = isPRAuthorizedUser()
+            }
+        }
+        return isAuthorizedUser
     }
 
     /**
