@@ -175,35 +175,46 @@ class Build {
         return text
     }
 
-    Integer getCause() {
-        def ALL_CAUSES = _build.getBuildCauses()
-        log.finer("Build cause is $ALL_CAUSES")
+    Integer identifyRootCause() {
+        def cause = _build.rawBuild.getCauses()[0]
+        while (cause instanceof hudson.model.Cause$UpstreamCause) {
+            cause = cause.upstreamRun.getCauses()[0]
+            log.finer("Upstream cause detail: ${cause.properties.shortDescription}")
+        }
+        log.finer("Root cause found!")
+        return identifyCause(cause)
+    }
 
-        def BRANCHEVENT_CAUSE = _build.getBuildCauses('jenkins.branch.BranchEventCause')           // PR is opened or updated
-        def USERID_CAUSE = _build.getBuildCauses('hudson.model.Cause$UserIdCause')                 // a Jenkins user starts a manual build
-        def BRANCHINDEXING_CAUSE = _build.getBuildCauses('hudson.model.Cause$BranchIndexingCause') // by clicking 'Scan Repository Now'
-        def REMOTE_CAUSE = _build.getBuildCauses('hudson.model.Cause$RemoteCause')
-        def UPSTREAM_CAUSE = _build.getBuildCauses('hudson.model.Cause$UpstreamCause')             // triggered by an upstream pipeline
-        def TIMER_CAUSE = _build.getBuildCauses('hudson.triggers.TimerTrigger$TimerTriggerCause')  // triggered by a timer
+    Integer identifySurfaceCause() {
+        def cause = _build.rawBuild.getCauses()[0]
+        log.finer("Surface cause detail: ${cause.properties.shortDescription}")
+        return identifyCause(cause)
+    }
 
-        if (BRANCHEVENT_CAUSE) {
-            return PipelineConstants.BRANCHEVENT_CAUSE_ID
+    private Integer identifyCause(Cause c) {
+        def causeID
+        if (c instanceof jenkins.branch.BranchEventCause) {
+            causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
+        }
+        else if (c instanceof hudson.model.Cause$UserIdCause) {
+            causeID = PipelineConstants.USERID_CAUSE_ID           // jenkins user trigger
+        }
+        else if (c instanceof jenkins.branch.BranchIndexingCause) {
+            causeID = PipelineConstants.BRANCHINDEXING_CAUSE_ID   //'Scan Repository Now' action
+        }
+        else if (c instanceof hudson.model.Cause$RemoteCause) {
+            causeID = PipelineConstants.REMOTE_CAUSE_ID
+        }
+        else if (c instanceof hudson.triggers.TimerTrigger$TimerTriggerCause) {
+            causeID = PipelineConstants.TIMER_CAUSE_ID            // timer trigger
+        }
+        else if (c instanceof hudson.model.Cause$UpstreamCause) {
+            causeID = PipelineConstants.UPSTREAM_CAUSE_ID         // upstream project trigger
         } 
-        if (USERID_CAUSE) {
-            return PipelineConstants.USERID_CAUSE_ID
+        else { 
+            causeID = PipelineConstants.UNKNOWN_CAUSE_ID 
         }
-        if (BRANCHINDEXING_CAUSE) {
-            return PipelineConstants.BRANCHINDEXING_CAUSE_ID
-        }
-        if (REMOTE_CAUSE) {
-            return PipelineConstants.REMOTE_CAUSE_ID
-        }
-        if (UPSTREAM_CAUSE) {
-            return PipelineConstants.UPSTREAM_CAUSE_ID
-        }
-        if (TIMER_CAUSE) {
-            return PipelineConstants.TIMER_CAUSE_ID
-        } 
-        return PipelineConstants.UNKNOWN_CAUSE_ID
+        
+        return causeID
     }
 }
