@@ -1439,8 +1439,12 @@ class GenericPipeline extends Pipeline {
         // 3. UPSTREAM_CAUSE_ID is not handled here. If it's UPSTREAM_CAUSE_ID, we need to find the root cause to decide what to do.
         // 4. this.isAuthorizedUser will not be neccessary because it's only initialized after packagingGeneric is executed, except
         //    for we move the check into setupGeneric.
-        // Integer causeID = this.build.getCause()
-        // this.isAuthorizedUser = false
+        Integer causeID = this.build.identifySurfaceCause()
+        if (causeID == PipelineConstants.UPSTREAM_CAUSE_ID) {
+            causeID = this.build.identifyRootCause()
+        }
+        //println causeIDs
+        this.isAuthorizedUser = false
         // if (causeID == PipelineConstants.USERID_CAUSE_ID) {
         //     this.isAuthorizedUser = true
         // } else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
@@ -1448,9 +1452,11 @@ class GenericPipeline extends Pipeline {
         //         this.isAuthorizedUser = isPRAuthorizedUser()
         //     }
         // }
-        // if (!this.isAuthorizedUser) {
-        //     preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
-        // }
+
+        //hard stop at here, just want to debug getCause()
+        if (!this.isAuthorizedUser) {
+            preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
+        }
 
         def originalPackageName = arguments.name
         // now arguments.name is used as stage name
