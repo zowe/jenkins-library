@@ -1522,6 +1522,10 @@ class GenericPipeline extends Pipeline {
                 isAuthorizedUser = true
             }
         }
+        else if (causeID == PipelineConstants.TIMER_CAUSE_ID) {
+            //timer triggered job
+            isAuthorizedUser = true
+        }
         return isAuthorizedUser
     }
 
