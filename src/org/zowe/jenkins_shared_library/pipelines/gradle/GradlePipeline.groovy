@@ -365,7 +365,8 @@ class GradlePipeline extends GenericPipeline {
 
                     def gradleParams = " -Psonar.host.url=${scannerParam['sonar.host.url']}" +
                                        " -Psonar.login=${scannerParam['sonar.login']}" +
-                                       " -Psonar.links.ci=${steps.env.BUILD_URL}"
+                                       " -Psonar.links.ci=${steps.env.BUILD_URL}" +
+                                       " -x test -x compileJava -x compileTestJava"
 
                     if (arguments.allowBranchScan) {
                         // pass branch information
