@@ -378,8 +378,20 @@ class GradlePipeline extends GenericPipeline {
                         }
                     }
 
+                    def extraEnvironments = ""
+                    if (arguments.javaHome) {
+                        // warning The version of Java (1.8.0_242) you have used to run this analysis is deprecated and we will stop accepting it from October 2020. Please update to at least Java 11.
+                        extraEnvironments = "JAVA_HOME=${arguments.javaHome}\nPATH=\${JAVA_HOME}/bin:\$PATH\n"
+                    }
+                    if (arguments.nodeJsVersion && arguments.nvmInitScript) {
+                        // The version of node.js (8) you have used to run this analysis is deprecated and we stopped accepting it. Please update to at least node.js 10.
+                        // Temporarily you can set the property 'sonar.scanner.force-deprecated-node-version-grace-period' to 'true' to continue using node.js 8
+                        // This will only work until Mon Feb 15 08:00:00 UTC 2021, afterwards all scans will fail.
+                        extraEnvironments += "set +x\n. ${arguments.nvmInitScript}\nnvm install ${arguments.nodeJsVersion}\nnvm use ${arguments.nodeJsVersion}\nset -x\n"
+                    }
+
                     // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                    steps.sh "./gradlew --info sonarqube ${gradleParams}"
+                    steps.sh "${extraEnvironments} ./gradlew --info sonarqube ${gradleParams}"
 
                     // check build status
                     if (arguments.failBuild) {
