@@ -20,8 +20,6 @@ import org.zowe.jenkins_shared_library.pipelines.Constants as PipelineConstants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
 import hudson.model.Cause
 import hudson.triggers.TimerTrigger
-import jenkins.branch.BranchEventCause
-import jenkins.branch.BranchIndexingCause
 
 /**
  * This class extends Jenkins current build functions.
@@ -194,16 +192,17 @@ class Build {
     }
 
     private Integer identifyCause(Cause c) {
+        log.finer("PPPPProperties are: ${c.properties}")
         def causeID
-        if (c instanceof jenkins.branch.BranchEventCause) {
-            causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
-        }
+        // if (c instanceof jenkins.branch.BranchEventCause) {
+        //     causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
+        // }
         else if (c instanceof hudson.model.Cause$UserIdCause) {
             causeID = PipelineConstants.USERID_CAUSE_ID           // jenkins user trigger
         }
-        else if (c instanceof jenkins.branch.BranchIndexingCause) {
-            causeID = PipelineConstants.BRANCHINDEXING_CAUSE_ID   //'Scan Repository Now' action
-        }
+        // else if (c instanceof jenkins.branch.BranchIndexingCause) {
+        //     causeID = PipelineConstants.BRANCHINDEXING_CAUSE_ID   //'Scan Repository Now' action
+        // }
         else if (c instanceof hudson.model.Cause$RemoteCause) {
             causeID = PipelineConstants.REMOTE_CAUSE_ID
         }
