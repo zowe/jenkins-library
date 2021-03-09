@@ -20,6 +20,8 @@ import org.zowe.jenkins_shared_library.pipelines.Constants as PipelineConstants
 import org.zowe.jenkins_shared_library.scm.Constants as SCMConstants
 import hudson.model.Cause
 import hudson.triggers.TimerTrigger
+import jenkins.branch.BranchEventCause
+import jenkins.branch.BranchIndexingCause
 
 /**
  * This class extends Jenkins current build functions.
