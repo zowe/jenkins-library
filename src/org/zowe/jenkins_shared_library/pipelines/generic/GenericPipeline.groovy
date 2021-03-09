@@ -1439,6 +1439,12 @@ class GenericPipeline extends Pipeline {
             if (!checkAuthorizedUser()) {
                 preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
             }
+            
+            //just a test
+            String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
+            int prNumber = prNumberString as Integer   // convert to int
+            def returnText = this.github.postComment(prNumber,"Hello, this is a test comment. Have a nice day!")
+
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {

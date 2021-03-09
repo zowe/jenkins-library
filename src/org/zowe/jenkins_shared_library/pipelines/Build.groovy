@@ -192,7 +192,6 @@ class Build {
     }
 
     private Integer identifyCause(Cause c) {
-        log.finer("DEBUG Cause properties are: ${c.properties}")
         def causeID
         if (c.toString().contains("BranchEventCause")) {
             causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
