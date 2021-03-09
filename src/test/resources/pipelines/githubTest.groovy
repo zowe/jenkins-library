@@ -144,13 +144,20 @@ node ('zowe-jenkins-agent') {
                 echo "[GITHUB_TEST] getting correct user permission from pull request successfully"
             }
         }
-        
+
+        //posting a comment on PR
+        def commentPostedTime = github.postComment(prId,"Hello, this is a test comment")
+        if (!commentPostedTime) {
+            error 'Posting comment failed'
+        }
+        else {
+            echo "[GITHUB_TEST] posting a comment on pull request successfully"
+        }
+
         // closing after test
         github.closePullRequest(prId)
         echo "[GITHUB_TEST] closing pull request successfully"
 
         github.deleteRemoteBranch()
-
-       
     }
 }

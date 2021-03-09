@@ -959,15 +959,18 @@ class GitHub {
         return foundTag
     }
 
+    /**
+     * Get the user of a PR
+     *
+     * @param pr      pr number
+     * @return        username in string
+     */
     String getPullRequestUser(Integer pr) {
         Map pullRequestInfo = this.getPullRequest(pr)
         return pullRequestInfo.user.login
     }
 
-    Boolean isUserWriteCollaborator(String user) throws InvalidArgumentException, ScmException {
-        boolean isUserWrite = false
-
-        // validate arguments
+    private void validateArgs() {
         if (!this.repository) {
             throw new InvalidArgumentException('repository')
         }
@@ -979,7 +982,25 @@ class GitHub {
         if (!this.usernamePasswordCredential) {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
-        
+    }
+
+    /**
+     * Validate if a user has proper write access
+     *
+     * @param user    username
+     * @return        true/false
+     */
+    Boolean isUserWriteCollaborator(String user) throws InvalidArgumentException, ScmException {
+        boolean isUserWrite = false
+
+        // validate arguments
+        validateArgs()
+
+        //additional validation
+        if (!user) {
+            throw new InvalidArgumentException('user')
+        }
+
         this.steps.withCredentials([
             this.steps.usernamePassword(
                 credentialsId: this.usernamePasswordCredential,
@@ -1017,5 +1038,57 @@ class GitHub {
         }
         this.steps.echo "User $user is "+(isUserWrite ? "" : "not ")+"a permitted write collaborator"
         return isUserWrite
+    }
+
+    /**
+     * Post a comment on issue/pr
+     *
+     * @param  issueNum     issue or pr number
+     * @return              comment posted timestamp
+     */
+    String postComment(Integer issueNum, String contentString) {
+        // Note: in Github APIs, PR is a subset of issue, but with code changes
+        //       issueNum can be either issue number or PR number
+
+        // validate arguments
+        validateArgs()
+
+        //additional validation
+        if (!issueNum) {
+            throw new InvalidArgumentException('issueNum')
+        }
+        if (!contentString) {
+            throw new InvalidArgumentException('contentString')
+        }
+
+        def result
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Posting a comment on issue/pr $issueNum on ${this.repository} \n content is $contentString"
+            def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                    " -X POST" +
+                    " -H \"Accept: application/vnd.github.v3+json\"" +
+                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments\"" +
+                    " -d '{\"body\":\"$contentString\"}'"
+            
+            log.finer("github api curl: ${cmd_postComment}")
+            def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
+            log.finer("Posting a comment on issue/pr $issueNum on ${this.repository}; response:\n${resultText}")
+            if (!resultText) {
+                throw new ScmException("Empty Github API response")
+            }
+            result = this.steps.readJSON text: resultText
+            if (!result || !result.containsKey('created_at')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
+            this.steps.echo "A comment has been posted on issue/pr $issueNum on ${this.repository}"
+        }
+        return result['created_at']
     }
 }
