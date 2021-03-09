@@ -194,13 +194,13 @@ class Build {
     private Integer identifyCause(Cause c) {
         log.finer("DEBUG Cause properties are: ${c.properties}")
         def causeID
-        if (c.properties.get("class").contains("BranchEventCause")) {
+        if (c.toString().contains("BranchEventCause")) {
             causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
         }
         else if (c instanceof hudson.model.Cause$UserIdCause) {
             causeID = PipelineConstants.USERID_CAUSE_ID           // jenkins user trigger
         }
-        else if (c.properties.get("class").contains("BranchIndexingCause")) {
+        else if (c.toString().contains("BranchIndexingCause")) {
             causeID = PipelineConstants.BRANCHINDEXING_CAUSE_ID   //'Scan Repository Now' action
         }
         else if (c instanceof hudson.model.Cause$RemoteCause) {
