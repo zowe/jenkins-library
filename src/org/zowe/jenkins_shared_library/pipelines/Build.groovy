@@ -197,7 +197,7 @@ class Build {
         // if (c instanceof jenkins.branch.BranchEventCause) {
         //     causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
         // }
-        else if (c instanceof hudson.model.Cause$UserIdCause) {
+        if (c instanceof hudson.model.Cause$UserIdCause) {
             causeID = PipelineConstants.USERID_CAUSE_ID           // jenkins user trigger
         }
         // else if (c instanceof jenkins.branch.BranchIndexingCause) {
