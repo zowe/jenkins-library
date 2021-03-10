@@ -1457,7 +1457,7 @@ class GenericPipeline extends Pipeline {
             //                  .replaceAll(/'/, "\\\\'")
             //                  .replaceAll(/\$/, '\\\\\\\$')
             contentString = StringEscapeUtils.escapeJavaScript(contentString)
-            contentString = StringEscapeUtils.escapeJavaScript(contentString)
+            //contentString = StringEscapeUtils.escapeJavaScript(contentString)
             def returnText = this.github.postComment(prNumber,contentString)
 
             // If there were any exceptions during the setup, throw them here so proper email notifications
