@@ -1075,7 +1075,7 @@ class GitHub {
                     " -X POST" +
                     " -H \"Accept: application/vnd.github.v3+json\"" +
                     " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments\"" +
-                    " -d \"{\"body\":\"$contentString\"}\""
+                    " -d \"{\"body\":\\\"$contentString\\\"}\""
             
             log.finer("github api curl: ${cmd_postComment}")
             def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
