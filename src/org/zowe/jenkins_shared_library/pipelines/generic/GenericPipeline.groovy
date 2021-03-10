@@ -1440,6 +1440,16 @@ class GenericPipeline extends Pipeline {
                 preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
             }
 
+            //test for posting a comment
+            String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
+            int prNumber = prNumberString as Integer   // convert to int
+            def returnText = this.github.postComment(prNumber,"Hello, this is a test comment2, to test some escape characters:")
+            def returnText2 = this.github.postComment(prNumber,"escape single quote \'SINGLEQUOTE\'")
+            def returnText3 = this.github.postComment(prNumber,"escape double quote \"DOUBLEQUOTE\"")
+            def returnText4 = this.github.postComment(prNumber,"escape backslash \\BLACKSLASH\\")
+            def returnText5 = this.github.postComment(prNumber,"escape tab TABSTART\tTABEND\t")
+            def returnText6 = this.github.postComment(prNumber,"escape new line NEWLINESTART\nNEWLINEEND\n")
+            def returnText7 = this.github.postComment(prNumber,"escape carriage return START\r")
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
