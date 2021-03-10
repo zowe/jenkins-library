@@ -1449,14 +1449,14 @@ class GenericPipeline extends Pipeline {
                     "\tline with 'single quotations'\r\n" +
                     "\tline with \\backslash\\\r\n" +
                     "\tline with \$dollar\$\r\n"
-            contentString = contentString.replaceAll("\\\\", "\\\\\\\\")
-                             .replaceAll(/\r/, "\\\\r")
-                             .replaceAll(/\n/, "\\\\n")
-                             .replaceAll(/\t/, '\\\\t')
-                             .replaceAll(/"/, '\\\\"')
-                             .replaceAll(/'/, "\\\\'")
-                             .replaceAll(/\$/, '\\\\\\\$')
-            //contentString = StringEscapeUtils.escapeJavaScript(contentString)
+            // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")
+            //                  .replaceAll(/\r/, "\\\\r")
+            //                  .replaceAll(/\n/, "\\\\n")
+            //                  .replaceAll(/\t/, '\\\\t')
+            //                  .replaceAll(/"/, '\\\\"')
+            //                  .replaceAll(/'/, "\\\\'")
+            //                  .replaceAll(/\$/, '\\\\\\\$')
+            contentString = StringEscapeUtils.escapeJavaScript(contentString)
             def returnText = this.github.postComment(prNumber,contentString)
 
             // If there were any exceptions during the setup, throw them here so proper email notifications
