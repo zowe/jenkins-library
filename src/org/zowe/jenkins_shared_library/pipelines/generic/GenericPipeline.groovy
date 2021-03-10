@@ -29,6 +29,7 @@ import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Constants as GlobalConstants
 import org.zowe.jenkins_shared_library.Utils
+import groovy.json.StringEscapeUtils 
 
 /**
  * Extends the functionality available in the {@link jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
@@ -1443,13 +1444,21 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            //def returnText = this.github.postComment(prNumber,"Hello, this is a test comment2, to test some escape characters:")
-            def returnText2 = this.github.postComment(prNumber,"escape single quote \\'SINGLEQUOTE\\'")
-            def returnText3 = this.github.postComment(prNumber,"escape double quote \\"DOUBLEQUOTE\\"")
-            def returnText4 = this.github.postComment(prNumber,"escape backslash \\\\BLACKSLASH\\\\")
-            def returnText5 = this.github.postComment(prNumber,"escape tab TABSTART\\tTABEND\\t")
-            def returnText6 = this.github.postComment(prNumber,"escape new line NEWLINESTART\\nNEWLINEEND\\n")
-            def returnText7 = this.github.postComment(prNumber,"escape carriage return START\\r")
+            def contentString = "test comment\r\n" +
+                    '\tline with "double quotations"\r\n' +
+                    "\tline with 'single quotations'\r\n" +
+                    "\tline with \\backslash\\\r\n" +
+                    "\tline with \$dollar\$\r\n"
+            // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")
+            //                  .replaceAll(/\r/, "\\\\r")
+            //                  .replaceAll(/\n/, "\\\\n")
+            //                  .replaceAll(/\t/, '\\\\t')
+            //                  .replaceAll(/"/, '\\\\"')
+            //                  .replaceAll(/'/, "\\\\'")
+            //                  .replaceAll(/\$/, '\\\\\\\$')
+            contentString = StringEscapeUtils.escapeJavaScript(contentString)
+            def returnText = this.github.postComment(prNumber,contentString)
+
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
