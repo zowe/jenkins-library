@@ -1444,7 +1444,7 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n'single quotations'\n\"double quotations\""
+            def contentString = "'single quotations'"
 
             contentString = StringEscapeUtils.escapeEcmaScript(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
