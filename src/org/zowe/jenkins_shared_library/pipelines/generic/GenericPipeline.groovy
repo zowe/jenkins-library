@@ -1444,12 +1444,10 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\'single quotations\'\n\"double quotations\""
+            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n'single quotations'\n\"double quotations\""
 
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: original: $contentString"
-
-            contentString = StringEscapeUtils.escapeJava(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJava: $contentString"
+            contentString = StringEscapeUtils.escapeJson(contentString)
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
 
             // contentString = contentString.replaceAll(/'/, "\\\\'")
             // steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
