@@ -1069,6 +1069,8 @@ class GitHub {
         println("AFTER ESCAPEJAVA IS " + contentString)
         String fullJsonText = "{\"body\":\"" + contentString + "\"}"
         println(fullJsonText)
+
+        def jsonSlurper = new JsonSlurper()
         def jsonObject = jsonSlurper.parseText(fullJsonText)
         println(jsonObject.body);
 
