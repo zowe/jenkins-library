@@ -1459,8 +1459,8 @@ class GenericPipeline extends Pipeline {
             //                  .replaceAll(/"/, '\\\\"')
             //                  .replaceAll(/'/, "\\\\'")
             //                  .replaceAll(/\$/, '\\\\\\\$')   v
-            contentString = StringEscapeUtils.escapeJavaScript(contentString)
-            steps.echo "ESCAPE DEBUG: after escapeJavaScript: $contentString"
+            contentString = StringEscapeUtils.escapeJson(contentString)
+            steps.echo "ESCAPE DEBUG: after escapeJson: $contentString"
             // contentString = contentString.replaceAll(/'/, "\\\'")
             // steps.echo "ESCAPE DEBUG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
