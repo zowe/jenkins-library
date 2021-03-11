@@ -1444,7 +1444,9 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            def contentString = "test comment\n\tline with \"double quotations\"\n\tline with \'single quotations\'\n\tline with \\backslash\\\n\tline with \$dollar\$\n"
+            //def contentString = "test comment\n\tline with \"double quotations\"\n\tline with \'single quotations\'\n\tline with \\backslash\\\n\tline with \$dollar\$\n"
+            def contentString = "test comment\ntestcomment2"
+            
             // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")
             //                  .replaceAll(/\r/, "\\\\r")
             //                  .replaceAll(/\n/, "\\\\n")
