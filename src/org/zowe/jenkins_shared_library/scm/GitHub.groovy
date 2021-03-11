@@ -1066,13 +1066,8 @@ class GitHub {
         def result
 
         contentString = StringEscapeUtils.escapeJava(contentString)
-        println("AFTER ESCAPEJAVA IS " + contentString)
+        this.steps.echo "AFTER ESCAPEJAVA IS " + $contentString
         String fullJsonText = "{\"body\":\"" + contentString + "\"}"
-        println(fullJsonText)
-
-        def jsonSlurper = new JsonSlurper()
-        def jsonObject = jsonSlurper.parseText(fullJsonText)
-        println(jsonObject.body);
 
         this.steps.withCredentials([
             this.steps.usernamePassword(
@@ -1081,7 +1076,7 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            this.steps.echo "Posting a comment on issue/pr $issueNum on ${this.repository} \n content is $contentString"
+            this.steps.echo "Posting a comment on issue/pr $issueNum on ${this.repository} \n content is $fullJsonText"
             def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                     " -X POST" +
                     " -H \"Accept: application/vnd.github.v3+json\"" +
