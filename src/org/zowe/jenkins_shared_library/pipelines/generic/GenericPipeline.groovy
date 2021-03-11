@@ -1451,7 +1451,7 @@ class GenericPipeline extends Pipeline {
             // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\"
             // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n"
             def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\'single quotations\'"
-            steps.echo "ESCAPE DEBUG: original: $contentString"
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: original: $contentString"
             // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")    v
             //                  .replaceAll(/\r/, "\\\\r")   v
             //                  .replaceAll(/\n/, "\\\\n")   v
@@ -1459,8 +1459,12 @@ class GenericPipeline extends Pipeline {
             //                  .replaceAll(/"/, '\\\\"')
             //                  .replaceAll(/'/, "\\\\'")
             //                  .replaceAll(/\$/, '\\\\\\\$')   v
+
+            contentString = StringEscapeUtils.escapeJavaScript(contentString)
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJavaScript: $contentString"
+
             contentString = StringEscapeUtils.escapeJson(contentString)
-            steps.echo "ESCAPE DEBUG: after escapeJson: $contentString"
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
             // contentString = contentString.replaceAll(/'/, "\\\'")
             // steps.echo "ESCAPE DEBUG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
