@@ -1461,7 +1461,7 @@ class GenericPipeline extends Pipeline {
             //                  .replaceAll(/\$/, '\\\\\\\$')   v
 
             contentString = StringEscapeUtils.escapeEcmaScript(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJavaScript: $contentString"
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
 
             // contentString = StringEscapeUtils.escapeJson(contentString)
             // steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
