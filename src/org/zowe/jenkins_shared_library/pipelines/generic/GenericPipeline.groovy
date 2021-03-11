@@ -1443,7 +1443,7 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            String contentString = "a\$b\nc\rd\te\\f\"g'"
+            String contentString = "a\$b\nc\rd\te\\f\"g"
             def returnText = this.github.postComment(prNumber,contentString)
 
             //doing a hardstop here 
