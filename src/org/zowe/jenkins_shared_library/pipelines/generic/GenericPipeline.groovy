@@ -1449,7 +1449,7 @@ class GenericPipeline extends Pipeline {
             contentString = StringEscapeUtils.escapeJson(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
 
-            contentString = contentString.replaceAll("'", "'\\\''")
+            contentString = contentString.replaceAll("'", "\'\\\'\'")
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
 
