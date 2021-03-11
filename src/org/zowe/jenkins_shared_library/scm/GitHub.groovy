@@ -1067,6 +1067,8 @@ class GitHub {
         contentString = StringEscapeUtils.escapeJava(contentString)
         this.steps.echo "AFTER ESCAPEJAVA IS $contentString"
         String fullJsonText = "'{\"body\":\"" + contentString + "\"}'"
+        def cmmd = "echo $fullJsonText > text.json"
+        def rs = this.steps.sh(script: cmmd + ' 2>&1', returnStdout: true).trim()
 
         this.steps.withCredentials([
             this.steps.usernamePassword(
@@ -1081,7 +1083,7 @@ class GitHub {
                     " -H \"Accept: application/vnd.github.v3+json\"" +
                     " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments\"" +
                     // " -d '{\"body\":\"$contentString\"}'"
-                    " -d " + fullJsonText
+                    " --data @text.json"
 
             log.finer("github api curl: ${cmd_postComment}")
             def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
