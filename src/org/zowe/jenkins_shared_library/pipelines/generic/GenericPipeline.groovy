@@ -1448,11 +1448,11 @@ class GenericPipeline extends Pipeline {
 
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: original: $contentString"
 
-            contentString = StringEscapeUtils.escapeEcmaScript(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
+            contentString = StringEscapeUtils.escapeJava(contentString)
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJava: $contentString"
 
-            contentString = contentString.replaceAll(/'/, "\\\\'")
-            steps.echo "ESCAPE DEBUG: after replaceAll single quote: $contentString"
+            // contentString = contentString.replaceAll(/'/, "\\\\'")
+            // steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
 
             //doing a hardstop here 
