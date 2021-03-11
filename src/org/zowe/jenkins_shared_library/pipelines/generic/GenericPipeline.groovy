@@ -1446,8 +1446,8 @@ class GenericPipeline extends Pipeline {
             int prNumber = prNumberString as Integer   // convert to int
             def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n'single quotations'\n\"double quotations\""
 
-            contentString = StringEscapeUtils.escapeJson(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
+            contentString = StringEscapeUtils.escapeEcmaScript(contentString)
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
 
             // contentString = contentString.replaceAll(/'/, "\\\\'")
             // steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
