@@ -1446,10 +1446,10 @@ class GenericPipeline extends Pipeline {
             int prNumber = prNumberString as Integer   // convert to int
             def contentString = "'single quotations'"
 
-            contentString = StringEscapeUtils.escapeEcmaScript(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
+            contentString = StringEscapeUtils.escapeJson(contentString)
+            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
 
-            contentString = contentString.replaceAll("\\\'", "\u0027")
+            contentString = contentString.replaceAll("'", "\u0027")
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
 
