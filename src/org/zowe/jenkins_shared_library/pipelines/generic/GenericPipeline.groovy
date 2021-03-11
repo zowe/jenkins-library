@@ -29,7 +29,6 @@ import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Constants as GlobalConstants
 import org.zowe.jenkins_shared_library.Utils
-import org.apache.commons.text.StringEscapeUtils
 
 /**
  * Extends the functionality available in the {@link jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
@@ -1444,13 +1443,7 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            def contentString = "\n\r\tdoublequote\"dollar\$backslash\\singlequote'"
-
-            contentString = StringEscapeUtils.escapeJson(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
-
-            contentString = contentString.replaceAll("'", "\'\\\'\'")
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
+            String contentString = "a\$b\nc\rd\te\\f\"g'"
             def returnText = this.github.postComment(prNumber,contentString)
 
             //doing a hardstop here 

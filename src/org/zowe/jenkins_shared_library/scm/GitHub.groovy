@@ -14,6 +14,8 @@ import groovy.util.logging.Log
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
+import groovy.json.StringEscapeUtils
+import groovy.json.JsonSlurper 
 
 /**
  * Methods to work with GitHub.
@@ -1063,6 +1065,13 @@ class GitHub {
 
         def result
 
+        contentString = StringEscapeUtils.escapeJava(contentString)
+        println("AFTER ESCAPEJAVA IS " + contentString)
+        String fullJsonText = "{\"body\":\"" + contentString + "\"}"
+        println(fullJsonText)
+        def jsonObject = jsonSlurper.parseText(fullJsonText)
+        println(jsonObject.body);
+
         this.steps.withCredentials([
             this.steps.usernamePassword(
                 credentialsId: this.usernamePasswordCredential,
@@ -1075,8 +1084,9 @@ class GitHub {
                     " -X POST" +
                     " -H \"Accept: application/vnd.github.v3+json\"" +
                     " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments\"" +
-                    " -d '{\"body\":\"$contentString\"}'"
-            
+                    // " -d '{\"body\":\"$contentString\"}'"
+                    " -d " + fullJsonText
+
             log.finer("github api curl: ${cmd_postComment}")
             def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
             log.finer("Posting a comment on issue/pr $issueNum on ${this.repository}; response:\n${resultText}")
