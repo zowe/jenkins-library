@@ -1449,6 +1449,12 @@ class GenericPipeline extends Pipeline {
             contentString = StringEscapeUtils.escapeEcmaScript(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
 
+            boolean check00 = contentString.contains("\\\\\'")
+            steps.echo "check 0: $check00"
+
+            boolean check0 = contentString.contains("\\\\'")
+            steps.echo "check 0: $check0"
+
             boolean check1 = contentString.contains("\\\'")
             steps.echo "check 1: $check1"
 
