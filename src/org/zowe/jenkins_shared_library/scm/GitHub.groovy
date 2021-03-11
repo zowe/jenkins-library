@@ -15,7 +15,6 @@ import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
 import groovy.json.StringEscapeUtils
-import groovy.json.JsonSlurper 
 
 /**
  * Methods to work with GitHub.
@@ -1066,7 +1065,7 @@ class GitHub {
         def result
 
         contentString = StringEscapeUtils.escapeJava(contentString)
-        this.steps.echo "AFTER ESCAPEJAVA IS " + $contentString
+        this.steps.echo "AFTER ESCAPEJAVA IS $contentString"
         String fullJsonText = "{\"body\":\"" + contentString + "\"}"
 
         this.steps.withCredentials([
