@@ -1449,25 +1449,7 @@ class GenericPipeline extends Pipeline {
             contentString = StringEscapeUtils.escapeEcmaScript(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
 
-            boolean check00 = contentString.contains("\\\\\'")
-            steps.echo "check 0: $check00"
-
-            boolean check0 = contentString.contains("\\\\'")
-            steps.echo "check 0: $check0"
-
-            boolean check1 = contentString.contains("\\\'")
-            steps.echo "check 1: $check1"
-
-            boolean check2 = contentString.contains("\\'")
-            steps.echo "check 2: $check2"
-
-            boolean check3 = contentString.contains("\'")
-            steps.echo "check 3: $check3"
-
-            boolean check4 = contentString.contains("'")
-            steps.echo "check 4: $check4"
-
-            contentString = contentString.replaceAll("\\\'", "'\''")
+            contentString = contentString.replaceAll("\\\'", "\u0027")
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
 
