@@ -1440,15 +1440,6 @@ class GenericPipeline extends Pipeline {
                 preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
             }
 
-            //test for posting a comment
-            String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
-            int prNumber = prNumberString as Integer   // convert to int
-            String contentString = "a\$b\nc\rd\te\\f\"g"
-            def returnText = this.github.postComment(prNumber,contentString)
-
-            //doing a hardstop here 
-            throw new PackagingStageException("TESTING: HARD STOP HERE", arguments.name)
-
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {

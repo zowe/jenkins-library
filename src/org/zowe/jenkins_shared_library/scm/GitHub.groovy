@@ -1064,11 +1064,10 @@ class GitHub {
 
         def result
 
+        //FIXME: all other escapable characters should be dealt with, except single quote. By design single quote is not allowed in JSON object
+        // In the meantine, prevent posting comments including single quotes
         contentString = StringEscapeUtils.escapeJava(contentString)
-        this.steps.echo "AFTER ESCAPEJAVA IS $contentString"
         String fullJsonText = "'{\"body\":\"" + contentString + "\"}'"
-        def cmmd = "echo $fullJsonText > text.json"
-        def rs = this.steps.sh(script: cmmd + ' 2>&1', returnStdout: true).trim()
 
         this.steps.withCredentials([
             this.steps.usernamePassword(
@@ -1082,8 +1081,7 @@ class GitHub {
                     " -X POST" +
                     " -H \"Accept: application/vnd.github.v3+json\"" +
                     " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments\"" +
-                    // " -d '{\"body\":\"$contentString\"}'"
-                    " --data @text.json"
+                    " -d " + fullJsonText
 
             log.finer("github api curl: ${cmd_postComment}")
             def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
