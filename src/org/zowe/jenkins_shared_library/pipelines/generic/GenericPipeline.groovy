@@ -1444,20 +1444,14 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            //def contentString = "test comment\n\tline with \"double quotations\"\n\tline with \'single quotations\'\n\tline with \\backslash\\\n\tline with \$dollar\$\n"
-            // def contentString = "testcomment1\ntestcomment2"
-            // def contentString = "testcomment1\n\ttestcomment2"
-            // def contentString = "testcomment1\n\ttestcomment2\n\\backslash\\"
-            // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\"
-            // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n"
-            // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n'single quotations'\"double quotations\""
-            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\"double quotations\""
+            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\'single quotations\'\"double quotations\""
+
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: original: $contentString"
             // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")    v
             //                  .replaceAll(/\r/, "\\\\r")   v
             //                  .replaceAll(/\n/, "\\\\n")   v
             //                  .replaceAll(/\t/, '\\\\t')   v
-            //                  .replaceAll(/"/, '\\\\"')
+            //                  .replaceAll(/"/, '\\\\"')     v
             //                  .replaceAll(/'/, "\\\\'")
             //                  .replaceAll(/\$/, '\\\\\\\$')   v
 
