@@ -1448,9 +1448,10 @@ class GenericPipeline extends Pipeline {
             // def contentString = "testcomment1\ntestcomment2"
             // def contentString = "testcomment1\n\ttestcomment2"
             // def contentString = "testcomment1\n\ttestcomment2\n\\backslash\\"
-            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\"
+            // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\"
+            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\$dollarsign\$"
             // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")    v
-            //                  .replaceAll(/\r/, "\\\\r")
+            //                  .replaceAll(/\r/, "\\\\r")   v
             //                  .replaceAll(/\n/, "\\\\n")   v
             //                  .replaceAll(/\t/, '\\\\t')   v
             //                  .replaceAll(/"/, '\\\\"')
