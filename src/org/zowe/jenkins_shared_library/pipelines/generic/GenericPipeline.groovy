@@ -1444,24 +1444,15 @@ class GenericPipeline extends Pipeline {
             //test for posting a comment
             String prNumberString = "${this.changeInfo.pullRequestId}"   // this will be PR number
             int prNumber = prNumberString as Integer   // convert to int
-            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\'single quotations\'\"double quotations\""
+            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\'single quotations\'\n\"double quotations\""
 
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: original: $contentString"
-            // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")    v
-            //                  .replaceAll(/\r/, "\\\\r")   v
-            //                  .replaceAll(/\n/, "\\\\n")   v
-            //                  .replaceAll(/\t/, '\\\\t')   v
-            //                  .replaceAll(/"/, '\\\\"')     v
-            //                  .replaceAll(/'/, "\\\\'")
-            //                  .replaceAll(/\$/, '\\\\\\\$')   v
 
             contentString = StringEscapeUtils.escapeEcmaScript(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
 
-            // contentString = StringEscapeUtils.escapeJson(contentString)
-            // steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
-            // contentString = contentString.replaceAll(/'/, "\\\'")
-            // steps.echo "ESCAPE DEBUG: after replaceAll single quote: $contentString"
+            contentString = contentString.replaceAll(/'/, "\\\'")
+            steps.echo "ESCAPE DEBUG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
 
             //doing a hardstop here 
