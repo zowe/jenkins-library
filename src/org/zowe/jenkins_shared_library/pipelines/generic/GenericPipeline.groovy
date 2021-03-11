@@ -1439,7 +1439,6 @@ class GenericPipeline extends Pipeline {
             if (!checkAuthorizedUser()) {
                 preSetupException = new PackagingStageException("Automatic packaging step for non-committers on z/OS is disabled.", arguments.name)
             }
-
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
             if (preSetupException) {
