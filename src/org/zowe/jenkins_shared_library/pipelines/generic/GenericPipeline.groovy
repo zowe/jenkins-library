@@ -1447,17 +1447,21 @@ class GenericPipeline extends Pipeline {
             //def contentString = "test comment\n\tline with \"double quotations\"\n\tline with \'single quotations\'\n\tline with \\backslash\\\n\tline with \$dollar\$\n"
             // def contentString = "testcomment1\ntestcomment2"
             // def contentString = "testcomment1\n\ttestcomment2"
-            def contentString = "testcomment1\n\ttestcomment2\n\\backslash\\"
-            // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")
+            // def contentString = "testcomment1\n\ttestcomment2\n\\backslash\\"
+            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\"
+            // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")    v
             //                  .replaceAll(/\r/, "\\\\r")
-            //                  .replaceAll(/\n/, "\\\\n")
-            //                  .replaceAll(/\t/, '\\\\t')
+            //                  .replaceAll(/\n/, "\\\\n")   v
+            //                  .replaceAll(/\t/, '\\\\t')   v
             //                  .replaceAll(/"/, '\\\\"')
             //                  .replaceAll(/'/, "\\\\'")
             //                  .replaceAll(/\$/, '\\\\\\\$')
             contentString = StringEscapeUtils.escapeJavaScript(contentString)
             //contentString = StringEscapeUtils.escapeJavaScript(contentString)
             def returnText = this.github.postComment(prNumber,contentString)
+
+            //doing a hardstop here 
+            throw new PackagingStageException("TESTING: HARD STOP HERE", arguments.name)
 
             // If there were any exceptions during the setup, throw them here so proper email notifications
             // can be sent.
