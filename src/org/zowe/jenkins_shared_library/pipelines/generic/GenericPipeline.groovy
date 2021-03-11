@@ -1450,7 +1450,7 @@ class GenericPipeline extends Pipeline {
             // def contentString = "testcomment1\n\ttestcomment2\n\\backslash\\"
             // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\"
             // def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n"
-            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n\'single quotations\'"
+            def contentString = "testcomment1\n\r\ttestcomment2\n\r\\backslash\\\n\$dollarsign\$\n'single quotations'"
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: original: $contentString"
             // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")    v
             //                  .replaceAll(/\r/, "\\\\r")   v
@@ -1460,8 +1460,8 @@ class GenericPipeline extends Pipeline {
             //                  .replaceAll(/'/, "\\\\'")
             //                  .replaceAll(/\$/, '\\\\\\\$')   v
 
-            contentString = StringEscapeUtils.escapeEcmaScript(contentString)
-            steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJavaScript: $contentString"
+            // contentString = StringEscapeUtils.escapeEcmaScript(contentString)
+            // steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJavaScript: $contentString"
 
             contentString = StringEscapeUtils.escapeJson(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeJson: $contentString"
