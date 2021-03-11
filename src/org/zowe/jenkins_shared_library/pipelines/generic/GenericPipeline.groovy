@@ -29,7 +29,7 @@ import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Constants as GlobalConstants
 import org.zowe.jenkins_shared_library.Utils
-import groovy.json.StringEscapeUtils 
+import org.apache.commons.text.StringEscapeUtils
 
 /**
  * Extends the functionality available in the {@link jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
