@@ -1066,7 +1066,7 @@ class GitHub {
 
         contentString = StringEscapeUtils.escapeJava(contentString)
         this.steps.echo "AFTER ESCAPEJAVA IS $contentString"
-        String fullJsonText = "{\"body\":\"" + contentString + "\"}"
+        String fullJsonText = "'{\"body\":\"" + contentString + "\"}'"
 
         this.steps.withCredentials([
             this.steps.usernamePassword(
