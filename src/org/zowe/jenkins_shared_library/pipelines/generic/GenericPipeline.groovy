@@ -1450,8 +1450,8 @@ class GenericPipeline extends Pipeline {
 
             contentString = StringEscapeUtils.escapeEcmaScript(contentString)
             steps.echo "ESCAPE DDDDDDDEEEEEEEBBBBBBUUUUUUGGGGGGG: after escapeEcmaScript: $contentString"
-
-            contentString = contentString.replaceAll(/'/, "\\\'")
+            
+            contentString = contentString.replaceAll("'", "\\\'")
             steps.echo "ESCAPE DEBUG: after replaceAll single quote: $contentString"
             def returnText = this.github.postComment(prNumber,contentString)
 
