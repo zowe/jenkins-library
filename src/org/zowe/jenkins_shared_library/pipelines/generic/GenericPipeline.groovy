@@ -1446,7 +1446,8 @@ class GenericPipeline extends Pipeline {
             int prNumber = prNumberString as Integer   // convert to int
             //def contentString = "test comment\n\tline with \"double quotations\"\n\tline with \'single quotations\'\n\tline with \\backslash\\\n\tline with \$dollar\$\n"
             // def contentString = "testcomment1\ntestcomment2"
-            def contentString = "testcomment1\n\ttestcomment2"
+            // def contentString = "testcomment1\n\ttestcomment2"
+            def contentString = "testcomment1\n\ttestcomment2\n\\backslash\\"
             // contentString = contentString.replaceAll("\\\\", "\\\\\\\\")
             //                  .replaceAll(/\r/, "\\\\r")
             //                  .replaceAll(/\n/, "\\\\n")
