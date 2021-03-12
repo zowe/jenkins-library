@@ -146,7 +146,7 @@ node ('zowe-jenkins-agent') {
         }
 
         //posting a comment on PR
-        def commentPostedTime = github.postComment(prId,"Hello, this is a test comment")
+        def commentPostedTime = github.postComment(prId,"Hello, this is a test comment including many escapable characters \n \" \\ \t \$ \r ")
         if (!commentPostedTime) {
             error 'Posting comment failed'
         }
