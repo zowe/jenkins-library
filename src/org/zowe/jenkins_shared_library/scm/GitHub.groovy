@@ -1076,7 +1076,7 @@ class GitHub {
                 usernameVariable: 'USERNAME'
             )
         ]) {
-            this.steps.echo "Posting a comment on issue/pr $issueNum on ${this.repository} \n content is $fullJsonText"
+            this.steps.echo "Posting a comment on issue/pr $issueNum from ${this.repository} \n content is $fullJsonText"
             def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                     " -X POST" +
                     " -H \"Accept: application/vnd.github.v3+json\"" +
@@ -1085,7 +1085,7 @@ class GitHub {
 
             log.finer("github api curl: ${cmd_postComment}")
             def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
-            log.finer("Posting a comment on issue/pr $issueNum on ${this.repository}; response:\n${resultText}")
+            log.finer("Posting a comment on issue/pr $issueNum from ${this.repository}; response:\n${resultText}")
             if (!resultText) {
                 throw new ScmException("Empty Github API response")
             }
@@ -1093,8 +1093,66 @@ class GitHub {
             if (!result || !result.containsKey('created_at')) {
                 throw new ScmException("Invalid Github API response \"${resultText}\"")
             }
-            this.steps.echo "A comment has been posted on issue/pr $issueNum on ${this.repository}"
+            this.steps.echo "A comment has been posted on issue/pr $issueNum from ${this.repository}"
         }
         return result['created_at']
+    }
+
+    /**
+     * Update an existing comment from issue/pr
+     *
+     * @param  issueNum     issue or pr number
+     * @param  commentId    comment id
+     * @return              comment updated timestamp
+     */
+    String updateComment(Integer issueNum, Integer commentId, String contentString) {
+        // Note: in Github APIs, PR is a subset of issue, but with code changes
+        //       issueNum can be either issue number or PR number
+
+        // validate arguments
+        validateArgs()
+
+        //additional validation
+        if (!issueNum) {
+            throw new InvalidArgumentException('issueNum')
+        }
+        if (!contentString) {
+            throw new InvalidArgumentException('contentString')
+        }
+
+        def result
+
+        //FIXME: all other escapable characters should be dealt with, except single quote. By design single quote is not allowed in JSON object
+        // In the meantine, prevent posting comments including single quotes
+        contentString = StringEscapeUtils.escapeJava(contentString)
+        String fullJsonText = "'{\"body\":\"" + contentString + "\"}'"
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Update the comment $commentId on issue/pr $issueNum from ${this.repository} \n content is $fullJsonText"
+            def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                    " -X PATCH" +
+                    " -H \"Accept: application/vnd.github.v3+json\"" +
+                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments/$commentId\"" +
+                    " -d " + fullJsonText
+
+            log.finer("github api curl: ${cmd_postComment}")
+            def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
+            log.finer("Update the comment $commentId on issue/pr $issueNum from ${this.repository}; response:\n${resultText}")
+            if (!resultText) {
+                throw new ScmException("Empty Github API response")
+            }
+            result = this.steps.readJSON text: resultText
+            if (!result || !result.containsKey('updated_at')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
+            this.steps.echo "The comment $commentId has been updated on issue/pr $issueNum from ${this.repository}"
+        }
+        return result['updated_at']
     }
 }
