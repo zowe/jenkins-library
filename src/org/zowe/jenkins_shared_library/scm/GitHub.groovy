@@ -1138,7 +1138,7 @@ class GitHub {
             def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
                     " -X PATCH" +
                     " -H \"Accept: application/vnd.github.v3+json\"" +
-                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments/$commentId\"" +
+                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/comments/$commentId\"" +
                     " -d " + fullJsonText
 
             log.finer("github api curl: ${cmd_postComment}")
