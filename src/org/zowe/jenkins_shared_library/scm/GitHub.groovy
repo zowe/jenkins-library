@@ -1045,9 +1045,9 @@ class GitHub {
      * Post a comment on issue/pr
      *
      * @param  issueNum     issue or pr number
-     * @return              comment posted timestamp
+     * @return              posted comment id
      */
-    String postComment(Integer issueNum, String contentString) {
+    Integer postComment(Integer issueNum, String contentString) {
         // Note: in Github APIs, PR is a subset of issue, but with code changes
         //       issueNum can be either issue number or PR number
 
@@ -1090,12 +1090,12 @@ class GitHub {
                 throw new ScmException("Empty Github API response")
             }
             result = this.steps.readJSON text: resultText
-            if (!result || !result.containsKey('created_at')) {
+            if (!result || !result.containsKey('id')) {
                 throw new ScmException("Invalid Github API response \"${resultText}\"")
             }
             this.steps.echo "A comment has been posted on issue/pr $issueNum from ${this.repository}"
         }
-        return result['created_at']
+        return result['id']
     }
 
     /**
