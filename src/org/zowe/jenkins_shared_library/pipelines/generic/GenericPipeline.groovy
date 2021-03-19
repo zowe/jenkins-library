@@ -259,6 +259,11 @@ class GenericPipeline extends Pipeline {
     protected GenericPipelineControl _control = new GenericPipelineControl()
 
     /**
+     * Global variable - root cause ID for the pipeline
+     */
+    Integer rootCauseId
+
+    /**
      * Constructs the class.
      *
      * <p>When invoking from a Jenkins pipeline script, the GenericPipeline must be passed
@@ -1526,8 +1531,17 @@ class GenericPipeline extends Pipeline {
             //timer triggered job
             isAuthorizedUser = true
         }
+        this.rootCauseId = causeID
         return isAuthorizedUser
     }
+
+    Integer getRootCauseId() {
+        return this.rootCauseId
+    }
+
+    ChangeInformation getChangeInfo() {
+        return this.changeInfo
+    } 
 
     /**
      * Creates a stage that will package artifact(s).
