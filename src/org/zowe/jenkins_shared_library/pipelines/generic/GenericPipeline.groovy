@@ -1535,14 +1535,6 @@ class GenericPipeline extends Pipeline {
         return isAuthorizedUser
     }
 
-    Integer getRootCauseId() {
-        return this.rootCauseId
-    }
-
-    ChangeInformation getChangeInfo() {
-        return this.changeInfo
-    } 
-
     /**
      * Creates a stage that will package artifact(s).
      *
