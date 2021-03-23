@@ -71,22 +71,19 @@ node ('zowe-jenkins-agent') {
         String buildNumber         = '803'
         String expectedVcsRevision = '840b9c532f434fa0d1488378b2a9b201d0c03f41'
 
-        // get build
-        Map build = jfrog.getBuildInfo(buildName, buildNumber)
-
-        // validate resolved build name
-        if (!build || !build['name']) {
+        // get buildInfo with vcsKeyword
+        Map build_keyword = jfrog.getBuildInfo(buildName, buildNumber, 'zowe-install-packaging')
+        // validate resolved build_keyword name
+        if (!build_keyword || !build_keyword['name']) {
             error "Failed to find \"${buildName}/${buildNumber}\""
         }
-
-        // validate build name
-        if (!build || !build['name'] || build['name'] != buildName) {
-            error "build name \"${build['name']}\" is not expected as \"${buildName}\"."
+        // validate build_keyword name
+        if (!build_keyword || !build_keyword['name'] || build_keyword['name'] != buildName) {
+            error "build_keyword name \"${build_keyword['name']}\" is not expected as \"${buildName}\"."
         }
-
-        // validate build vcsRevision
-        if (!build || !build['vcsRevision'] || build['vcsRevision'] != expectedVcsRevision) {
-            error "build vcsRevision \"${build['vcsRevision']}\" is not expected as \"${expectedVcsRevision}\"."
+        // validate build_keyword vcsRevision
+        if (!build_keyword || !build_keyword['vcsRevision'] || build_keyword['vcsRevision'] != expectedVcsRevision) {
+            error "build_keyword vcsRevision \"${build_keyword['vcsRevision']}\" is not expected as \"${expectedVcsRevision}\"."
         }
 
         echo "[JFROG_ARTIFACTORY_TEST] getBuildInfo successfully"
