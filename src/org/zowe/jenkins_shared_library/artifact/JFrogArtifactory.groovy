@@ -350,8 +350,6 @@ class JFrogArtifactory implements ArtifactInterface {
                     "url" : "https://github.com/zowe/zowe-install-packaging.git",
                     "empty" : false
                 } ],
-                "vcsRevision" : "d6b2a3fe45de71434ad13a133dfb3f433ccb6473",
-                "vcsUrl" : "https://github.com/zowe/zowe-install-packaging.git",
                 "modules" : [ {
                     "id" : "zowe-install-packaging :: staging",
                     "artifacts" : [ {
@@ -386,6 +384,20 @@ class JFrogArtifactory implements ArtifactInterface {
                throw new ArtifactException("Artifactory API error: ${firstError}")
            }
         } else if (result && result.containsKey('buildInfo')) {
+            // the follwing two lines are removed from buildInfo
+            //  "vcsRevision" : "d6b2a3fe45de71434ad13a133dfb3f433ccb6473",
+            //  "vcsUrl" : "https://github.com/zowe/zowe-install-packaging.git",
+            // thus need to pick and generate vcs from scratch if not available
+            def vcsList = result.buildInfo.vcs
+            if (vcsList) {
+                for (def vcs : vcsList) {
+                    if (args['vcs-url-keyword'] && vcs.url.contains(args['vcs-url-keyword'])) {
+                        // if contains the keyword, we generate a new vcsUrl key and revision hash
+                        result.buildInfo.vcsRevision = vcs.revision
+                        result.buildInfo.vcsUrl = vcs.url
+                    }
+                }
+            }
             return result['buildInfo']
         } else {
             throw new ArtifactException("Artifactory API error: result doesn't include buildInfo")
@@ -397,10 +409,11 @@ class JFrogArtifactory implements ArtifactInterface {
      *
      * @see #getBuildInfo(Map)
      */
-    Map getBuildInfo(String buildName, String buildNumber) {
+    Map getBuildInfo(String buildName, String buildNumber, String vcsUrlKeyword) {
         return getBuildInfo([
-            'build-name'   : buildName,
-            'build-number' : buildNumber,
+            'build-name'      : buildName,
+            'build-number'    : buildNumber,
+            'vcs-url-keyword' : vcsUrlKeyword
         ])
     }
 
