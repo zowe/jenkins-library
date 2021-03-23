@@ -193,13 +193,13 @@ class Build {
 
     private Integer identifyCause(Cause c) {
         def causeID
-        if (c instanceof jenkins.branch.BranchEventCause) {
+        if (c.toString().contains("BranchEventCause")) {
             causeID = PipelineConstants.BRANCHEVENT_CAUSE_ID      //PR open or updated
         }
         else if (c instanceof hudson.model.Cause$UserIdCause) {
             causeID = PipelineConstants.USERID_CAUSE_ID           // jenkins user trigger
         }
-        else if (c instanceof jenkins.branch.BranchIndexingCause) {
+        else if (c.toString().contains("BranchIndexingCause")) {
             causeID = PipelineConstants.BRANCHINDEXING_CAUSE_ID   //'Scan Repository Now' action
         }
         else if (c instanceof hudson.model.Cause$RemoteCause) {
