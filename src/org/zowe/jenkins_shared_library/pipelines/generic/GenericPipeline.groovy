@@ -287,7 +287,7 @@ class GenericPipeline extends Pipeline {
         changeInfo = new ChangeInformation(steps)
         github = new GitHub(steps)
         // init JenkinsAPI
-        jenkins = JenkinsAPI.init()
+        jenkins = JenkinsAPI.instance.init()
         artifactory = new JFrogArtifactory(steps)
         pax = new Pax(steps)
     }
