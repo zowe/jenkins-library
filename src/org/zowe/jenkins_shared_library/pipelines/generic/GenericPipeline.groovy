@@ -29,6 +29,7 @@ import org.zowe.jenkins_shared_library.scm.GitHub
 import org.zowe.jenkins_shared_library.scm.ScmException
 import org.zowe.jenkins_shared_library.Constants as GlobalConstants
 import org.zowe.jenkins_shared_library.Utils
+import org.zowe.jenkins_shared_library.integrationtest.JenkinsAPI
 
 /**
  * Extends the functionality available in the {@link jenkins_shared_library.pipelines.base.Pipeline} class. This class adds methods for
@@ -237,6 +238,11 @@ class GenericPipeline extends Pipeline {
     GitHub github
 
     /**
+     * JenkinsAPI instance
+     */
+    static JenkinsAPI jenkins
+
+    /**
      * Github tag prefix
      *
      * <p>If you set a prefix {@code example}, then all version tags like {@code v1.2.3} will have a github tag {@code example-v1.2.3}.</p>
@@ -280,6 +286,8 @@ class GenericPipeline extends Pipeline {
         super(steps)
         changeInfo = new ChangeInformation(steps)
         github = new GitHub(steps)
+        // init JenkinsAPI
+        jenkins = JenkinsAPI.init()
         artifactory = new JFrogArtifactory(steps)
         pax = new Pax(steps)
     }

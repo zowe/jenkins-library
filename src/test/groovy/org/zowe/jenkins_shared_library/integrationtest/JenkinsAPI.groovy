@@ -94,6 +94,29 @@ class JenkinsAPI {
         ensureFolder(Constants.INTEGRATION_TEST_JENKINS_FOLDER)
     }
 
+    // for public API calls
+    JenkinsAPI(String baseUri, Map options = [:]) throws JenkinsAPIException {
+        // init logger
+        logger = Utils.getLogger(Class.getSimpleName())
+
+        // init Awaitility
+        Awaitility.setDefaultTimeout(1, TimeUnit.MINUTES)
+        Awaitility.setDefaultPollInterval(Duration.FIVE_SECONDS)
+        Awaitility.setDefaultPollDelay(1, TimeUnit.SECONDS)
+
+        // validate parameters
+        jenkinsBaseUri = baseUri
+
+        if (options.containsKey('crumb') && options['crumb']) {
+            jenkinsCrumbEnabled = true
+        }
+
+        logger.config("Jenkins server initialized: ${jenkinsBaseUri}")
+
+        // make sure test folder exists
+        ensureFolder(Constants.INTEGRATION_TEST_JENKINS_FOLDER)
+    }
+
     /**
      * Initialize a JenkinsAPI singleton
      *
@@ -112,9 +135,16 @@ class JenkinsAPI {
         String password = System.getProperty('jenkins.password')
         String crumb = System.getProperty('jenkins.crumb')
         if (!instance) {
-            instance = new JenkinsAPI(uri, user, password, [
-                'crumb': crumb == 'true'
-            ])
+            if (!user && !password) {
+                instance = new JenkinsAPI(uri, [
+                    'crumb': crumb == 'true'
+                ])
+            }
+            else {
+                instance = new JenkinsAPI(uri, user, password, [
+                    'crumb': crumb == 'true'
+                ])
+            }
         }
 
         return instance
@@ -622,5 +652,10 @@ class JenkinsAPI {
         logger.finer("Fetching jon ${name} parameters ...")
 
         startJobAndGetBuildInformation name
+    }
+
+    void getFailedTestReport() {
+        Map testResultAll = get("/job/zowe-install-test/job/PR-2023/14/testReport/api/json?tree=suites[cases[className,name,age,status]]")
+        testResultAll.each{ key, value -> logger.finer("TOMTOMTOMTOMTOM ${key}:${value}") }
     }
 }
