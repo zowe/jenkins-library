@@ -240,7 +240,7 @@ class GenericPipeline extends Pipeline {
     /**
      * JenkinsAPI instance
      */
-    JenkinsAPI jenkins
+    def jenkins
 
     /**
      * Github tag prefix
