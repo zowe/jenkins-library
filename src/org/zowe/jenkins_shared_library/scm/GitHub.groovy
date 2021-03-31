@@ -1044,8 +1044,9 @@ class GitHub {
     /**
      * Post a comment on issue/pr
      *
-     * @param  issueNum     issue or pr number
-     * @return              posted comment id
+     * @param  issueNum      issue or pr number
+     * @param  contentString content to write
+     * @return               posted comment id
      */
     Integer postComment(Integer issueNum, String contentString) {
         // Note: in Github APIs, PR is a subset of issue, but with code changes
@@ -1101,11 +1102,12 @@ class GitHub {
     /**
      * Update an existing comment from issue/pr
      *
-     * @param  issueNum     issue or pr number
-     * @param  commentId    comment id
-     * @return              comment updated timestamp
+     * @param  issueNum      issue or pr number
+     * @param  commentId     comment id
+     * @param  contentString content to write
+     * @return               posted comment id
      */
-    String updateComment(Integer issueNum, Integer commentId, String contentString) {
+    Integer updateComment(Integer issueNum, Integer commentId, String contentString) {
         // Note: in Github APIs, PR is a subset of issue, but with code changes
         //       issueNum can be either issue number or PR number
 
@@ -1153,6 +1155,6 @@ class GitHub {
             }
             this.steps.echo "The comment $commentId has been updated on issue/pr $issueNum from ${this.repository}"
         }
-        return result['updated_at']
+        return result['id']
     }
 }
