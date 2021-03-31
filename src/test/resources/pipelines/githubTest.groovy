@@ -144,13 +144,29 @@ node ('zowe-jenkins-agent') {
                 echo "[GITHUB_TEST] getting correct user permission from pull request successfully"
             }
         }
-        
+
+        //posting a comment on PR
+        def newCommentId = github.postComment(prId, "Hello, this is a test comment including a subset of escapable characters \n \" \\ ")
+        if (!newCommentId) {
+            error 'Posting comment failed'
+        }
+        else {
+            echo "[GITHUB_TEST] posting a comment on pull request successfully"
+        }
+
+        //updating a comment on PR
+        def commentUpdateTime = github.updateComment(prId, newCommentId, "Update: this is a new updated test comment, which including another set of escapable characters \t \$ \r ")
+        if (!commentUpdateTime) {
+            error 'Updating comment failed'
+        }
+        else {
+            echo "[GITHUB_TEST] updating a comment on pull request successfully"
+        }
+
         // closing after test
         github.closePullRequest(prId)
         echo "[GITHUB_TEST] closing pull request successfully"
 
         github.deleteRemoteBranch()
-
-       
     }
 }

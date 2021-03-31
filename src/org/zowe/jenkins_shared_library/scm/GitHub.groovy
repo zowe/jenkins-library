@@ -14,6 +14,7 @@ import groovy.util.logging.Log
 import org.zowe.jenkins_shared_library.exceptions.InvalidArgumentException
 import org.zowe.jenkins_shared_library.exceptions.UnderConstructionException
 import org.zowe.jenkins_shared_library.Utils
+import groovy.json.StringEscapeUtils
 
 /**
  * Methods to work with GitHub.
@@ -959,15 +960,18 @@ class GitHub {
         return foundTag
     }
 
+    /**
+     * Get the user of a PR
+     *
+     * @param pr      pr number
+     * @return        username in string
+     */
     String getPullRequestUser(Integer pr) {
         Map pullRequestInfo = this.getPullRequest(pr)
         return pullRequestInfo.user.login
     }
 
-    Boolean isUserWriteCollaborator(String user) throws InvalidArgumentException, ScmException {
-        boolean isUserWrite = false
-
-        // validate arguments
+    private void validateArgs() {
         if (!this.repository) {
             throw new InvalidArgumentException('repository')
         }
@@ -979,7 +983,25 @@ class GitHub {
         if (!this.usernamePasswordCredential) {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
-        
+    }
+
+    /**
+     * Validate if a user has proper write access
+     *
+     * @param user    username
+     * @return        true/false
+     */
+    Boolean isUserWriteCollaborator(String user) throws InvalidArgumentException, ScmException {
+        boolean isUserWrite = false
+
+        // validate arguments
+        validateArgs()
+
+        //additional validation
+        if (!user) {
+            throw new InvalidArgumentException('user')
+        }
+
         this.steps.withCredentials([
             this.steps.usernamePassword(
                 credentialsId: this.usernamePasswordCredential,
@@ -1017,5 +1039,122 @@ class GitHub {
         }
         this.steps.echo "User $user is "+(isUserWrite ? "" : "not ")+"a permitted write collaborator"
         return isUserWrite
+    }
+
+    /**
+     * Post a comment on issue/pr
+     *
+     * @param  issueNum      issue or pr number
+     * @param  contentString content to write
+     * @return               posted comment id
+     */
+    Integer postComment(Integer issueNum, String contentString) {
+        // Note: in Github APIs, PR is a subset of issue, but with code changes
+        //       issueNum can be either issue number or PR number
+
+        // validate arguments
+        validateArgs()
+
+        //additional validation
+        if (!issueNum) {
+            throw new InvalidArgumentException('issueNum')
+        }
+        if (!contentString) {
+            throw new InvalidArgumentException('contentString')
+        }
+
+        def result
+
+        //FIXME: all other escapable characters should be dealt with, except single quote. By design single quote is not allowed in JSON object
+        // In the meantine, prevent posting comments including single quotes
+        contentString = StringEscapeUtils.escapeJava(contentString)
+        String fullJsonText = "'{\"body\":\"" + contentString + "\"}'"
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Posting a comment on issue/pr $issueNum from ${this.repository} \n content is $fullJsonText"
+            def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                    " -X POST" +
+                    " -H \"Accept: application/vnd.github.v3+json\"" +
+                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/$issueNum/comments\"" +
+                    " -d " + fullJsonText
+
+            log.finer("github api curl: ${cmd_postComment}")
+            def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
+            log.finer("Posting a comment on issue/pr $issueNum from ${this.repository}; response:\n${resultText}")
+            if (!resultText) {
+                throw new ScmException("Empty Github API response")
+            }
+            result = this.steps.readJSON text: resultText
+            if (!result || !result.containsKey('id')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
+            this.steps.echo "A comment has been posted on issue/pr $issueNum from ${this.repository}"
+        }
+        return result['id']
+    }
+
+    /**
+     * Update an existing comment from issue/pr
+     *
+     * @param  issueNum      issue or pr number
+     * @param  commentId     comment id
+     * @param  contentString content to write
+     * @return               posted comment id
+     */
+    Integer updateComment(Integer issueNum, Integer commentId, String contentString) {
+        // Note: in Github APIs, PR is a subset of issue, but with code changes
+        //       issueNum can be either issue number or PR number
+
+        // validate arguments
+        validateArgs()
+
+        //additional validation
+        if (!issueNum) {
+            throw new InvalidArgumentException('issueNum')
+        }
+        if (!contentString) {
+            throw new InvalidArgumentException('contentString')
+        }
+
+        def result
+
+        //FIXME: all other escapable characters should be dealt with, except single quote. By design single quote is not allowed in JSON object
+        // In the meantine, prevent posting comments including single quotes
+        contentString = StringEscapeUtils.escapeJava(contentString)
+        String fullJsonText = "'{\"body\":\"" + contentString + "\"}'"
+
+        this.steps.withCredentials([
+            this.steps.usernamePassword(
+                credentialsId: this.usernamePasswordCredential,
+                passwordVariable: 'PASSWORD',
+                usernameVariable: 'USERNAME'
+            )
+        ]) {
+            this.steps.echo "Update the comment $commentId on issue/pr $issueNum from ${this.repository} \n content is $fullJsonText"
+            def cmd_postComment = "curl -u \"\${USERNAME}:\${PASSWORD}\" -sS" +
+                    " -X PATCH" +
+                    " -H \"Accept: application/vnd.github.v3+json\"" +
+                    " \"https://${GITHUB_API_DOMAIN}/repos/${this.repository}/issues/comments/$commentId\"" +
+                    " -d " + fullJsonText
+
+            log.finer("github api curl: ${cmd_postComment}")
+            def resultText = this.steps.sh(script: cmd_postComment + ' 2>&1', returnStdout: true).trim()
+            log.finer("Update the comment $commentId on issue/pr $issueNum from ${this.repository}; response:\n${resultText}")
+            if (!resultText) {
+                throw new ScmException("Empty Github API response")
+            }
+            result = this.steps.readJSON text: resultText
+            if (!result || !result.containsKey('updated_at')) {
+                throw new ScmException("Invalid Github API response \"${resultText}\"")
+            }
+            this.steps.echo "The comment $commentId has been updated on issue/pr $issueNum from ${this.repository}"
+        }
+        return result['id']
     }
 }
