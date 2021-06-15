@@ -22,4 +22,11 @@ class EndArguments {
      * status email send.</p>
      */
     Closure always
+
+    /**
+     * Option to skip default emailing in end stage.
+     *
+     * @default {@code false}
+     */
+    Boolean skipEmail = false
 }
