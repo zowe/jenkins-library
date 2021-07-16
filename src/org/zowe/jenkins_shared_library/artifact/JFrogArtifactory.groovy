@@ -466,6 +466,7 @@ class JFrogArtifactory implements ArtifactInterface {
         Integer expectedArtifacts = args.containsKey('expected') ? (args['expected'] as Integer) : -1
 
         // download
+        this.steps.sh "echo 'spec:' && cat ${specFile}"
         def downloadResult = this.steps.sh(
             script: "jfrog rt dl --spec=\"${specFile}\"",
             returnStdout: true
