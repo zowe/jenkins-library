@@ -529,7 +529,14 @@ class Registry {
         // run npm version
         this.steps.echo "Making a \"${version}\" version bump ..."
         this.steps.dir(tempFolder) {
-            def res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
+            def res
+            if (args['baseDirectory'] && args['baseDirectory'] != '.') {
+                this.steps.dir(args['baseDirectory']) {
+                    res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
+                }
+            } else {
+                res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
+            }
             if (res.contains('Git working directory not clean.')) {
                 throw new NpmException('Working directory is not clean')
             } else if (!(res ==~ /^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
@@ -568,6 +575,20 @@ class Registry {
             'github'  : github,
             'branch'  : branch,
             'version' : version,
+        ])
+    }
+
+    /**
+     * Declare a new version of npm package.
+     *
+     * @see #version(Map)
+     */
+    void version(GitHub github, String branch, String version = 'PATCH', String baseDirectory = '.') {
+        this.version([
+            'github'  : github,
+            'branch'  : branch,
+            'version' : version,
+            'baseDirectory': baseDirectory,
         ])
     }
 }
