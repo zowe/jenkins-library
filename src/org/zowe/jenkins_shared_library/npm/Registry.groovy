@@ -570,19 +570,6 @@ class Registry {
      *
      * @see #version(Map)
      */
-    void version(GitHub github, String branch, String version = 'PATCH') {
-        this.version([
-            'github'  : github,
-            'branch'  : branch,
-            'version' : version,
-        ])
-    }
-
-    /**
-     * Declare a new version of npm package.
-     *
-     * @see #version(Map)
-     */
     void version(GitHub github, String branch, String version = 'PATCH', String baseDirectory = '.') {
         this.version([
             'github'  : github,
