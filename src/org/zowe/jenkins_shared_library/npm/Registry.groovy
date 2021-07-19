@@ -532,6 +532,9 @@ class Registry {
             def res
             if (args['baseDirectory'] && args['baseDirectory'] != '.') {
                 this.steps.dir(args['baseDirectory']) {
+                    // REF: https://github.com/npm/npm/issues/9111#issuecomment-126500995
+                    //      npm version not creating commit or tag in subdirectory [using given workaround]
+                    this.steps.sh "mkdir -p .git"
                     res = this.steps.sh(script: "npm version ${version.toLowerCase()}", returnStdout: true).trim()
                 }
             } else {
