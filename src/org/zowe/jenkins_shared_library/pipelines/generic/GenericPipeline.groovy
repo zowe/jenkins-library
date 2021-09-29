@@ -1453,45 +1453,45 @@ class GenericPipeline extends Pipeline {
             // execute operation Closure if provided
             if (arguments.operation) {
                 arguments.operation(stageName)
-            }
-
-            // re-init if there are config changes passed on arguments
-            this.pax.init(Utils.toMap(arguments))
-            def workspaceExists = steps.fileExists(this.pax.localWorkspace)
-            if (workspaceExists) {
-                steps.echo "Found local packaging workspace ${this.pax.localWorkspace}"
-
-                if (!this.pax.getSshHost()) {
-                    throw new PackagingStageException("PAX server configuration sshHost is missing", this.pax.sshHost)
-                }
-                if (!this.pax.getSshCredential()) {
-                    throw new PackagingStageException("PAX server configuration sshCredential is missing", this.pax.sshCredential)
-                }
-                if (!this.pax.getRemoteWorkspace()) {
-                    throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", this.pax.remoteWorkspace)
-                }
-
-                // normalize package name
-                def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
-                steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
-                def paxPackageFile = arguments.compress ? paxPackageName + '.pax.Z' : paxPackageName + '.pax'
-                def result = this.pax.pack(
-                    job             : "pax-packaging-${paxPackageName}",
-                    filename        : paxPackageFile,
-                    extraFiles      : arguments.extraFiles ?: '',
-                    paxOptions      : arguments.paxOptions ?: '',
-                    compress        : arguments.compress ?: false,
-                    compressOptions : arguments.compressOptions ?: '',
-                    keepTempFolder  : arguments.keepTempFolder ?: false
-                )
-                if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageFile}")) {
-                    steps.echo "Packaging result ${paxPackageFile} is in place."
-                } else {
-                    steps.sh "ls -la ${this.pax.localWorkspace}"
-                    steps.error "Failed to find packaging result ${paxPackageFile}"
-                }
             } else {
-                steps.echo "Not found local packaging workspace ${this.pax.localWorkspace}"
+                // re-init if there are config changes passed on arguments
+                this.pax.init(Utils.toMap(arguments))
+                def workspaceExists = steps.fileExists(this.pax.localWorkspace)
+                if (workspaceExists) {
+                    steps.echo "Found local packaging workspace ${this.pax.localWorkspace}"
+
+                    if (!this.pax.getSshHost()) {
+                        throw new PackagingStageException("PAX server configuration sshHost is missing", this.pax.sshHost)
+                    }
+                    if (!this.pax.getSshCredential()) {
+                        throw new PackagingStageException("PAX server configuration sshCredential is missing", this.pax.sshCredential)
+                    }
+                    if (!this.pax.getRemoteWorkspace()) {
+                        throw new PackagingStageException("PAX server configuration remoteWorkspace is missing", this.pax.remoteWorkspace)
+                    }
+
+                    // normalize package name
+                    def paxPackageName = Utils.sanitizeBranchName(originalPackageName)
+                    steps.echo "Creating pax file \"${paxPackageName}\" from workspace..."
+                    def paxPackageFile = arguments.compress ? paxPackageName + '.pax.Z' : paxPackageName + '.pax'
+                    def result = this.pax.pack(
+                        job             : "pax-packaging-${paxPackageName}",
+                        filename        : paxPackageFile,
+                        extraFiles      : arguments.extraFiles ?: '',
+                        paxOptions      : arguments.paxOptions ?: '',
+                        compress        : arguments.compress ?: false,
+                        compressOptions : arguments.compressOptions ?: '',
+                        keepTempFolder  : arguments.keepTempFolder ?: false
+                    )
+                    if (steps.fileExists("${this.pax.localWorkspace}/${paxPackageFile}")) {
+                        steps.echo "Packaging result ${paxPackageFile} is in place."
+                    } else {
+                        steps.sh "ls -la ${this.pax.localWorkspace}"
+                        steps.error "Failed to find packaging result ${paxPackageFile}"
+                    }
+                } else {
+                    steps.echo "Not found local packaging workspace ${this.pax.localWorkspace}"
+                }
             }
         }
 
@@ -1512,10 +1512,10 @@ class GenericPipeline extends Pipeline {
         if (causeID == PipelineConstants.UPSTREAM_CAUSE_ID) {
             causeID = this.build.identifyRootCause()
         }
-        if (causeID == PipelineConstants.USERID_CAUSE_ID) {
+        if (causeID == PipelineConstants.USERID_CAUSE_ID) { 
             //users on Jenkins are already trusted
             isAuthorizedUser = true
-        }
+        } 
         else if (causeID == PipelineConstants.BRANCHEVENT_CAUSE_ID || causeID == PipelineConstants.BRANCHINDEXING_CAUSE_ID) {
             if (this.changeInfo.isPullRequest) {
                 // anyone on Github can create pull request, so we need to check if the user is trusted
