@@ -114,8 +114,8 @@ class JFrogArtifactory implements ArtifactInterface {
                     usernameVariable: 'USERNAME'
                 )
             ]) {
-                this.steps.sh "jfrog rt config ${CLI_CONFIG_NAME}" +
-                              " --url=${this.url}" +
+                this.steps.sh "jfrog config add ${CLI_CONFIG_NAME}" +
+                              " --artifactory-url=${this.url}" +
                               " --user=\${USERNAME}" +
                               " --password=\${PASSWORD}"
             }
