@@ -115,6 +115,7 @@ class JFrogArtifactory implements ArtifactInterface {
                 )
             ]) {
                 this.steps.sh "jfrog config add ${CLI_CONFIG_NAME}" +
+                              " --overwrite" +
                               " --interactive=false" +
                               " --artifactory-url=${this.url}" +
                               " --user=\${USERNAME}" +
