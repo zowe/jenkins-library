@@ -472,7 +472,7 @@ class JFrogArtifactory implements ArtifactInterface {
         if (args.containsKey('specContent')) {
             this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
         }
-        def specFileJson = this.steps.readJSON(text: readFile(specFile).trim())
+        def specFileJson = this.steps.readJSON(text: this.steps.readFile(encoding: 'UTF-8', file: specFile).trim())
         def specFileRemake = false
         specFileJson['files'].each { it ->
             if (it['build']) {
