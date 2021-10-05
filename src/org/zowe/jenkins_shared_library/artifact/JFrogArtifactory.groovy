@@ -472,6 +472,27 @@ class JFrogArtifactory implements ArtifactInterface {
         if (args.containsKey('specContent')) {
             this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
         }
+
+        def specFileJson = this.steps.readJSON(file: specFile)
+        def specFileRemake = false
+        specFileJson['files'].each { it ->
+            if (it['build']) {
+                specFileRemake = true
+                def resultText = this.steps.sh(
+                    script: "jfrog rt curl -XGET \"/api/build/${it['build'].replace('/', ' :: ')}\"",
+                    returnStdout: true
+                ).trim()
+                def results = this.steps.readJSON text: resultText
+                def buildNumber = results["buildsNumbers"][0]["uri"]
+                it['build'] = "${it['build']}${buildNumber}"
+            }
+        }
+        if (specFileRemake) {
+            this.steps.sh "The key 'build' detected in specFile, need to remake to include bld number in 'build'"
+            this.steps.sh "rm ${specFile}"
+            this.steps.writeFile encoding: 'UTF-8', file: specFile, text: specFileJson
+        }
+
         Integer expectedArtifacts = args.containsKey('expected') ? (args['expected'] as Integer) : -1
 
         // download
