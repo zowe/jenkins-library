@@ -159,9 +159,6 @@ class JFrogArtifactory implements ArtifactInterface {
                 returnStdout: true
             ).trim()
             def results = this.steps.readJSON text: resultText
-            this.steps.echo "OHHHHHHHHH YESSSSSSSS"
-            this.steps.echo "${results["buildsNumbers"][0]}"
-            this.steps.echo "${results["buildsNumbers"][0]["uri"]}"
             buildNumber = results["buildsNumbers"][0]["uri"]
         }
         def searchOptions = ""
