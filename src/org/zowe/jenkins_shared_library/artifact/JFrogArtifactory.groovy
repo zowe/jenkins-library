@@ -148,18 +148,25 @@ class JFrogArtifactory implements ArtifactInterface {
         if (!usernamePasswordCredential) {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
-
+        def buildNumber
+        if (args['build-number']) {
+            buildNumber = "/${args['build-number']}"
+        }
+        else {
+            // we need to get latest build number from the job specified
+            def resultText = this.steps.sh(
+                script: "jfrog rt curl -XGET \"/api/build/${args['build-name'].replace('/', ' :: ')}\"",
+                returnStdout: true
+            ).trim()
+            def results = this.steps.readJSON text: resultText
+            buildNumber = results["buildsNumbers"][0]["uri"]
+        }
         def searchOptions = ""
         def searchOptionText = ""
         if (args['build-name']) {
             // limit to build
-            if (args['build-number']) {
-                searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}/${args['build-number']}\""
-                searchOptionText = "in build ${args['build-name']}/${args['build-number']}"
-            } else {
-                searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}\""
-                searchOptionText = "in build ${args['build-name']}"
-            }
+            searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}${buildNumber}\""
+            searchOptionText = "in build ${args['build-name']}${buildNumber}"
         }
         this.steps.echo "Searching artifact \"${args['pattern']}\"${searchOptionText} ..."
 
@@ -465,6 +472,32 @@ class JFrogArtifactory implements ArtifactInterface {
         if (args.containsKey('specContent')) {
             this.steps.writeFile encoding: 'UTF-8', file: tmpFile, text: args['specContent']
         }
+        def specFileJson = this.steps.readJSON(text: this.steps.readFile(encoding: 'UTF-8', file: specFile).trim())
+        def specFileRemake = false
+        specFileJson['files'].each { it ->
+            if (it['build']) {
+                specFileRemake = true
+                def resultText = this.steps.sh(
+                    script: "jfrog rt curl -XGET \"/api/build/${it['build'].replace('/', ' :: ')}\"",
+                    returnStdout: true
+                ).trim()
+                def results = this.steps.readJSON text: resultText
+                def buildNumber = results["buildsNumbers"][0]["uri"]
+                if (buildNumber) {
+                    it['build'] = it['build'] + buildNumber
+                } 
+                else {
+                    this.steps.echo "WARNING: no build exists from Jenkins job ${it['build']}."
+                }   
+            }
+        }
+        if (specFileRemake) {
+            this.steps.echo "The key \"build\" detected in specFile, need to remake to include bld number in \"build\""
+            this.steps.sh "rm ${specFile}"
+            this.steps.writeFile encoding: 'UTF-8', file: 'remake.json', text: specFileJson.toString()
+            specFile = 'remake.json'
+        }
+
         Integer expectedArtifacts = args.containsKey('expected') ? (args['expected'] as Integer) : -1
 
         // download
