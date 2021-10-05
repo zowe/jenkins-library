@@ -491,7 +491,7 @@ class JFrogArtifactory implements ArtifactInterface {
         if (specFileRemake) {
             this.steps.echo "The key \"build\" detected in specFile, need to remake to include bld number in \"build\""
             this.steps.sh "rm ${specFile}"
-            this.steps.writeFile encoding: 'UTF-8', file: 'remake.json', text: specFileJson
+            this.steps.writeFile encoding: 'UTF-8', file: 'remake.json', text: specFileJson.toString()
             specFile = 'remake.json'
         }
 
