@@ -484,7 +484,7 @@ class JFrogArtifactory implements ArtifactInterface {
                 ).trim()
                 def results = this.steps.readJSON text: resultText
                 def buildNumber = results["buildsNumbers"][0]["uri"]
-                it['build'] = "${it['build']}${buildNumber}"
+                it['build'] = it['build'] + buildNumber
                 this.steps.echo "it['build'] after is ${it['build']}"
             }
         }
