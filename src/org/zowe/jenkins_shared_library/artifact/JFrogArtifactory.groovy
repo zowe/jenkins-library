@@ -476,6 +476,7 @@ class JFrogArtifactory implements ArtifactInterface {
         def specFileRemake = false
         specFileJson['files'].each { it ->
             if (it['build']) {
+                this.steps.echo "it['build'] before is ${it['build']}"
                 specFileRemake = true
                 def resultText = this.steps.sh(
                     script: "jfrog rt curl -XGET \"/api/build/${it['build'].replace('/', ' :: ')}\"",
@@ -483,9 +484,8 @@ class JFrogArtifactory implements ArtifactInterface {
                 ).trim()
                 def results = this.steps.readJSON text: resultText
                 def buildNumber = results["buildsNumbers"][0]["uri"]
-                this.steps.echo "build number is ${buildNumber}"
                 it['build'] = "${it['build']}${buildNumber}"
-                this.steps.echo "it['build'] is ${it['build']}"
+                this.steps.echo "it['build'] after is ${it['build']}"
             }
         }
         if (specFileRemake) {
