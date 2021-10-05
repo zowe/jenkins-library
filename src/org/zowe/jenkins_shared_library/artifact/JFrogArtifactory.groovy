@@ -148,18 +148,25 @@ class JFrogArtifactory implements ArtifactInterface {
         if (!usernamePasswordCredential) {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
-
+        def buildNumber
+        if (args['build-number']) {
+            buildNumber = "/${args['build-number']}"
+        }
+        else {
+            // we need to get latest build number from the job specified
+            def resultText = this.steps.sh(
+                script: "jfrog rt curl -XGET \"/api/build/${args['build-name'].replace('/', ' :: ')}\"",
+                returnStdout: true
+            ).trim()
+            def results = this.steps.readJSON text: resultText
+            buildNumber = results.buildsNumbers[0].url
+        }
         def searchOptions = ""
         def searchOptionText = ""
         if (args['build-name']) {
             // limit to build
-            if (args['build-number']) {
-                searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}/${args['build-number']}\""
-                searchOptionText = "in build ${args['build-name']}/${args['build-number']}"
-            } else {
-                searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}\""
-                searchOptionText = "in build ${args['build-name']}"
-            }
+            searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}${buildNumber}\""
+            searchOptionText = "in build ${args['build-name']}${buildNumber}"
         }
         this.steps.echo "Searching artifact \"${args['pattern']}\"${searchOptionText} ..."
 
