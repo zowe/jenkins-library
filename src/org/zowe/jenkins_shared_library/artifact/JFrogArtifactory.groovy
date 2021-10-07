@@ -174,7 +174,7 @@ class JFrogArtifactory implements ArtifactInterface {
             // if we have * in the path, we only pick the most recent artifact
             // if we only have * in the artifact name, we may want to pick more than one
             searchOptions = "${searchOptions} --sort-by \"created\" --sort-order \"desc\" --limit 1"
-            searchOptionText = "${searchOptionText} \* detected, limit to only latest build"
+            searchOptionText = "${searchOptionText} * detected, limit to only latest build"
         }
 
         this.steps.echo "Searching artifact \"${args['pattern']}\"${searchOptionText} ..."
