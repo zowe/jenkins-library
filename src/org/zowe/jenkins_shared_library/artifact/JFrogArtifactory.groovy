@@ -149,11 +149,12 @@ class JFrogArtifactory implements ArtifactInterface {
             throw new InvalidArgumentException('usernamePasswordCredential')
         }
         def buildNumber
+        // build number is passed through this method
         if (args['build-number']) {
             buildNumber = "/${args['build-number']}"
-        }
-        else {
-            // we need to get latest build number from the job specified
+        } 
+        else if (args['build-name']){      
+            // otherwise build number is not passed, we reply on build-name to find out latest build number
             def resultText = this.steps.sh(
                 script: "jfrog rt curl -XGET \"/api/build/${args['build-name'].replace('/', ' :: ')}\"",
                 returnStdout: true
