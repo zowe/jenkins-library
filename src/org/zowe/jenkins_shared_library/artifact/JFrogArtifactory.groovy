@@ -167,8 +167,16 @@ class JFrogArtifactory implements ArtifactInterface {
         if (args['build-name']) {
             // limit to build
             searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}${buildNumber}\""
-            searchOptionText = "in build ${args['build-name']}${buildNumber}"
+            searchOptionText = "in build ${args['build-name']}${buildNumber}."
         }
+
+        if (!args['build-name'] && !args['build-number'] && args['pattern'] =~ /\*.*\/[^\/]+$/) {
+            // if we have * in the path, we only pick the most recent artifact
+            // if we only have * in the artifact name, we may want to pick more than one
+            searchOptions = "${searchOptions} --sort-by \"created\" --sort-order \"desc\" --limit 1"
+            searchOptionText = "${searchOptionText} * detected, limit to only latest build"
+        }
+
         this.steps.echo "Searching artifact \"${args['pattern']}\"${searchOptionText} ..."
 
         def resultText = this.steps.sh(
