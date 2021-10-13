@@ -483,7 +483,7 @@ class JFrogArtifactory implements ArtifactInterface {
         }
         def specFileJson = this.steps.readJSON(text: this.steps.readFile(encoding: 'UTF-8', file: specFile).trim())
         def specFileRemake = false
-        def pattern
+        def pattern = ""
         specFileJson['files'].each { it ->
             pattern = it['pattern']
             if (it['build']) {
@@ -509,7 +509,7 @@ class JFrogArtifactory implements ArtifactInterface {
             specFile = 'remake.json'
         }
 
-        def downloadOptions
+        def downloadOptions = ""
         if (!specFileRemake && pattern =~ /\*.*\/[^\/]+$/) {
             // if we have * in the path, we only pick the most recent artifact
             downloadOptions = "--sort-by \"created\" --sort-order \"desc\" --limit 1"
@@ -519,6 +519,7 @@ class JFrogArtifactory implements ArtifactInterface {
 
         // download
         this.steps.sh "echo 'spec:' && cat ${specFile}"
+        
         def downloadResult = this.steps.sh(
             script: "jfrog rt dl --spec=\"${specFile}\" ${downloadOptions}",
             returnStdout: true
