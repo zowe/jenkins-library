@@ -167,9 +167,9 @@ class Constants {
     /**
      * Default PAX Packaging server host name
      *
-     * @Default {@code "zzow01.zowe.marist.cloud"}
+     * @Default {@code "zzow04.zowe.marist.cloud"}
      */
-    public static String DEFAULT_PAX_PACKAGING_SSH_HOST = 'zzow01.zowe.marist.cloud'
+    public static String DEFAULT_PAX_PACKAGING_SSH_HOST = 'zzow04.zowe.marist.cloud'
 
     /**
      * Default PAX Packaging server port
@@ -181,9 +181,9 @@ class Constants {
     /**
      * Default PAX Packaging server credential defined on Jenkins
      *
-     * @Default {@code "ssh-marist-server-zzow01"}
+     * @Default {@code "ssh-marist-server-zzow04"}
      */
-    public static String DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL = 'ssh-marist-server-zzow01'
+    public static String DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL = 'ssh-marist-server-zzow04'
 
     /**
      * Default PAX Packaging server default working space
