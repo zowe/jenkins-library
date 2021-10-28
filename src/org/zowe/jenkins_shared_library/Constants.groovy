@@ -181,9 +181,9 @@ class Constants {
     /**
      * Default PAX Packaging server credential defined on Jenkins
      *
-     * @Default {@code "ssh-marist-server-zzow04"}
+     * @Default {@code "ssh-marist-server-credential"}
      */
-    public static String DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL = 'ssh-marist-server-zzow04'
+    public static String DEFAULT_PAX_PACKAGING_SSH_CREDENTIAL = 'ssh-marist-server-credential'
 
     /**
      * Default PAX Packaging server default working space
