@@ -156,7 +156,7 @@ class JFrogArtifactory implements ArtifactInterface {
         else if (args['build-name']){      
             // otherwise build number is not passed, we reply on build-name to find out latest build number
             def resultText = this.steps.sh(
-                script: "jfrog rt curl -XGET \"/api/build/${args['build-name'].replace('/', ' :: ')}\"",
+                script: "jfrog rt curl -XGET \"/api/build/${args['build-name']}\"",
                 returnStdout: true
             ).trim()
             def results = this.steps.readJSON text: resultText
@@ -166,7 +166,7 @@ class JFrogArtifactory implements ArtifactInterface {
         def searchOptionText = ""
         if (args['build-name']) {
             // limit to build
-            searchOptions = "--build=\"${args['build-name'].replace('/', ' :: ')}${buildNumber}\""
+            searchOptions = "--build=\"${args['build-name']}${buildNumber}\""
             searchOptionText = "in build ${args['build-name']}${buildNumber}."
         }
 
@@ -316,7 +316,7 @@ class JFrogArtifactory implements ArtifactInterface {
         }
 
         // FIXME: this could be risky if build name including non-ASCII characters
-        def encodedBuildName = args['build-name'].replace('/', ' :: ').replace(' ', '%20')
+        def encodedBuildName = args['build-name'].replace(' ', '%20')
         this.steps.echo "Fetching build information of \"${encodedBuildName}/${args['build-number']}\" ..."
 
         def resultText = null
@@ -489,7 +489,7 @@ class JFrogArtifactory implements ArtifactInterface {
             if (it['build']) {
                 specFileRemake = true
                 def resultText = this.steps.sh(
-                    script: "jfrog rt curl -XGET \"/api/build/${it['build'].replace('/', ' :: ')}\"",
+                    script: "jfrog rt curl -XGET \"/api/build/${it['build']}\"",
                     returnStdout: true
                 ).trim()
                 def results = this.steps.readJSON text: resultText
@@ -577,7 +577,7 @@ class JFrogArtifactory implements ArtifactInterface {
         }
 
         def env = this.steps.env
-        def buildName = env.JOB_NAME.replace('/', ' :: ')
+        def buildName = env.JOB_NAME
         this.steps.echo "Uploading artifact \"${args['pattern']}\" to \"${args['target']}\"\n" +
             "- Build name   : ${buildName}" +
             "- Build number : ${env.BUILD_NUMBER}"
@@ -888,7 +888,7 @@ class JFrogArtifactory implements ArtifactInterface {
 
         // prepare artifact property
         def props = []
-        def currentBuildName = env.JOB_NAME.replace('/', ' :: ')
+        def currentBuildName = env.JOB_NAME
         props << "build.name=${currentBuildName}"
         props << "build.number=${env.BUILD_NUMBER}"
         if (buildName) {
